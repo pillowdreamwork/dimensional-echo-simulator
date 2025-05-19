@@ -1,73 +1,31 @@
-# Welcome to your Lovable project
+# PillowDreamwork: Dimensional Echo Simulator
 
-## Project info
+## Overview
+A high-dimensional simulation game blending quantum physics, vector algebra, and symbolic dream-work. Modular architecture for easy extension and AI interoperation.
 
-**URL**: https://lovable.dev/projects/7271a35b-c6e2-41b3-a8df-695e67898c59
+## Architecture
+- **Simulation Core**: Main simulation loop, dimensional logic
+- **PillowDreamwork Module**: Dream sequences, subconscious simulation
+- **Vector Alchemy Engine**: Vector/tensor manipulation, nonlinear logic
+- **Dream Compass**: UI for navigation across dimensions
+- **Uncertainty Engine**: Probabilistic outcomes, quantum logic
+- **Echo Simulator**: Ripple effects, timeline management
+- **Multiversal Dream Server**: Multiplayer, community dream logic
+- **Mythic Intelligence**: AI archetypes, adaptive personalities
+- **IURI**: Ritual interface for quantum math, glyphs, intention fields
 
-## How can I edit this code?
+## Extending/Modifying
+- Each module is in `src/lib/pillowdreamwork.ts` or `src/components/`
+- Add new modules or extend existing ones as needed
+- Use the provided API hooks for external AI or plugin integration
 
-There are several ways of editing your application.
+## Future Enhancements
+- Quantum Tesseract Engine
+- Dream-Symbol AutoCompiler
+- Karma Reflection Logs
+- API integration for cross-tool expansion
+- Sentient Ritual Seeds
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7271a35b-c6e2-41b3-a8df-695e67898c59) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/7271a35b-c6e2-41b3-a8df-695e67898c59) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+For detailed module structure, see `src/lib/pillowdreamwork.ts`.
