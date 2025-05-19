@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { generateDimensionalEffect } from "@/utils/quantum";
 import { useToast } from "@/components/ui/use-toast";
-import { DreamCompass, RitualInterface, MythicAIShowcase, EchoSimulatorMode } from './PillowDreamworkShowcase';
+import { DreamCompass, RitualInterface, MythicAIShowcase, EchoSimulatorMode, SiderAIShowcase } from '../components/PillowDreamworkShowcase';
 
 const Index = () => {
   const { toast } = useToast();
@@ -164,6 +164,7 @@ const Index = () => {
         <RitualInterface />
         <MythicAIShowcase />
         <EchoSimulatorMode />
+        <SiderAIShowcase />
       </div>
       
       <footer className="mt-8 text-center text-xs text-muted-foreground">
