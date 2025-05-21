@@ -1,5 +1,17 @@
+
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-createRoot(document.getElementById("root")!).render(<App />);
+// Run system checks during startup
+import { runSystemCheck } from './utils/moduleCheck';
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', () => {
+  // Run module check and log results
+  const systemStatus = runSystemCheck();
+  console.log(`System Status: ${systemStatus.status} (${systemStatus.functionalityScore}% functional)`);
+  
+  // Render the application
+  createRoot(document.getElementById("root")!).render(<App />);
+});
