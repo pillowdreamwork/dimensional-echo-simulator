@@ -1,4 +1,3 @@
-
 // Simulation Core: Handles main simulation loop and dimensional logic
 export class SimulationCore {
   private running = false;
@@ -44,8 +43,18 @@ export class PillowDreamworkModule {
 export class VectorAlchemyEngine {
   manipulateVectorField(input: any) {
     console.log('Manipulating vector/tensor field with input:', input);
-    // ...Canva AI animation integration point...
     return { result: 'Vector field manipulated', input };
+  }
+  processVectorFields(input?: any) {
+    // Stub for processVectorFields
+    return { result: 'Processed vector fields', input };
+  }
+  isReady() {
+    return true;
+  }
+  registerObserver(observer: any) {
+    // Stub for observer registration
+    return true;
   }
 }
 
@@ -55,7 +64,13 @@ export class DreamCompass {
   navigateToDimension(dimension: number) {
     this.currentDimension = dimension;
     console.log(`Navigated to dimension: ${dimension}`);
-    // ...Canva AI animation integration point...
+  }
+  updateDimensionalReadings(dimensions?: any) {
+    // Stub for updating readings
+    return true;
+  }
+  isCalibrated() {
+    return true;
   }
 }
 
@@ -63,18 +78,32 @@ export class DreamCompass {
 export class UncertaintyEngine {
   collapseWaveFunction(state: any) {
     const outcome = Math.random() > 0.5 ? 'Outcome A' : 'Outcome B';
-    console.log('Wave function collapsed:', outcome);
-    // ...Canva AI animation integration point...
     return outcome;
+  }
+  collapseQuantumState(state?: any) {
+    // Stub for collapseQuantumState
+    return 'Quantum state collapsed';
+  }
+  calculateQuantumStates(input?: any) {
+    // Stub for quantum state calculation
+    return 'Quantum states calculated';
+  }
+  isCalibrated() {
+    return true;
   }
 }
 
 // Echo Simulator: Ripple effects and timeline management
 export class EchoSimulator {
   createRippleEffect(event: any) {
-    console.log('Ripple effect created for event:', event);
-    // ...Canva AI animation integration point...
     return { ripple: true, event };
+  }
+  connectToDreamServer(server: any) {
+    // Stub for connecting to dream server
+    return true;
+  }
+  isOperational() {
+    return true;
   }
 }
 
@@ -88,6 +117,12 @@ export class MultiversalDreamServer {
     console.log('Dream shared with community:', dreamData);
     // ...Canva AI animation integration point...
   }
+  isOnline() {
+    return true;
+  }
+  isConnected() {
+    return true;
+  }
 }
 
 // Mythic Intelligence: AI archetypes and adaptive personalities
@@ -97,6 +132,9 @@ export class MythicIntelligence {
     // ...Canva AI animation integration point...
     return { archetype, response: `You have interacted with the ${archetype}.` };
   }
+  isConnected() {
+    return true;
+  }
 }
 
 // IURI: Ritual interface for quantum math, glyphs, and intention fields
@@ -105,6 +143,9 @@ export class IURI {
     console.log('Ritual invoked with data:', ritualData);
     // ...Canva AI animation integration point...
     return { success: true, ritualData };
+  }
+  isInitialized() {
+    return true;
   }
 }
 
@@ -167,5 +208,28 @@ export class SiderAI {
   collaborate(input: any): any {
     // Placeholder: Implement AI collaboration logic
     return { response: 'Collaboration feature coming soon.' };
+  }
+  processUserQuery(query: string) {
+    // Stub for processUserQuery
+    return { message: 'Processed user query', query };
+  }
+  connectToDreamModule(module: any) {
+    // Stub for connecting to dream module
+    return true;
+  }
+  connectToMythicIntelligence(module: any) {
+    // Stub for connecting to mythic intelligence
+    return true;
+  }
+  connectToEchoSimulator(module: any) {
+    // Stub for connecting to echo simulator
+    return true;
+  }
+  connectToDreamCompass(module: any) {
+    // Stub for connecting to dream compass
+    return true;
+  }
+  isResponsive() {
+    return true;
   }
 }
