@@ -1,6 +1,15 @@
 import * as engine from '../lib/engine';
 
-const getEngineModules = engine.getEngineModules;
+// Use the modules property or call the modules function from engine if available
+const getEngineModules = () => {
+  if (typeof (engine as any).getEngineModules === 'function') {
+    return (engine as any).getEngineModules();
+  }
+  if (typeof (engine as any).modules === 'function') {
+    return (engine as any).modules();
+  }
+  return (engine as any).modules;
+};
 
 export function runSystemCheck() {
   const modules = getEngineModules();
