@@ -22,45 +22,37 @@ export function initializePillowDreamworkGame() {
     return getEngineModules();
   }
 
-  // Initialize core modules in the correct order with dependencies
-  try {
-    // Initialize base modules first
-    simulationCore = new SimulationCore();
-    iuri = new IURI(); // IURI needs to be initialized before InvocationAPI
-    
-    // Then initialize modules that depend on the base modules
-    invocationAPI = new InvocationAPI(iuri);
-    pillowDreamwork = new PillowDreamworkModule();
-    vectorAlchemy = new VectorAlchemyEngine();
-    mythicAI = new MythicIntelligence();
-    uncertainty = new UncertaintyEngine();
-    echoSimulator = new EchoSimulator();
-    dreamServer = new MultiversalDreamServer();
-    siderAI = new SiderAI();
-    dreamCompass = new DreamCompass();
+  // Initialize core modules
+  simulationCore = new SimulationCore();
+  pillowDreamwork = new PillowDreamworkModule();
+  vectorAlchemy = new VectorAlchemyEngine();
+  iuri = new IURI();
+  invocationAPI = new InvocationAPI(iuri);
+  mythicAI = new MythicIntelligence();
+  uncertainty = new UncertaintyEngine();
+  echoSimulator = new EchoSimulator();
+  dreamServer = new MultiversalDreamServer();
+  siderAI = new SiderAI();
+  dreamCompass = new DreamCompass();
 
-    // Wire modules together
-    simulationCore.addUpdateListener((frame, dimensions) => {
-      if (pillowDreamwork?.getDreamState().inDream) {
-        pillowDreamwork.processDreamLogic();
-      }
-    });
-    
-    // Start simulation core
-    simulationCore.start();
-    console.log("PillowDreamwork game engine initialized");
+  // Wire modules together
+  simulationCore.addUpdateListener((frame, dimensions) => {
+    if (pillowDreamwork?.getDreamState().inDream) {
+      pillowDreamwork.processDreamLogic();
+    }
+  });
+  
+  // Start simulation core
+  simulationCore.start();
+  console.log("PillowDreamwork game engine initialized");
 
-    return getEngineModules();
-  } catch (error) {
-    console.error("Error initializing PillowDreamwork engine:", error);
-    return null;
-  }
+  return getEngineModules();
 }
 
 // Get access to all engine modules
 export function getEngineModules() {
   if (!simulationCore) {
-    return initializePillowDreamworkGame();
+    initializePillowDreamworkGame();
   }
   
   return {
@@ -81,7 +73,7 @@ export function getEngineModules() {
 // Get a specific module by name
 export function getModule(moduleName: string) {
   const modules = getEngineModules();
-  return modules ? modules[moduleName as keyof typeof modules] || null : null;
+  return modules[moduleName as keyof typeof modules] || null;
 }
 
 // Reset the entire engine (useful for testing or cleanup)
