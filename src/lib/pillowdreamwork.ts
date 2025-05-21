@@ -1,39 +1,59 @@
 // Simulation Core: Handles main simulation loop and dimensional logic
 export class SimulationCore {
+  private running = false;
+  private frame = 0;
   start() {
-    // Start the simulation loop
+    this.running = true;
+    this.frame = 0;
+    console.log('Simulation started.');
     // ...Canva AI animation integration point...
   }
   update() {
-    // Update simulation state per frame
+    if (!this.running) return;
+    this.frame++;
+    console.log(`Simulation frame: ${this.frame}`);
     // ...Canva AI animation integration point...
+  }
+  stop() {
+    this.running = false;
+    console.log('Simulation stopped.');
   }
 }
 
 // PillowDreamwork Module: Manages dream sequences and subconscious simulation
 export class PillowDreamworkModule {
+  private inDream = false;
   enterDreamSequence() {
-    // Begin a dream sequence
+    this.inDream = true;
+    console.log('Entered dream sequence.');
     // ...Canva AI animation integration point...
   }
   processDreamLogic() {
-    // Handle dream logic and transitions
+    if (!this.inDream) return;
+    console.log('Processing dream logic...');
     // ...Canva AI animation integration point...
+  }
+  exitDreamSequence() {
+    this.inDream = false;
+    console.log('Exited dream sequence.');
   }
 }
 
 // Vector Alchemy Engine: Handles vector field manipulation and tensor logic
 export class VectorAlchemyEngine {
   manipulateVectorField(input: any) {
-    // Manipulate vector/tensor fields based on input
+    console.log('Manipulating vector/tensor field with input:', input);
     // ...Canva AI animation integration point...
+    return { result: 'Vector field manipulated', input };
   }
 }
 
 // Dream Compass: UI for navigation across dimensions
 export class DreamCompass {
+  currentDimension = 1;
   navigateToDimension(dimension: number) {
-    // Navigate to a specific dimension
+    this.currentDimension = dimension;
+    console.log(`Navigated to dimension: ${dimension}`);
     // ...Canva AI animation integration point...
   }
 }
@@ -41,28 +61,30 @@ export class DreamCompass {
 // Uncertainty Engine: Implements probabilistic outcomes and quantum logic
 export class UncertaintyEngine {
   collapseWaveFunction(state: any) {
-    // Collapse quantum state probabilistically
+    const outcome = Math.random() > 0.5 ? 'Outcome A' : 'Outcome B';
+    console.log('Wave function collapsed:', outcome);
     // ...Canva AI animation integration point...
-    return Math.random() > 0.5 ? 'Outcome A' : 'Outcome B';
+    return outcome;
   }
 }
 
 // Echo Simulator: Ripple effects and timeline management
 export class EchoSimulator {
   createRippleEffect(event: any) {
-    // Simulate ripple effects across timelines
+    console.log('Ripple effect created for event:', event);
     // ...Canva AI animation integration point...
+    return { ripple: true, event };
   }
 }
 
 // Multiversal Dream Server: Multiplayer and community dream logic
 export class MultiversalDreamServer {
   connectToServer() {
-    // Connect to multiplayer dream server
+    console.log('Connected to Multiversal Dream Server.');
     // ...Canva AI animation integration point...
   }
   shareDream(dreamData: any) {
-    // Share dream with community
+    console.log('Dream shared with community:', dreamData);
     // ...Canva AI animation integration point...
   }
 }
@@ -70,16 +92,18 @@ export class MultiversalDreamServer {
 // Mythic Intelligence: AI archetypes and adaptive personalities
 export class MythicIntelligence {
   interactWithArchetype(archetype: string) {
-    // Interact with a mythic AI archetype
+    console.log(`Interacting with archetype: ${archetype}`);
     // ...Canva AI animation integration point...
+    return { archetype, response: `You have interacted with the ${archetype}.` };
   }
 }
 
 // IURI: Ritual interface for quantum math, glyphs, and intention fields
 export class IURI {
   invokeRitual(ritualData: any) {
-    // Perform a ritual using quantum math, glyphs, or intention fields
+    console.log('Ritual invoked with data:', ritualData);
     // ...Canva AI animation integration point...
+    return { success: true, ritualData };
   }
 }
 
