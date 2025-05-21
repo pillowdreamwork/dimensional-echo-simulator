@@ -1,4 +1,6 @@
-import { getEngineModules } from '../lib/engine';
+import * as engine from '../lib/engine';
+
+const getEngineModules = engine.getEngineModules;
 
 export function runSystemCheck() {
   const modules = getEngineModules();
