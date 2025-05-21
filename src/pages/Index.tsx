@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import VirtualCompass from "@/components/VirtualCompass";
 import DimensionalView from "@/components/DimensionalView";
@@ -7,8 +8,8 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { generateDimensionalEffect } from "@/utils/quantum";
-import { useToast } from "@/components/ui/use-toast";
-import { DreamCompass, RitualInterface, MythicAIShowcase, EchoSimulatorMode, SiderAIShowcase } from '../components/PillowDreamworkShowcase';
+import { useToast } from "@/hooks/use-toast";
+import { PillowDreamworkShowcase } from '../components/PillowDreamworkShowcase';
 
 const Index = () => {
   const { toast } = useToast();
@@ -160,11 +161,7 @@ const Index = () => {
 
       {/* PillowDreamwork showcase components */}
       <div className="mt-8">
-        <DreamCompass />
-        <RitualInterface />
-        <MythicAIShowcase />
-        <EchoSimulatorMode />
-        <SiderAIShowcase />
+        <PillowDreamworkShowcase />
       </div>
       
       <footer className="mt-8 text-center text-xs text-muted-foreground">
@@ -175,6 +172,6 @@ const Index = () => {
       </footer>
     </div>
   );
-};
+}
 
 export default Index;

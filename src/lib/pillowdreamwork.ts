@@ -1,3 +1,4 @@
+
 // Simulation Core: Handles main simulation loop and dimensional logic
 export class SimulationCore {
   private running = false;
@@ -104,6 +105,41 @@ export class IURI {
     console.log('Ritual invoked with data:', ritualData);
     // ...Canva AI animation integration point...
     return { success: true, ritualData };
+  }
+}
+
+// InvocationAPI: Interface for ritual and intention programming
+export class InvocationAPI {
+  private rituals: {[key: string]: any} = {};
+  
+  /**
+   * Register a new ritual with the API
+   */
+  registerRitual(name: string, pattern: any) {
+    this.rituals[name] = pattern;
+    console.log(`Ritual "${name}" registered with the API`);
+    return true;
+  }
+  
+  /**
+   * Invoke a registered ritual by name
+   */
+  invokeRitual(name: string, params: any = {}) {
+    if (!this.rituals[name]) {
+      console.error(`Ritual "${name}" not found`);
+      return false;
+    }
+    
+    console.log(`Invoking ritual "${name}" with parameters:`, params);
+    // ...Canva AI animation integration point...
+    return { success: true, ritual: name, params };
+  }
+  
+  /**
+   * List all available rituals
+   */
+  listRituals() {
+    return Object.keys(this.rituals);
   }
 }
 
