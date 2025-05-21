@@ -119,6 +119,7 @@ export const dimensionGlyphs = {
   11: "☉"
 };
 
+// Generate a dimensional effect based on dimension
 export const generateDimensionalEffect = (dimension: number): string => {
   const effects = [
     "Reality warps slightly around you",
@@ -132,4 +133,293 @@ export const generateDimensionalEffect = (dimension: number): string => {
   
   // Return random effect, influenced by dimension number
   return effects[Math.floor((Math.random() + dimension/11) * effects.length) % effects.length];
+};
+
+// NEW: Analyze symbol pattern and determine effect
+export const analyzeSymbolPattern = (pattern: string): {effect: string, power: number} => {
+  let power = 0;
+  let effectType = "";
+  
+  // Calculate power based on symbol count and types
+  power = pattern.length * 10; // Base power from number of symbols
+  
+  // Special symbols have more power
+  if (pattern.includes("⊛")) power += 25;
+  if (pattern.includes("⊕")) power += 30;
+  if (pattern.includes("☉")) power += 40;
+  if (pattern.includes("⏧")) power += 35;
+  
+  // Calculate effect type based on pattern composition
+  if (pattern.includes("—") || pattern.includes("┼")) {
+    effectType = "structural";
+  } else if (pattern.includes("⬠") || pattern.includes("⧫")) {
+    effectType = "spatial";
+  } else if (pattern.includes("⎔") || pattern.includes("⌬")) {
+    effectType = "probabilistic";
+  } else if (pattern.includes("⍟") || pattern.includes("⎈")) {
+    effectType = "vibrational";
+  } else if (pattern.includes("⏣")) {
+    effectType = "holographic";
+  } else {
+    effectType = "unknown";
+  }
+  
+  // Generate specific effect based on type
+  const effects = {
+    structural: [
+      "Reality foundations stabilize around you",
+      "Dimensional grid patterns become visible",
+      "Spacetime rigidity increases temporarily"
+    ],
+    spatial: [
+      "Space folds briefly between dimensions",
+      "Volumetric awareness expands in your consciousness",
+      "Spatial boundaries become permeable"
+    ],
+    probabilistic: [
+      "Future pathways branch visibly before you",
+      "Probability waves collapse into new patterns",
+      "Quantum uncertainty temporarily decreases"
+    ],
+    vibrational: [
+      "Resonant frequencies harmonize across dimensions",
+      "Vibrational patterns sync with your consciousness",
+      "Energy flows become visible as geometric patterns"
+    ],
+    holographic: [
+      "Information fields overlay your perception",
+      "Fractal patterns reveal deeper reality structures",
+      "Holographic encoding of reality becomes apparent"
+    ],
+    unknown: [
+      "Strange effects ripple through reality",
+      "Unexplained phenomena manifest briefly",
+      "Reality responds in unpredictable ways"
+    ]
+  };
+  
+  const typeEffects = effects[effectType as keyof typeof effects] || effects.unknown;
+  const effect = typeEffects[Math.floor(Math.random() * typeEffects.length)];
+  
+  return { effect, power };
+};
+
+// NEW: Process ritual with IURI system
+export const processRitual = (glyph: string, intensity: number): {
+  outcome: string;
+  dimensionalShift: number;
+  timelineEffect: string;
+} => {
+  const glyphValues = {
+    "⏣": { power: 7, domain: "holographic", affinity: "time" },
+    "⍟": { power: 5, domain: "symbolic", affinity: "consciousness" },
+    "⌬": { power: 6, domain: "energetic", affinity: "structure" },
+    "⎈": { power: 8, domain: "harmonic", affinity: "vibration" },
+    "☉": { power: 10, domain: "transcendent", affinity: "unity" },
+    "⧫": { power: 4, domain: "temporal", affinity: "space" }
+  };
+  
+  // Default values for unknown glyphs
+  const glyphInfo = glyphValues[glyph as keyof typeof glyphValues] || 
+                    { power: 3, domain: "unknown", affinity: "chaos" };
+  
+  // Calculate outcome based on glyph properties and intensity
+  const effectPower = (glyphInfo.power * intensity) / 100;
+  const dimensionalShift = Math.min(Math.floor(effectPower / 3), 3);
+  
+  // Generate outcome descriptions
+  const domainEffects = {
+    "holographic": [
+      "Information fields overlay your perception",
+      "Reality encodes itself into fractal patterns",
+      "Dimensional barriers become transparent"
+    ],
+    "symbolic": [
+      "Archetypes emerge from the collective unconscious",
+      "Meaning crystallizes into tangible form",
+      "Symbolic language becomes temporarily comprehensible"
+    ],
+    "energetic": [
+      "Energy flows become visible as geometric patterns",
+      "Power concentrates into usable constructs",
+      "Force fields form around intentional thought"
+    ],
+    "harmonic": [
+      "Resonant frequencies align across dimensions",
+      "Harmonic convergence creates stable pathways",
+      "Vibrational patterns synchronize with consciousness"
+    ],
+    "transcendent": [
+      "Ultimate reality briefly pierces the veil",
+      "Transcendent awareness expands beyond normal limits",
+      "Unity consciousness emerges temporarily"
+    ],
+    "temporal": [
+      "Time flows become malleable and visible",
+      "Past, present and future briefly coexist",
+      "Temporal boundaries dissolve momentarily"
+    ],
+    "unknown": [
+      "Chaotic energies swirl in unpredictable patterns",
+      "Reality responds in unexpected ways",
+      "Strange phenomena manifest briefly"
+    ]
+  };
+  
+  const timelineEffects = {
+    "time": "Timeline branches become temporarily visible",
+    "consciousness": "Alternative self-states become accessible",
+    "structure": "Reality foundations stabilize into new configurations",
+    "vibration": "Harmonic resonance creates stable multidimensional pathways",
+    "unity": "All possibilities converge toward optimal outcomes",
+    "space": "Spatial dimensions fold to connect distant realities",
+    "chaos": "Unpredictable timeline fluctuations occur"
+  };
+  
+  const domain = glyphInfo.domain as keyof typeof domainEffects;
+  const domainEffectList = domainEffects[domain] || domainEffects.unknown;
+  const outcome = domainEffectList[Math.floor(Math.random() * domainEffectList.length)];
+  
+  const affinity = glyphInfo.affinity as keyof typeof timelineEffects;
+  const timelineEffect = timelineEffects[affinity] || timelineEffects.chaos;
+  
+  return {
+    outcome,
+    dimensionalShift,
+    timelineEffect
+  };
+};
+
+// NEW: Process mythic archetype interaction
+export const interactWithMythicArchetype = (archetype: string): {
+  response: string;
+  insight: string;
+  dimensionalAffinity: number;
+} => {
+  const archetypeData = {
+    "Oracle": {
+      responses: [
+        "The patterns between dimensions reveal what has been hidden.",
+        "Time is a circle that spirals upward through dimensions.",
+        "What you seek is seeking you across the probability spectrum."
+      ],
+      insights: [
+        "Look to the spaces between decisions for true knowledge.",
+        "The past and future exist simultaneously in the fifth dimension.",
+        "Observation collapses possibility into reality."
+      ],
+      dimensionalAffinity: 9
+    },
+    "Trickster": {
+      responses: [
+        "Reality is merely agreement among observers. I disagree.",
+        "The rules you believe in are simply the ones you've noticed.",
+        "Chaos is pattern viewed from too close a distance."
+      ],
+      insights: [
+        "Break patterns to see what lies beneath them.",
+        "The unexpected path often leads to unexpected possibilities.",
+        "In contradiction lies truth."
+      ],
+      dimensionalAffinity: 5
+    },
+    "Guide": {
+      responses: [
+        "Follow the resonance that feels like home.",
+        "Each dimension teaches what you need for the next.",
+        "The path appears when you're ready to walk it."
+      ],
+      insights: [
+        "Trust the journey more than the destination.",
+        "The maps you seek are written in your own understanding.",
+        "Navigation across dimensions requires both logic and intuition."
+      ],
+      dimensionalAffinity: 7
+    },
+    "Warrior": {
+      responses: [
+        "Courage creates its own reality tunnels.",
+        "Stand firm at the nexus of possibility.",
+        "Decision is the blade that cuts through uncertainty."
+      ],
+      insights: [
+        "Decisive action collapses quantum states favorably.",
+        "Protect your timeline from entropic forces.",
+        "Strength comes from alignment with your higher-dimensional self."
+      ],
+      dimensionalAffinity: 3
+    }
+  };
+  
+  const defaultData = {
+    responses: ["The archetype acknowledges your presence."],
+    insights: ["Some insights remain veiled for now."],
+    dimensionalAffinity: 1
+  };
+  
+  const data = archetypeData[archetype as keyof typeof archetypeData] || defaultData;
+  
+  const responseIndex = Math.floor(Math.random() * data.responses.length);
+  const insightIndex = Math.floor(Math.random() * data.insights.length);
+  
+  return {
+    response: data.responses[responseIndex],
+    insight: data.insights[insightIndex],
+    dimensionalAffinity: data.dimensionalAffinity
+  };
+};
+
+// NEW: Simulate timeline ripple effects
+export const createTimelineRipple = (origin: string, intensity: number): {
+  primaryEffect: string;
+  secondaryEffects: string[];
+  branchFactor: number;
+} => {
+  // Calculate branching factor based on intensity
+  const branchFactor = Math.max(1, Math.min(7, Math.floor(intensity / 15)));
+  
+  // Generate primary effect description
+  const primaryEffects = [
+    "A new timeline branch forms from your decision",
+    "Reality ripples outward from your choice point",
+    "Alternate possibilities crystallize around your action",
+    "A quantum decision tree splits into parallel realities",
+    "Your choice creates a nexus point across dimensions"
+  ];
+  
+  // Generate secondary effects
+  const secondaryEffectPool = [
+    "Echoes of alternate choices briefly manifest",
+    "Quantum entanglement links similar timelines",
+    "Memory fragments from variant selves surface",
+    "Probability waves recalculate around new constants",
+    "Timeline stability increases as branches propagate",
+    "Causal chains reconfigure to accommodate changes",
+    "Dimensional barriers thin near branch points",
+    "Synchronicity increases around related events",
+    "Temporal harmonics create resonance patterns"
+  ];
+  
+  // Select effects based on intensity and branching
+  const primaryEffect = primaryEffects[Math.floor(Math.random() * primaryEffects.length)];
+  
+  // Choose secondary effects based on branch factor
+  const secondaryEffects: string[] = [];
+  const usedIndices: number[] = [];
+  
+  for (let i = 0; i < branchFactor; i++) {
+    let index;
+    do {
+      index = Math.floor(Math.random() * secondaryEffectPool.length);
+    } while (usedIndices.includes(index));
+    
+    usedIndices.push(index);
+    secondaryEffects.push(secondaryEffectPool[index]);
+  }
+  
+  return {
+    primaryEffect,
+    secondaryEffects,
+    branchFactor
+  };
 };

@@ -1,30 +1,97 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CompassIcon, WandSparklesIcon, StarIcon, InfinityIcon, LayersIcon } from "lucide-react";
-import { SiderAI, MythicIntelligence, IURI, EchoSimulator } from '../lib/pillowdreamwork';
 import { Badge } from '@/components/ui/badge';
+import { CompassIcon, WandSparklesIcon, StarIcon, InfinityIcon, LayersIcon } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
+import { getEngineModules, initializePillowDreamworkGame } from '../lib/engine';
+import { analyzeSymbolPattern, interactWithMythicArchetype, processRitual, createTimelineRipple } from '../utils/quantum';
+
+// Initialize the game engine
+initializePillowDreamworkGame();
 
 // Improved Dream Compass component with interactive elements
 export function DreamCompass() {
   const { toast } = useToast();
   const [activeDirection, setActiveDirection] = useState<string | null>(null);
   const [isCalibrating, setIsCalibrating] = useState(false);
+  const [compassState, setCompassState] = useState({
+    currentDimension: 1,
+    accessibleDimensions: [1, 2, 3]
+  });
+
+  // Get engine modules
+  const { dreamCompass } = getEngineModules();
+  
+  // Initialize compass state
+  useEffect(() => {
+    if (dreamCompass) {
+      setCompassState({
+        currentDimension: dreamCompass.currentDimension,
+        accessibleDimensions: dreamCompass.getAccessibleDimensions()
+      });
+    }
+  }, []);
 
   const handleDirectionClick = (direction: string) => {
     setActiveDirection(direction);
     setIsCalibrating(true);
     
     setTimeout(() => {
+      // Map direction to dimensional effect
+      let dimensionChange = 0;
+      
+      switch(direction) {
+        case "North":
+          dimensionChange = 1;
+          break;
+        case "South":
+          dimensionChange = -1;
+          break;
+        case "East":
+        case "West":
+          // Lateral movement - same dimension but different perspective
+          break;  
+        case "Above":
+          dimensionChange = 2;
+          break;
+        case "Below":
+          dimensionChange = -2;
+          break;
+      }
+      
+      // Calculate target dimension
+      const targetDimension = Math.max(1, Math.min(11, compassState.currentDimension + dimensionChange));
+      
+      // Check if dimension is accessible
+      if (compassState.accessibleDimensions.includes(targetDimension)) {
+        // Update compass
+        if (dreamCompass) {
+          dreamCompass.navigateToDimension(targetDimension);
+          
+          setCompassState({
+            currentDimension: targetDimension,
+            accessibleDimensions: dreamCompass.getAccessibleDimensions()
+          });
+        }
+        
+        toast({
+          title: "Dimensional Shift",
+          description: `Navigated to ${targetDimension}D via ${direction.toLowerCase()} direction`,
+          duration: 3000,
+        });
+      } else {
+        toast({
+          title: "Navigation Failed",
+          description: `Dimension ${targetDimension}D is not currently accessible`,
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+      
       setIsCalibrating(false);
-      toast({
-        title: "Dream Navigation",
-        description: `Navigated to ${direction} in the dream landscape`,
-        duration: 3000,
-      });
     }, 1500);
   };
 
@@ -37,7 +104,7 @@ export function DreamCompass() {
             Dream Compass
           </CardTitle>
           <Badge variant="outline" className="bg-quantum-blue/20 text-quantum-blue">
-            Navigation
+            {compassState.currentDimension}D
           </Badge>
         </div>
       </CardHeader>
@@ -65,6 +132,21 @@ export function DreamCompass() {
             Calibrating dream coordinates...
           </div>
         )}
+        
+        <div className="mt-4">
+          <div className="text-sm font-medium mb-2">Accessible Dimensions</div>
+          <div className="flex flex-wrap gap-2">
+            {compassState.accessibleDimensions.map(dim => (
+              <Badge 
+                key={dim} 
+                variant={dim === compassState.currentDimension ? "default" : "outline"}
+                className={dim === compassState.currentDimension ? "bg-quantum-blue" : ""}
+              >
+                {dim}D
+              </Badge>
+            ))}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
@@ -76,9 +158,12 @@ export function RitualInterface() {
   const [activeGlyph, setActiveGlyph] = useState<string | null>(null);
   const [ritualActive, setRitualActive] = useState(false);
   const [intensity, setIntensity] = useState(50);
+  const [ritualHistory, setRitualHistory] = useState<any[]>([]);
   
-  const iuri = new IURI();
+  // Get engine modules
+  const { iuri } = getEngineModules();
   
+  // Available glyphs
   const glyphs = ["⏣", "⍟", "⌬", "⎈", "☉", "⧫"];
   
   const handleGlyphClick = (glyph: string) => {
@@ -98,17 +183,50 @@ export function RitualInterface() {
     setRitualActive(true);
     
     setTimeout(() => {
-      const result = iuri.invokeRitual({
-        glyph: activeGlyph,
-        intensity: intensity
-      });
+      // Process ritual using the quantum utility
+      const result = processRitual(activeGlyph, intensity);
+      
+      // Also invoke through the engine if available
+      if (iuri) {
+        iuri.invokeRitual({
+          glyph: activeGlyph,
+          intensity: intensity
+        });
+      }
+      
+      // Update history
+      setRitualHistory(prev => [
+        {
+          glyph: activeGlyph,
+          intensity,
+          outcome: result.outcome,
+          timestamp: new Date().toISOString()
+        },
+        ...prev.slice(0, 4)
+      ]);
       
       setRitualActive(false);
       
       toast({
         title: "Ritual Invoked",
-        description: `The ${activeGlyph} ritual has been activated with ${intensity}% intensity`,
+        description: result.outcome,
         duration: 4000,
+      });
+      
+      // If the ritual results in a dimension shift
+      if (result.dimensionalShift > 0) {
+        toast({
+          title: "Dimensional Effect",
+          description: `The ritual creates a shift of ${result.dimensionalShift} dimensional levels`,
+          duration: 3000,
+        });
+      }
+      
+      // Show timeline effect
+      toast({
+        title: "Timeline Effect",
+        description: result.timelineEffect,
+        duration: 3000,
       });
     }, 2000);
   };
@@ -168,6 +286,20 @@ export function RitualInterface() {
         >
           {ritualActive ? "Invoking Ritual..." : "Invoke Ritual"}
         </Button>
+        
+        {ritualHistory.length > 0 && (
+          <div className="mt-4">
+            <p className="text-sm font-medium mb-2">Ritual History</p>
+            <div className="space-y-2 max-h-24 overflow-y-auto">
+              {ritualHistory.map((ritual, index) => (
+                <div key={index} className="flex items-center text-xs text-muted-foreground">
+                  <span className="mr-2">{ritual.glyph}</span>
+                  <span className="flex-grow truncate">{ritual.outcome}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -178,8 +310,10 @@ export function MythicAIShowcase() {
   const { toast } = useToast();
   const [selectedArchetype, setSelectedArchetype] = useState<string | null>(null);
   const [interacting, setInteracting] = useState(false);
+  const [archetypeHistory, setArchetypeHistory] = useState<any[]>([]);
   
-  const mythicAI = new MythicIntelligence();
+  // Get engine modules
+  const { mythicAI } = getEngineModules();
   
   const archetypes = [
     { name: "Oracle", description: "Reveals hidden knowledge and futures" },
@@ -193,14 +327,47 @@ export function MythicAIShowcase() {
     setInteracting(true);
     
     setTimeout(() => {
-      const result = mythicAI.interactWithArchetype(archetype);
+      // Process interaction using the quantum utility
+      const result = interactWithMythicArchetype(archetype);
+      
+      // Also interact through the engine if available
+      let engineResult = { response: "", insight: "", dimensionalAffinity: 0 };
+      if (mythicAI) {
+        const interaction = mythicAI.interactWithArchetype(archetype);
+        engineResult = {
+          response: interaction.response || "",
+          insight: "The archetype shares wisdom with you.",
+          dimensionalAffinity: interaction.affinity || 0
+        };
+      }
+      
+      // Combine results
+      const finalResult = {
+        response: result.response,
+        insight: result.insight,
+        dimensionalAffinity: result.dimensionalAffinity,
+        archetype
+      };
+      
+      // Update history
+      setArchetypeHistory(prev => [finalResult, ...prev.slice(0, 2)]);
+      
       setInteracting(false);
       
       toast({
         title: `The ${archetype} Speaks`,
-        description: result.response,
+        description: finalResult.response,
         duration: 4000,
       });
+      
+      // Secondary insight toast
+      setTimeout(() => {
+        toast({
+          title: "Insight Revealed",
+          description: finalResult.insight,
+          duration: 3000,
+        });
+      }, 1000);
     }, 1500);
   };
 
@@ -238,6 +405,20 @@ export function MythicAIShowcase() {
             </div>
           ))}
         </div>
+        
+        {archetypeHistory.length > 0 && (
+          <div className="mt-4">
+            <p className="text-sm font-medium mb-2">Recent Interactions</p>
+            <div className="space-y-2 max-h-24 overflow-y-auto">
+              {archetypeHistory.map((interaction, index) => (
+                <div key={index} className="text-xs">
+                  <span className="font-medium text-quantum-purple">{interaction.archetype}:</span>
+                  <span className="text-muted-foreground ml-1 italic">"{interaction.response.substring(0, 60)}..."</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -248,26 +429,57 @@ export function EchoSimulatorMode() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("ripples");
   const [isSimulating, setIsSimulating] = useState(false);
+  const [rippleHistory, setRippleHistory] = useState<any[]>([]);
+  const [rippleIntensity, setRippleIntensity] = useState(50);
   
-  const echoSimulator = new EchoSimulator();
+  // Get engine modules
+  const { echoSimulator } = getEngineModules();
   
   const handleCreateRipple = () => {
     setIsSimulating(true);
     
     setTimeout(() => {
-      const result = echoSimulator.createRippleEffect({
+      // Generate ripple data
+      const eventData = {
         origin: "user decision",
-        intensity: Math.random() * 10,
+        intensity: rippleIntensity / 10, // Scale to 0-10
         timestamp: new Date().toISOString()
-      });
+      };
+      
+      // Process ripple using the quantum utility
+      const rippleResult = createTimelineRipple(eventData.origin, rippleIntensity);
+      
+      // Also create ripple through the engine if available
+      if (echoSimulator) {
+        echoSimulator.createRippleEffect(eventData);
+      }
+      
+      // Update history
+      setRippleHistory(prev => [{
+        primaryEffect: rippleResult.primaryEffect,
+        secondaryEffects: rippleResult.secondaryEffects,
+        branchFactor: rippleResult.branchFactor,
+        timestamp: new Date().toISOString()
+      }, ...prev.slice(0, 4)]);
       
       setIsSimulating(false);
       
       toast({
         title: "Reality Ripple Created",
-        description: "Your decision has created ripples across multiple timelines",
+        description: rippleResult.primaryEffect,
         duration: 3000,
       });
+      
+      // Display secondary effects
+      if (rippleResult.secondaryEffects.length > 0) {
+        setTimeout(() => {
+          toast({
+            title: "Secondary Effects",
+            description: `${rippleResult.branchFactor} timeline branches affected`,
+            duration: 3000,
+          });
+        }, 1000);
+      }
     }, 2000);
   };
   
@@ -297,6 +509,20 @@ export function EchoSimulatorMode() {
           </TabsList>
           
           <TabsContent value="ripples" className="space-y-4">
+            <div className="mb-4">
+              <label className="text-sm text-muted-foreground mb-2 block">
+                Decision Intensity: {rippleIntensity}%
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="100"
+                value={rippleIntensity}
+                onChange={(e) => setRippleIntensity(parseInt(e.target.value))}
+                className="w-full h-2 bg-quantum-teal/20 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+            
             <Button
               onClick={handleCreateRipple}
               disabled={isSimulating}
@@ -305,26 +531,56 @@ export function EchoSimulatorMode() {
               {isSimulating ? "Creating Ripple..." : "Create Reality Ripple"}
             </Button>
             
-            <div className="grid grid-cols-3 gap-2">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="border border-quantum-teal/30 rounded-md p-2">
-                  <div className="w-full h-1 bg-quantum-teal/30 mb-2"></div>
-                  <p className="text-xs text-muted-foreground">Timeline {i}</p>
+            {rippleHistory.length > 0 && (
+              <div className="mt-4">
+                <p className="text-sm font-medium mb-2">Recent Ripples</p>
+                <div className="space-y-2 max-h-36 overflow-y-auto">
+                  {rippleHistory.map((ripple, index) => (
+                    <div key={index} className="border border-quantum-teal/30 rounded-md p-2">
+                      <p className="text-xs font-medium">{ripple.primaryEffect}</p>
+                      <div className="mt-1 grid grid-cols-3 gap-1">
+                        {Array.from({ length: ripple.branchFactor }).map((_, i) => (
+                          <div key={i} className="w-full h-1 bg-quantum-teal/40"></div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="timelines" className="space-y-4">
+            <div className="border border-dashed border-muted-foreground/20 rounded-md p-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                Active Timeline: Main
+              </p>
+              <div className="my-3 flex justify-center">
+                <div className="h-1 w-1/2 bg-quantum-teal"></div>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {rippleHistory.slice(0, 3).map((ripple, i) => (
+                  <div key={i} className="flex flex-col items-center">
+                    <div className="w-2 h-2 rounded-full bg-quantum-teal mb-1"></div>
+                    <p className="text-xs text-muted-foreground">Branch {i+1}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </TabsContent>
           
-          <TabsContent value="timelines" className="text-center py-4">
-            <p className="text-sm text-muted-foreground">
-              Timeline visualization coming soon
-            </p>
-          </TabsContent>
-          
-          <TabsContent value="karma" className="text-center py-4">
-            <p className="text-sm text-muted-foreground">
-              Karma logs will appear here
-            </p>
+          <TabsContent value="karma" className="space-y-4">
+            <div className="border border-dashed border-muted-foreground/20 rounded-md p-4">
+              <p className="text-sm text-center mb-3">Karmic Balance</p>
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-1/3 h-1 bg-quantum-blue/50 rounded-full"></div>
+                <div className="w-1/3 h-1 bg-quantum-purple/50 rounded-full"></div>
+                <div className="w-1/3 h-1 bg-quantum-gold/50 rounded-full"></div>
+              </div>
+              <p className="text-xs text-center text-muted-foreground mt-3">
+                Your decisions maintain cosmic equilibrium
+              </p>
+            </div>
           </TabsContent>
         </Tabs>
       </CardContent>
@@ -335,18 +591,33 @@ export function EchoSimulatorMode() {
 // Enhanced SiderAI assistant with dimension-specific suggestions
 export function SiderAIShowcase() {
   const [showMore, setShowMore] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const { toast } = useToast();
   
-  // Use SiderAI directly from the module with enhanced suggestions
-  const siderAI = new SiderAI();
-  const suggestions = [
-    'Try exploring a new dimension for unique dream archetypes.',
-    'Use the Vector Alchemy Engine to manipulate 5D fields.',
-    'Invoke a ritual in IURI to unlock hidden pathways.',
-    'Interact with the Mythic Intelligence to gain insights.',
-    'Create a ripple effect to see multiverse branching.',
-    'Try connecting symbols in different patterns for varied effects.',
-  ];
+  // Get engine modules
+  const { siderAI, dreamCompass } = getEngineModules();
+  
+  // Generate suggestions based on current state
+  useEffect(() => {
+    // Get current dimension from dream compass
+    const dimension = dreamCompass?.currentDimension || 1;
+    
+    // Get suggestions from SiderAI if available
+    if (siderAI) {
+      const contextSuggestions = siderAI.getSuggestions({ dimension });
+      setSuggestions(contextSuggestions);
+    } else {
+      // Fallback suggestions
+      setSuggestions([
+        'Try exploring a new dimension for unique dream archetypes.',
+        'Use the Vector Alchemy Engine to manipulate 5D fields.',
+        'Invoke a ritual in IURI to unlock hidden pathways.',
+        'Interact with the Mythic Intelligence to gain insights.',
+        'Create a ripple effect to see multiverse branching.',
+        'Try connecting symbols in different patterns for varied effects.',
+      ]);
+    }
+  }, [siderAI, dreamCompass]);
   
   const handleSuggestionClick = (suggestion: string) => {
     toast({
@@ -374,13 +645,13 @@ export function SiderAIShowcase() {
           {suggestions.slice(0, showMore ? suggestions.length : 3).map((s, i) => (
             <li 
               key={i} 
-              className="flex items-start"
+              className="flex items-start cursor-pointer"
               onClick={() => handleSuggestionClick(s)}
             >
               <div className="h-6 w-6 rounded-full bg-quantum-blue/20 text-quantum-blue flex items-center justify-center text-xs mr-2 mt-0.5">
                 {i + 1}
               </div>
-              <p className="text-sm cursor-pointer hover:text-quantum-blue transition-colors">{s}</p>
+              <p className="text-sm hover:text-quantum-blue transition-colors">{s}</p>
             </li>
           ))}
         </ul>
@@ -401,6 +672,11 @@ export function SiderAIShowcase() {
 
 // Main PillowDreamwork showcase container
 export function PillowDreamworkShowcase() {
+  // Initialize engine on component mount
+  useEffect(() => {
+    initializePillowDreamworkGame();
+  }, []);
+  
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6 p-4">
       <DreamCompass />
