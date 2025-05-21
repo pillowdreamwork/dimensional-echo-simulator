@@ -228,26 +228,19 @@ export class VectorAlchemyEngine {
   private dimensions = 11;
   private fields: Map<string, number[][]> = new Map();
   private activeTransformations: string[] = [];
-  
+
   constructor() {
     // Initialize some basic vector fields
     this.createField("base", this.generateIdentityField());
     this.createField("quantum", this.generateRandomField(0.2));
     this.createField("consciousness", this.generateWaveField());
   }
-  
+
   manipulateVectorField(input: any) {
-<<<<<<< HEAD
-    console.log('Manipulating vector/tensor field with input:', input);
-    return { result: 'Vector field manipulated', input };
-=======
     const { fieldName, transformation, parameters } = input;
-    
     // Get the field or use the base field
     const field = this.fields.get(fieldName) || this.fields.get("base") || this.generateIdentityField();
-    
     let resultField;
-    
     // Apply transformation
     switch (transformation) {
       case "rotate":
@@ -267,38 +260,31 @@ export class VectorAlchemyEngine {
         resultField = field;
         break;
     }
-    
     // Store the result if a target is specified
     if (parameters?.target) {
       this.fields.set(parameters.target, resultField);
     }
-    
     // Record the transformation
     this.activeTransformations.push(`${transformation}:${fieldName}->${parameters?.target || "result"}`);
     if (this.activeTransformations.length > 10) {
       this.activeTransformations.shift();
     }
-    
-    return { 
+    return {
       result: resultField,
       input,
       transformations: this.activeTransformations
     };
   }
-  
   createField(name: string, field: number[][]) {
     this.fields.set(name, field);
     return true;
   }
-  
   getField(name: string) {
     return this.fields.get(name);
   }
-  
   getAllFieldNames() {
     return Array.from(this.fields.keys());
   }
-  
   // Helper: Generate identity field (each vector points to itself)
   private generateIdentityField(): number[][] {
     const field: number[][] = [];
@@ -309,7 +295,6 @@ export class VectorAlchemyEngine {
     }
     return field;
   }
-  
   // Helper: Generate random field
   private generateRandomField(scale: number = 1): number[][] {
     const field: number[][] = [];
@@ -319,48 +304,38 @@ export class VectorAlchemyEngine {
     }
     return field;
   }
-  
   // Helper: Generate wave-like field
   private generateWaveField(): number[][] {
     const field: number[][] = [];
     for (let i = 0; i < this.dimensions; i++) {
-      const vector = Array(this.dimensions).fill(0).map((_, j) => 
-        Math.sin((i + j) * Math.PI / this.dimensions)
-      );
+      const vector = Array(this.dimensions).fill(0).map((_, j) => Math.sin((i + j) * Math.PI / this.dimensions));
       field.push(vector);
     }
     return field;
   }
-  
   // Transform: Rotate field (simplified n-dimensional rotation)
   private rotateField(field: number[][], angle: number): number[][] {
     // Very simplified rotation - just mix neighboring dimensions
     const result = JSON.parse(JSON.stringify(field)); // Deep copy
-    
     for (let i = 0; i < field.length; i++) {
       for (let j = 0; j < field[i].length - 1; j++) {
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
         const v1 = field[i][j];
         const v2 = field[i][j+1];
-        
         result[i][j] = v1 * cos - v2 * sin;
         result[i][j+1] = v1 * sin + v2 * cos;
       }
     }
-    
     return result;
   }
-  
   // Transform: Scale field
   private scaleField(field: number[][], factor: number): number[][] {
     return field.map(vector => vector.map(value => value * factor));
   }
-  
   // Transform: Superimpose fields
   private superimposeFields(field1: number[][], field2: number[][], weight: number): number[][] {
     const result: number[][] = [];
-    
     for (let i = 0; i < Math.min(field1.length, field2.length); i++) {
       const vector: number[] = [];
       for (let j = 0; j < Math.min(field1[i].length, field2[i].length); j++) {
@@ -368,14 +343,11 @@ export class VectorAlchemyEngine {
       }
       result.push(vector);
     }
-    
     return result;
   }
-  
   // Transform: Invert field
   private invertField(field: number[][]): number[][] {
     return field.map(vector => vector.map(value => -value));
->>>>>>> 675b9486bb0c0c40cc18ec2c7808ab0f83af0f14
   }
   processVectorFields(input?: any) {
     // Stub for processVectorFields
@@ -415,15 +387,6 @@ export class DreamCompass {
     
     this.currentDimension = dimension;
     console.log(`Navigated to dimension: ${dimension}`);
-<<<<<<< HEAD
-  }
-  updateDimensionalReadings(dimensions?: any) {
-    // Stub for updating readings
-    return true;
-  }
-  isCalibrated() {
-    return true;
-=======
     
     // Notify listeners
     this.compassListeners.forEach(listener => {
@@ -486,7 +449,6 @@ export class DreamCompass {
       return true;
     }
     return false;
->>>>>>> 675b9486bb0c0c40cc18ec2c7808ab0f83af0f14
   }
 }
 
@@ -497,21 +459,6 @@ export class UncertaintyEngine {
   private stateHistory: any[] = [];
   
   collapseWaveFunction(state: any) {
-<<<<<<< HEAD
-    const outcome = Math.random() > 0.5 ? 'Outcome A' : 'Outcome B';
-    return outcome;
-  }
-  collapseQuantumState(state?: any) {
-    // Stub for collapseQuantumState
-    return 'Quantum state collapsed';
-  }
-  calculateQuantumStates(input?: any) {
-    // Stub for quantum state calculation
-    return 'Quantum states calculated';
-  }
-  isCalibrated() {
-    return true;
-=======
     // Apply uncertainty logic
     const outcome = this.determineOutcome(state);
     
@@ -600,7 +547,6 @@ export class UncertaintyEngine {
     
     // Fallback
     return outcomes[outcomes.length - 1].value;
->>>>>>> 675b9486bb0c0c40cc18ec2c7808ab0f83af0f14
   }
 }
 
@@ -617,9 +563,6 @@ export class EchoSimulator {
   }
   
   createRippleEffect(event: any) {
-<<<<<<< HEAD
-    return { ripple: true, event };
-=======
     // Generate ripple effect data
     const ripple = {
       id: `ripple-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
@@ -765,7 +708,6 @@ export class EchoSimulator {
     }
     
     return effects;
->>>>>>> 675b9486bb0c0c40cc18ec2c7808ab0f83af0f14
   }
   connectToDreamServer(server: any) {
     // Stub for connecting to dream server
@@ -981,12 +923,6 @@ export class MultiversalDreamServer {
     
     return dreams;
   }
-  isOnline() {
-    return true;
-  }
-  isConnected() {
-    return true;
-  }
 }
 
 // Mythic Intelligence: AI archetypes and adaptive personalities
@@ -1132,9 +1068,6 @@ export class MythicIntelligence {
       ]
     });
     this.affinity.set("Warrior", 0);
-  }
-  isConnected() {
-    return true;
   }
 }
 
