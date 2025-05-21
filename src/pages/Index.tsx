@@ -1,14 +1,13 @@
-
 import React, { useState, useEffect } from "react";
-import VirtualCompass from "@/components/VirtualCompass";
-import DimensionalView from "@/components/DimensionalView";
-import QuantumInterface from "@/components/QuantumInterface";
-import SymbolSystem from "@/components/SymbolSystem";
-import { Separator } from "@/components/ui/separator";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { generateDimensionalEffect } from "@/utils/quantum";
-import { useToast } from "@/hooks/use-toast";
+import VirtualCompass from "../components/VirtualCompass";
+import DimensionalView from "../components/DimensionalView";
+import QuantumInterface from "../components/QuantumInterface";
+import SymbolSystem from "../components/SymbolSystem";
+import { Separator } from "../components/ui/separator";
+import { Card, CardContent } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import { generateDimensionalEffect } from "../utils/quantum";
+import { useToast } from "../hooks/use-toast";
 import { PillowDreamworkShowcase } from '../components/PillowDreamworkShowcase';
 
 const Index = () => {
