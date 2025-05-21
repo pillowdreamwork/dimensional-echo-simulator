@@ -548,6 +548,10 @@ export class UncertaintyEngine {
     // Fallback
     return outcomes[outcomes.length - 1].value;
   }
+  calculateQuantumStates(input?: any) {
+    // Stub for quantum state calculation
+    return 'Quantum states calculated';
+  }
 }
 
 // Echo Simulator: Ripple effects and timeline management
@@ -1292,9 +1296,6 @@ export class IURI {
       domain: "time",
       description: "Manipulates timeflow and causality"
     });
-  }
-  isInitialized() {
-    return true;
   }
 }
 

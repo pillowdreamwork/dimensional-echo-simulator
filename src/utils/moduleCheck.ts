@@ -21,7 +21,14 @@ export function runSystemCheck() {
   const checks = {
     coreRunning: !!modules.simulationCore,
     dreamworkActive: !!modules.pillowDreamwork && typeof modules.pillowDreamwork.getDreamState === 'function' && modules.pillowDreamwork.getDreamState().initialized,
-    vectorAlchemyReady: !!modules.vectorAlchemy && typeof modules.vectorAlchemy.isReady === 'function' && modules.vectorAlchemy.isReady(),
+    vectorAlchemyReady: !!modules.vectorAlchemy && typeof modules.vectorAlchemy.isReady === 'function' ? (() => {
+      try {
+        return modules.vectorAlchemy.isReady();
+      } catch (e) {
+        console.warn('vectorAlchemy.isReady threw an error:', e);
+        return false;
+      }
+    })() : false,
     ritualSystemOnline: !!modules.iuri && typeof modules.iuri.isInitialized === 'function' && modules.iuri.isInitialized(),
     mythicIntelligenceConnected: !!modules.mythicAI && typeof modules.mythicAI.isConnected === 'function' && modules.mythicAI.isConnected(),
     uncertaintyEngineCalibrated: !!modules.uncertainty && typeof modules.uncertainty.isCalibrated === 'function' && modules.uncertainty.isCalibrated(),
