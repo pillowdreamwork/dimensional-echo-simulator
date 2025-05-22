@@ -2,7 +2,11 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { FileDownIcon, Code2Icon, BookOpenIcon } from 'lucide-react';
-import { exportFullSystemData, exportProjectBlueprint, exportCodebaseDocument } from '../utils/exportUtils';
+import { 
+  exportFullSystemData, 
+  exportProjectBlueprint, 
+  exportCodebaseDocument 
+} from '../utils/export';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from '@/components/ui/use-toast';
 import { 
