@@ -5,6 +5,11 @@ import { FileDownIcon, Code2Icon, BookOpenIcon } from 'lucide-react';
 import { exportFullSystemData, exportProjectBlueprint, exportCodebaseDocument } from '../utils/exportUtils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from '@/components/ui/use-toast';
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
 
 interface ExportDocButtonProps {
   variant?: 'default' | 'outline' | 'secondary' | 'ghost' | 'link' | 'destructive';
@@ -76,12 +81,17 @@ export function ExportDocButton({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant={variant} size={size} className={className}>
-          <FileDownIcon className="mr-2 h-4 w-4" />
-          Export Documentation
-        </Button>
-      </DropdownMenuTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger asChild>
+            <Button variant={variant} size={size} className={className}>
+              <FileDownIcon className="mr-2 h-4 w-4" />
+              Export Documentation
+            </Button>
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        <TooltipContent>Export project documentation</TooltipContent>
+      </Tooltip>
       <DropdownMenuContent>
         <DropdownMenuItem onClick={handleExportBlueprint}>
           <BookOpenIcon className="mr-2 h-4 w-4" />
