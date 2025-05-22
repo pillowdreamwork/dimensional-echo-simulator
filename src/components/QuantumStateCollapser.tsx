@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "@/hooks/use-toast";
 import { getEngineModules } from '../lib/engine';
+import { CustomProgress } from './ui/custom-progress';
 
 const QuantumStateCollapser = () => {
   const [quantumStates, setQuantumStates] = useState<{[key: string]: number}>({
@@ -17,6 +18,7 @@ const QuantumStateCollapser = () => {
   const [collapsing, setCollapsing] = useState(false);
   const [collapsedState, setCollapsedState] = useState<string | null>(null);
   const [stabilityFactor, setStabilityFactor] = useState(50);
+  const [wasReset, setWasReset] = useState(false);
   
   const { uncertainty } = getEngineModules();
   
@@ -53,6 +55,39 @@ const QuantumStateCollapser = () => {
     }));
   };
   
+  // Superimpose quantum states
+  const handleSuperimpose = () => {
+    setCollapsing(true);
+    
+    setTimeout(() => {
+      // Create a superposition of states
+      const allStates = Object.keys(quantumStates);
+      const superpositionState = allStates[Math.floor(Math.random() * allStates.length)];
+      
+      // Update all quantum states based on superposition
+      const newStates = {...quantumStates};
+      
+      // Redistribute probabilities while maintaining the chosen state as highest
+      Object.keys(newStates).forEach(key => {
+        if (key === superpositionState) {
+          newStates[key] = 0.7 + Math.random() * 0.3;
+        } else {
+          newStates[key] = 0.2 + Math.random() * 0.3;
+        }
+      });
+      
+      setQuantumStates(newStates);
+      
+      toast({
+        title: "Quantum States Superimposed",
+        description: `Created superposition centered on ${stateNames[superpositionState]} state`,
+        duration: 3000,
+      });
+      
+      setCollapsing(false);
+    }, 1500);
+  };
+  
   // Collapse quantum state - this simulates the quantum collapse without requiring the actual engine function
   const handleCollapseState = () => {
     setCollapsing(true);
@@ -79,6 +114,8 @@ const QuantumStateCollapser = () => {
       // Reset to uncollapsed state after a few seconds
       setTimeout(() => {
         setCollapsedState(null);
+        setWasReset(true);
+        setTimeout(() => setWasReset(false), 500);
       }, 5000);
       
       // Show toast with results
@@ -91,9 +128,26 @@ const QuantumStateCollapser = () => {
       setCollapsing(false);
     }, 2000);
   };
+  
+  // Reset all quantum states to equal probability
+  const handleReset = () => {
+    setQuantumStates({
+      alpha: 0.5,
+      beta: 0.5,
+      gamma: 0.5,
+      delta: 0.5
+    });
+    setCollapsedState(null);
+    
+    toast({
+      title: "Quantum States Reset",
+      description: "All states returned to equal probability",
+      duration: 2000,
+    });
+  };
 
   return (
-    <Card className="quantum-state-collapser bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70">
+    <Card className={`quantum-state-collapser bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70 ${wasReset ? 'animate-pulse' : ''}`}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <CardTitle className="text-quantum-purple">Quantum State Collapser</CardTitle>
@@ -128,12 +182,10 @@ const QuantumStateCollapser = () => {
               disabled={collapsing || !!collapsedState}
               className="mb-1"
             />
-            <div 
-              className="h-2 rounded-full"
-              style={{ 
-                width: `${calculateProbabilities()[state] * 100}%`,
-                backgroundColor: collapsedState === state ? '#9b87f5' : 'rgba(155, 135, 245, 0.3)'
-              }}
+            <CustomProgress 
+              value={calculateProbabilities()[state] * 100}
+              className="h-2"
+              indicatorClassName={collapsedState === state ? 'bg-quantum-purple' : 'bg-quantum-purple/40'}
             />
           </div>
         ))}
@@ -163,13 +215,34 @@ const QuantumStateCollapser = () => {
           </Badge>
         </div>
         
-        <Button
-          onClick={handleCollapseState}
-          disabled={collapsing || !!collapsedState}
-          className="w-full bg-quantum-purple hover:bg-quantum-purple/80"
-        >
-          {collapsing ? "Collapsing Quantum State..." : "Collapse Quantum State"}
-        </Button>
+        <div className="grid grid-cols-1 gap-2">
+          <Button
+            onClick={handleCollapseState}
+            disabled={collapsing || !!collapsedState}
+            variant="quantum"
+            className="w-full"
+          >
+            {collapsing ? "Collapsing Quantum State..." : "Collapse Quantum State"}
+          </Button>
+          
+          <Button
+            onClick={handleSuperimpose}
+            disabled={collapsing || !!collapsedState}
+            variant="superimpose"  
+            className="w-full"
+          >
+            Superimpose States
+          </Button>
+          
+          <Button
+            onClick={handleReset}
+            disabled={collapsing}
+            variant="outline"
+            className="w-full"
+          >
+            Reset States
+          </Button>
+        </div>
         
         {collapsedState && (
           <div className="mt-4 p-3 border border-quantum-purple/30 rounded-md bg-quantum-purple/10">

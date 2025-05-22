@@ -23,12 +23,15 @@ const buttonVariants = cva(
         gold: "bg-quantum-gold text-black hover:bg-quantum-gold/80",
         teal: "bg-quantum-teal text-white hover:bg-quantum-teal/80",
         blue: "bg-quantum-blue text-white hover:bg-quantum-blue/80",
+        collapse: "bg-red-500 text-white hover:bg-red-600", // Added collapse variant
+        superimpose: "bg-amber-500 text-black hover:bg-amber-600", // Added superimpose variant
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10",
+        xs: "h-7 rounded-md px-2 text-xs", // Added extra small size
       },
     },
     defaultVariants: {

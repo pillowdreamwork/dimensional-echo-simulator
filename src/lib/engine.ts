@@ -85,15 +85,22 @@ export function initializePillowDreamworkGame() {
       if (dreamCompass && dimensions) {
         // Safe check for dimensional methods
         // Use any available method to update the compass with dimensions
-        // TypeScript casting to avoid type errors
         const compass = dreamCompass as any;
         
-        if (typeof compass.updateDimensionalReadings === 'function') {
-          compass.updateDimensionalReadings(dimensions);
-        } else if (typeof compass.updateReadings === 'function') {
-          compass.updateReadings(dimensions);
-        } else if (typeof compass.calibrate === 'function') {
-          compass.calibrate(dimensions);
+        try {
+          // Try different available methods
+          if (typeof compass.updateDimensionalReadings === 'function') {
+            compass.updateDimensionalReadings(dimensions);
+          } else if (typeof compass.updateReadings === 'function') {
+            compass.updateReadings(dimensions);
+          } else if (typeof compass.calibrate === 'function') {
+            compass.calibrate(dimensions);
+          } else {
+            // Fallback - store dimensions directly
+            compass._dimensions = dimensions;
+          }
+        } catch (e) {
+          console.error("Failed to update dream compass:", e);
         }
       }
     });
