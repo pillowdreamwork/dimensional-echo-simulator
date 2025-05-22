@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for exporting quantum data
  */
@@ -97,7 +96,9 @@ export function exportFullSystemData(fileName?: string): Promise<void> {
         exportDate: new Date().toISOString(),
         engineState: {
           simulation: simulationCore ? {
-            active: simulationCore.status === 'active',
+            // Fix: Check for an isActive method first, then try other approaches
+            active: typeof simulationCore.isActive === 'function' ? simulationCore.isActive() : 
+                    (simulationCore as any).status === 'active' || false,
             currentFrame: simulationCore.getCurrentState?.() || 0,
             dimensions: simulationCore.setDimension ? ['dimension data unavailable'] : []
           } : null,
