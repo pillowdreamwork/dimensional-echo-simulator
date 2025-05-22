@@ -4,153 +4,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from '@/components/ui/badge';
-import { CompassIcon, WandSparklesIcon, StarIcon, InfinityIcon, LayersIcon } from "lucide-react";
+import { WandSparklesIcon, StarIcon, InfinityIcon, LayersIcon } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { getEngineModules, initializePillowDreamworkGame } from '../lib/engine';
 import { analyzeSymbolPattern, interactWithMythicArchetype, processRitual, createTimelineRipple } from '../utils/quantum';
+import DreamCompass from './DreamCompassComponent';
 
 // Initialize the game engine
 initializePillowDreamworkGame();
-
-// Improved Dream Compass component with interactive elements
-export function DreamCompass() {
-  const { toast } = useToast();
-  const [activeDirection, setActiveDirection] = useState<string | null>(null);
-  const [isCalibrating, setIsCalibrating] = useState(false);
-  const [compassState, setCompassState] = useState({
-    currentDimension: 1,
-    accessibleDimensions: [1, 2, 3]
-  });
-
-  // Get engine modules
-  const { dreamCompass } = getEngineModules();
-  
-  // Initialize compass state
-  useEffect(() => {
-    if (dreamCompass) {
-      setCompassState({
-        currentDimension: dreamCompass.currentDimension,
-        accessibleDimensions: dreamCompass.getAccessibleDimensions()
-      });
-    }
-  }, []);
-
-  const handleDirectionClick = (direction: string) => {
-    setActiveDirection(direction);
-    setIsCalibrating(true);
-    
-    setTimeout(() => {
-      // Map direction to dimensional effect
-      let dimensionChange = 0;
-      
-      switch(direction) {
-        case "North":
-          dimensionChange = 1;
-          break;
-        case "South":
-          dimensionChange = -1;
-          break;
-        case "East":
-        case "West":
-          // Lateral movement - same dimension but different perspective
-          break;  
-        case "Above":
-          dimensionChange = 2;
-          break;
-        case "Below":
-          dimensionChange = -2;
-          break;
-      }
-      
-      // Calculate target dimension
-      const targetDimension = Math.max(1, Math.min(11, compassState.currentDimension + dimensionChange));
-      
-      // Check if dimension is accessible
-      if (compassState.accessibleDimensions.includes(targetDimension)) {
-        // Update compass
-        if (dreamCompass) {
-          dreamCompass.navigateToDimension(targetDimension);
-          
-          setCompassState({
-            currentDimension: targetDimension,
-            accessibleDimensions: dreamCompass.getAccessibleDimensions()
-          });
-        }
-        
-        toast({
-          title: "Dimensional Shift",
-          description: `Navigated to ${targetDimension}D via ${direction.toLowerCase()} direction`,
-          duration: 3000,
-        });
-      } else {
-        toast({
-          title: "Navigation Failed",
-          description: `Dimension ${targetDimension}D is not currently accessible`,
-          variant: "destructive",
-          duration: 3000,
-        });
-      }
-      
-      setIsCalibrating(false);
-    }, 1500);
-  };
-
-  return (
-    <Card className="dream-compass bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70 mb-6">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <CardTitle className="flex items-center">
-            <CompassIcon className="mr-2 text-quantum-blue" size={20} />
-            Dream Compass
-          </CardTitle>
-          <Badge variant="outline" className="bg-quantum-blue/20 text-quantum-blue">
-            {compassState.currentDimension}D
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground mb-4">
-          Navigate across dimensions using dreams, vectors, and intention signals.
-        </p>
-        
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          {['North', 'East', 'South', 'West', 'Above', 'Below'].map((dir) => (
-            <Button 
-              key={dir}
-              variant="outline" 
-              className={`h-12 ${activeDirection === dir ? 'bg-quantum-blue/30 border-quantum-blue' : 'hover:bg-quantum-blue/10'}`}
-              onClick={() => handleDirectionClick(dir)}
-              disabled={isCalibrating}
-            >
-              {dir}
-            </Button>
-          ))}
-        </div>
-        
-        {isCalibrating && (
-          <div className="text-center text-sm text-quantum-blue animate-pulse mt-2">
-            Calibrating dream coordinates...
-          </div>
-        )}
-        
-        <div className="mt-4">
-          <div className="text-sm font-medium mb-2">Accessible Dimensions</div>
-          <div className="flex flex-wrap gap-2">
-            {compassState.accessibleDimensions.map(dim => (
-              <Badge 
-                key={dim} 
-                variant={dim === compassState.currentDimension ? "default" : "outline"}
-                className={dim === compassState.currentDimension ? "bg-quantum-blue" : ""}
-              >
-                {dim}D
-              </Badge>
-            ))}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 // Enhanced Ritual Interface (IURI) with interactive elements
 export function RitualInterface() {
@@ -187,7 +48,7 @@ export function RitualInterface() {
       const result = processRitual(activeGlyph, intensity);
       
       // Also invoke through the engine if available
-      if (iuri) {
+      if (iuri && typeof iuri.invokeRitual === 'function') {
         iuri.invokeRitual({
           glyph: activeGlyph,
           intensity: intensity
@@ -282,7 +143,8 @@ export function RitualInterface() {
         <Button
           onClick={handleInvokeRitual}
           disabled={ritualActive}
-          className="w-full bg-quantum-gold hover:bg-quantum-gold/80 text-black"
+          variant="gold"
+          className="w-full"
         >
           {ritualActive ? "Invoking Ritual..." : "Invoke Ritual"}
         </Button>
@@ -332,7 +194,7 @@ export function MythicAIShowcase() {
       
       // Also interact through the engine if available
       let engineResult = { response: "", insight: "", dimensionalAffinity: 0 };
-      if (mythicAI) {
+      if (mythicAI && typeof mythicAI.interactWithArchetype === 'function') {
         const interaction = mythicAI.interactWithArchetype(archetype);
         engineResult = {
           response: interaction.response || "",
@@ -450,7 +312,7 @@ export function EchoSimulatorMode() {
       const rippleResult = createTimelineRipple(eventData.origin, rippleIntensity);
       
       // Also create ripple through the engine if available
-      if (echoSimulator) {
+      if (echoSimulator && typeof echoSimulator.createRippleEffect === 'function') {
         echoSimulator.createRippleEffect(eventData);
       }
       
@@ -526,7 +388,8 @@ export function EchoSimulatorMode() {
             <Button
               onClick={handleCreateRipple}
               disabled={isSimulating}
-              className="w-full bg-quantum-teal hover:bg-quantum-teal/80"
+              variant="teal"
+              className="w-full"
             >
               {isSimulating ? "Creating Ripple..." : "Create Reality Ripple"}
             </Button>
@@ -603,7 +466,7 @@ export function SiderAIShowcase() {
     const dimension = dreamCompass?.currentDimension || 1;
     
     // Get suggestions from SiderAI if available
-    if (siderAI) {
+    if (siderAI && typeof siderAI.getSuggestions === 'function') {
       const contextSuggestions = siderAI.getSuggestions({ dimension });
       setSuggestions(contextSuggestions);
     } else {
