@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -146,11 +145,10 @@ const SystemMonitor = () => {
               </div>
               <Progress 
                 value={systemStatus.functionalityScore} 
-                className="h-2"
-                indicatorClassName={
+                className={`h-2 ${
                   systemStatus.functionalityScore > 80 ? "bg-green-500" : 
                   systemStatus.functionalityScore > 50 ? "bg-amber-500" : "bg-red-500"
-                }
+                }`}
               />
             </div>
             
