@@ -1,4 +1,3 @@
-
 import { SimulationCore, PillowDreamworkModule, VectorAlchemyEngine, InvocationAPI, MythicIntelligence, UncertaintyEngine, EchoSimulator, MultiversalDreamServer, IURI, SiderAI, DreamCompass } from '../lib/pillowdreamwork';
 
 // Global singleton instances for the entire application
@@ -83,11 +82,17 @@ export function initializePillowDreamworkGame() {
       
       // Update dream compass based on current dimensions
       if (dreamCompass && dimensions) {
-        // Safe check for dimensional methods - use updateDimensionalReadings if exists
-        if (typeof dreamCompass.updateDimensionalReadings === 'function') {
-          dreamCompass.updateDimensionalReadings(dimensions);
-        } else if (typeof (dreamCompass as any).updateReadings === 'function') {
-          (dreamCompass as any).updateReadings(dimensions);
+        // Safe check for dimensional methods
+        // Use any available method to update the compass with dimensions
+        // TypeScript casting to avoid type errors
+        const compass = dreamCompass as any;
+        
+        if (typeof compass.updateDimensionalReadings === 'function') {
+          compass.updateDimensionalReadings(dimensions);
+        } else if (typeof compass.updateReadings === 'function') {
+          compass.updateReadings(dimensions);
+        } else if (typeof compass.calibrate === 'function') {
+          compass.calibrate(dimensions);
         }
       }
     });
