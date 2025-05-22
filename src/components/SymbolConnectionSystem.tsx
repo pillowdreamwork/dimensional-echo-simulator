@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -111,7 +112,7 @@ const SymbolConnectionSystem = () => {
     const pattern = sortedConnections.map(conn => {
       const sourceSymbol = symbols.find(s => s.id === conn.source);
       const targetSymbol = symbols.find(s => s.id === conn.target);
-      return sourceSymbol?.glyph + targetSymbol?.glyph;
+      return `${sourceSymbol?.glyph || ''}${targetSymbol?.glyph || ''}`;
     }).join('');
     
     setTimeout(() => {
@@ -119,10 +120,13 @@ const SymbolConnectionSystem = () => {
       const result = analyzeSymbolPattern(pattern);
       
       // Extract effects, providing fallbacks if properties don't exist
-      const effect = result.effect || "The symbols resonate with each other.";
-      const dimensionalEffect = 
-        'dimensionalEffect' in result ? result.dimensionalEffect : 
-        "The dimensional membrane fluctuates slightly.";
+      const effect = typeof result === 'object' && result !== null && 'effect' in result 
+        ? result.effect as string 
+        : "The symbols resonate with each other.";
+        
+      const dimensionalEffect = typeof result === 'object' && result !== null && 'dimensionalEffect' in result
+        ? result.dimensionalEffect as string
+        : "The dimensional membrane fluctuates slightly.";
       
       // Show results
       toast({

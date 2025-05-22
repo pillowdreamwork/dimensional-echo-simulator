@@ -82,10 +82,11 @@ export function initializePillowDreamworkGame() {
       }
       
       // Update dream compass based on current dimensions
-      if (dreamCompass) {
-        // Safely skip updating dimensional readings if method doesn't exist
-        if (typeof dreamCompass.updateDimensionalReadings === 'function') {
-          dreamCompass.updateDimensionalReadings(dimensions);
+      if (dreamCompass && dimensions) {
+        // Safe check for dimensional methods
+        // We need to adapt here since updateDimensionalReadings doesn't exist
+        if (typeof dreamCompass.calibrate === 'function') {
+          dreamCompass.calibrate(dimensions);
         }
       }
     });

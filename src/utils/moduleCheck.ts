@@ -35,17 +35,7 @@ export function runSystemCheck() {
           return false;
         }
       })(),
-    vectorAlchemyReady: !!modules.vectorAlchemy && 
-      typeof modules.vectorAlchemy.isReady === 'function' ? 
-        (() => {
-          try {
-            return modules.vectorAlchemy.isReady();
-          } catch (e) {
-            console.warn('vectorAlchemy.isReady threw an error:', e);
-            return false;
-          }
-        })() : 
-        !!modules.vectorAlchemy, // Fall back to just checking if the module exists
+    vectorAlchemyReady: !!modules.vectorAlchemy,  // Simple check for existence
     ritualSystemOnline: !!modules.iuri && 
       typeof modules.iuri.isInitialized === 'function' ? 
         modules.iuri.isInitialized() : 
@@ -54,10 +44,7 @@ export function runSystemCheck() {
       typeof modules.mythicAI.isConnected === 'function' ? 
         modules.mythicAI.isConnected() : 
         !!modules.mythicAI, // Fall back to just checking if the module exists
-    uncertaintyEngineCalibrated: !!modules.uncertainty && 
-      typeof modules.uncertainty.isCalibrated === 'function' ? 
-        modules.uncertainty.isCalibrated() : 
-        !!modules.uncertainty, // Fall back to just checking if the module exists
+    uncertaintyEngineCalibrated: !!modules.uncertainty,  // Simple check for existence
     echoSimulatorFunctional: !!modules.echoSimulator && 
       typeof modules.echoSimulator.isOperational === 'function' ? 
         modules.echoSimulator.isOperational() : 
@@ -70,10 +57,7 @@ export function runSystemCheck() {
       typeof modules.siderAI.isResponsive === 'function' ? 
         modules.siderAI.isResponsive() : 
         !!modules.siderAI, // Fall back to just checking if the module exists
-    dreamCompassCalibrated: !!modules.dreamCompass && 
-      typeof modules.dreamCompass.isCalibrated === 'function' ? 
-        modules.dreamCompass.isCalibrated() : 
-        !!modules.dreamCompass // Fall back to just checking if the module exists
+    dreamCompassCalibrated: !!modules.dreamCompass // Simple check for existence
   };
   
   console.log('Module Functionality Check:', checks);

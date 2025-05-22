@@ -8,6 +8,7 @@ import SymbolConnectionSystem from "../components/SymbolConnectionSystem";
 import QuantumStateCollapser from "../components/QuantumStateCollapser";
 import RitualList from "../components/RitualList";
 import ChatAI from "../components/ChatAI";
+import SystemMonitor from "../components/SystemMonitor";
 import { Separator } from "../components/ui/separator";
 import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
@@ -108,10 +109,11 @@ const Index = () => {
       </header>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-6xl mx-auto mb-6">
-        <TabsList className="grid grid-cols-3 mb-4 w-full max-w-md mx-auto">
+        <TabsList className="grid grid-cols-4 mb-4 w-full max-w-md mx-auto">
           <TabsTrigger value="dimensional">Dimensional</TabsTrigger>
           <TabsTrigger value="quantum">Quantum</TabsTrigger>
           <TabsTrigger value="symbolic">Symbolic</TabsTrigger>
+          <TabsTrigger value="system">System</TabsTrigger>
         </TabsList>
         
         <TabsContent value="dimensional">
@@ -196,6 +198,35 @@ const Index = () => {
               />
             </div>
             <SymbolConnectionSystem />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="system">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-6">
+              <SystemMonitor />
+            </div>
+            <div className="space-y-6">
+              <Card className="bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70">
+                <CardContent className="py-6">
+                  <h3 className="text-lg font-medium text-quantum-teal mb-4">System Status</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    The System Monitor tab allows you to:
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-2 mb-4 list-disc pl-5">
+                    <li>Monitor the health of all quantum modules</li>
+                    <li>Run diagnostics on dimensional interface components</li>
+                    <li>Enable autofix to maintain system stability</li>
+                    <li>Repair any detected issues in the simulation</li>
+                  </ul>
+                  <p className="text-sm text-muted-foreground">
+                    When autofix is enabled, the system will automatically attempt to repair 
+                    any detected issues every 30 seconds, keeping your multidimensional 
+                    experience stable and responsive.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </TabsContent>
       </Tabs>

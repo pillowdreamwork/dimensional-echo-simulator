@@ -53,7 +53,7 @@ const QuantumStateCollapser = () => {
     }));
   };
   
-  // Collapse quantum state
+  // Collapse quantum state - this simulates the quantum collapse without requiring the actual engine function
   const handleCollapseState = () => {
     setCollapsing(true);
     
@@ -61,27 +61,18 @@ const QuantumStateCollapser = () => {
       // Calculate probabilities
       const probs = calculateProbabilities();
       
-      // Use uncertainty engine if available and if it has the collapseQuantumState method
-      let collapsedResult;
-      if (uncertainty && typeof uncertainty.collapseQuantumState === 'function') {
-        collapsedResult = uncertainty.collapseQuantumState(
-          Object.entries(probs).map(([key, prob]) => ({ state: key, probability: prob })),
-          stabilityFactor / 100
-        );
-      } else {
-        // Manual calculation
-        const random = Math.random();
-        let cumulativeProb = 0;
-        collapsedResult = Object.entries(probs).find(([key, prob]) => {
-          cumulativeProb += prob;
-          return random < cumulativeProb;
-        })?.[0] || Object.keys(probs)[0];
-      }
+      // Manual calculation for quantum state collapse
+      const random = Math.random();
+      let cumulativeProb = 0;
+      let stateKey = Object.entries(probs).find(([key, prob]) => {
+        cumulativeProb += prob;
+        return random < cumulativeProb;
+      })?.[0] || Object.keys(probs)[0];
       
-      // Get collapsed state
-      const stateKey = typeof collapsedResult === 'string' ? collapsedResult : 
-                     (collapsedResult && typeof collapsedResult === 'object' && 'state' in collapsedResult) ? 
-                     collapsedResult.state : Object.keys(probs)[0];
+      // Apply stability factor (higher = more likely to stay in current state)
+      if (collapsedState && Math.random() < (stabilityFactor / 100)) {
+        stateKey = collapsedState;
+      }
       
       setCollapsedState(stateKey || null);
       
