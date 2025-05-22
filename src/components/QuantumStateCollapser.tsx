@@ -61,9 +61,9 @@ const QuantumStateCollapser = () => {
       // Calculate probabilities
       const probs = calculateProbabilities();
       
-      // Use uncertainty engine if available
+      // Use uncertainty engine if available and if it has the collapseQuantumState method
       let collapsedResult;
-      if (uncertainty) {
+      if (uncertainty && typeof uncertainty.collapseQuantumState === 'function') {
         collapsedResult = uncertainty.collapseQuantumState(
           Object.entries(probs).map(([key, prob]) => ({ state: key, probability: prob })),
           stabilityFactor / 100
@@ -79,7 +79,10 @@ const QuantumStateCollapser = () => {
       }
       
       // Get collapsed state
-      const stateKey = typeof collapsedResult === 'string' ? collapsedResult : collapsedResult?.state;
+      const stateKey = typeof collapsedResult === 'string' ? collapsedResult : 
+                     (collapsedResult && typeof collapsedResult === 'object' && 'state' in collapsedResult) ? 
+                     collapsedResult.state : Object.keys(probs)[0];
+      
       setCollapsedState(stateKey || null);
       
       // Reset to uncollapsed state after a few seconds

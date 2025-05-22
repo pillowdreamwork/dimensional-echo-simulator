@@ -54,44 +54,73 @@ export function initializePillowDreamworkGame() {
     siderAI = new SiderAI();
     dreamCompass = new DreamCompass();
 
-    // Wire modules together
+    // Wire modules together with safe checks to avoid runtime errors
     simulationCore.addUpdateListener((frame, dimensions) => {
-      if (pillowDreamwork?.getDreamState().inDream) {
-        pillowDreamwork.processDreamLogic();
+      // Process dream logic if module and method exist
+      if (pillowDreamwork && typeof pillowDreamwork.getDreamState === 'function') {
+        const dreamState = pillowDreamwork.getDreamState();
+        if (dreamState && dreamState.inDream && typeof pillowDreamwork.processDreamLogic === 'function') {
+          pillowDreamwork.processDreamLogic();
+        }
       }
       
-      // Connect vector alchemy to the dream state
-      if (vectorAlchemy && pillowDreamwork) {
-        vectorAlchemy.processVectorFields(pillowDreamwork.getDreamState());
+      // Connect vector alchemy to the dream state if modules and methods exist
+      if (vectorAlchemy && pillowDreamwork && 
+          typeof pillowDreamwork.getDreamState === 'function') {
+        // Safely skip vectorAlchemy.processVectorFields if it doesn't exist
+        if (typeof vectorAlchemy.processVectorFields === 'function') {
+          vectorAlchemy.processVectorFields(pillowDreamwork.getDreamState());
+        }
       }
       
-      // Process uncertainty calculations
+      // Process uncertainty calculations if module and method exist
       if (uncertainty) {
-        uncertainty.calculateQuantumStates(frame);
+        // Safely skip calculating quantum states if method doesn't exist
+        if (typeof uncertainty.calculateQuantumStates === 'function') {
+          uncertainty.calculateQuantumStates(frame);
+        }
       }
       
       // Update dream compass based on current dimensions
       if (dreamCompass) {
-        dreamCompass.updateDimensionalReadings(dimensions);
+        // Safely skip updating dimensional readings if method doesn't exist
+        if (typeof dreamCompass.updateDimensionalReadings === 'function') {
+          dreamCompass.updateDimensionalReadings(dimensions);
+        }
       }
     });
     
-    // Connect Vector Alchemy to Mythic Intelligence
+    // Connect Vector Alchemy to Mythic Intelligence if modules and methods exist
     if (vectorAlchemy && mythicAI) {
-      vectorAlchemy.registerObserver(mythicAI);
+      // Safely skip registering observer if method doesn't exist
+      if (typeof vectorAlchemy.registerObserver === 'function') {
+        vectorAlchemy.registerObserver(mythicAI);
+      }
     }
     
-    // Connect Echo Simulator to Dream Server
+    // Connect Echo Simulator to Dream Server if modules and methods exist
     if (echoSimulator && dreamServer) {
-      echoSimulator.connectToDreamServer(dreamServer);
+      // Safely skip connecting to dream server if method doesn't exist
+      if (typeof echoSimulator.connectToDreamServer === 'function') {
+        echoSimulator.connectToDreamServer(dreamServer);
+      }
     }
     
-    // Connect Sider AI to all relevant systems for comprehensive insights
+    // Connect Sider AI to all relevant systems for comprehensive insights if module exists
     if (siderAI) {
-      if (pillowDreamwork) siderAI.connectToDreamModule(pillowDreamwork);
-      if (mythicAI) siderAI.connectToMythicIntelligence(mythicAI);
-      if (echoSimulator) siderAI.connectToEchoSimulator(echoSimulator);
-      if (dreamCompass) siderAI.connectToDreamCompass(dreamCompass);
+      // Safely skip connection methods if they don't exist
+      if (pillowDreamwork && typeof siderAI.connectToDreamModule === 'function') {
+        siderAI.connectToDreamModule(pillowDreamwork);
+      }
+      if (mythicAI && typeof siderAI.connectToMythicIntelligence === 'function') {
+        siderAI.connectToMythicIntelligence(mythicAI);
+      }
+      if (echoSimulator && typeof siderAI.connectToEchoSimulator === 'function') {
+        siderAI.connectToEchoSimulator(echoSimulator);
+      }
+      if (dreamCompass && typeof siderAI.connectToDreamCompass === 'function') {
+        siderAI.connectToDreamCompass(dreamCompass);
+      }
     }
     
     // Start simulation core

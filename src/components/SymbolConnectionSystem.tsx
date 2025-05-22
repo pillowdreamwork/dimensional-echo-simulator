@@ -1,269 +1,277 @@
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Badge } from '@/components/ui/badge';
-import { toast } from "@/hooks/use-toast";
 import { analyzeSymbolPattern } from '../utils/quantum';
+import { useToast } from "../hooks/use-toast";
 
+// Define Symbol type
 type Symbol = {
-  id: number;
+  id: string;
   glyph: string;
-  position: { x: number; y: number };
-  connections: number[];
+  name: string;
+  x: number;
+  y: number;
+  connected: boolean;
+};
+
+// Define Connection type
+type Connection = {
+  id: string;
+  source: string;
+  target: string;
+  power: number;
 };
 
 const SymbolConnectionSystem = () => {
   const [symbols, setSymbols] = useState<Symbol[]>([]);
-  const [connecting, setConnecting] = useState<number | null>(null);
-  const [activeSymbols, setActiveSymbols] = useState<number[]>([]);
-  const [connectionMode, setConnectionMode] = useState<boolean>(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [connections, setConnections] = useState<Connection[]>([]);
+  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+  const [hoveredSymbol, setHoveredSymbol] = useState<string | null>(null);
+  const [isActivating, setIsActivating] = useState(false);
+  const { toast } = useToast();
 
-  // Available glyphs
-  const availableGlyphs = ["⊕", "⊗", "⊛", "⊙", "⊚", "⊝", "⌬", "✸", "⍟"];
-
-  // Initialize symbols
+  // Initialize available symbols
   useEffect(() => {
-    generateSymbols();
+    const initialSymbols: Symbol[] = [
+      { id: '1', glyph: '⊕', name: 'Confluence', x: 30, y: 30, connected: false },
+      { id: '2', glyph: '⊗', name: 'Nexus', x: 70, y: 30, connected: false },
+      { id: '3', glyph: '⊛', name: 'Radiance', x: 30, y: 70, connected: false },
+      { id: '4', glyph: '⊙', name: 'Singularity', x: 70, y: 70, connected: false },
+      { id: '5', glyph: '⊚', name: 'Vortex', x: 50, y: 50, connected: false },
+      { id: '6', glyph: '⊝', name: 'Null', x: 20, y: 50, connected: false },
+      { id: '7', glyph: '⌬', name: 'Drift', x: 80, y: 50, connected: false },
+      { id: '8', glyph: '⍟', name: 'Echo', x: 50, y: 20, connected: false },
+      { id: '9', glyph: '✸', name: 'Forge', x: 50, y: 80, connected: false }
+    ];
+    
+    setSymbols(initialSymbols);
   }, []);
 
-  // Generate random symbols
-  const generateSymbols = () => {
-    const newSymbols: Symbol[] = [];
-    for (let i = 0; i < 7; i++) {
-      newSymbols.push({
-        id: i,
-        glyph: availableGlyphs[Math.floor(Math.random() * availableGlyphs.length)],
-        position: {
-          x: Math.random() * 80 + 10,
-          y: Math.random() * 80 + 10,
-        },
-        connections: []
-      });
+  const handleSymbolClick = (id: string) => {
+    if (isActivating) return;
+    
+    // If no symbol is selected, select this one
+    if (!selectedSymbol) {
+      setSelectedSymbol(id);
+      return;
     }
-    setSymbols(newSymbols);
-    setActiveSymbols([]);
+    
+    // If clicking on the same symbol, deselect it
+    if (selectedSymbol === id) {
+      setSelectedSymbol(null);
+      return;
+    }
+    
+    // Otherwise, create a connection between the two symbols
+    const newConnection = {
+      id: `${selectedSymbol}-${id}`,
+      source: selectedSymbol,
+      target: id,
+      power: Math.random() * 0.5 + 0.5 // Random power between 0.5 and 1
+    };
+    
+    // Check if connection already exists
+    const connectionExists = connections.some(
+      conn => (conn.source === selectedSymbol && conn.target === id) || 
+              (conn.source === id && conn.target === selectedSymbol)
+    );
+    
+    if (!connectionExists) {
+      setConnections([...connections, newConnection]);
+      
+      // Mark symbols as connected
+      setSymbols(symbols.map(s => 
+        s.id === selectedSymbol || s.id === id 
+          ? { ...s, connected: true } 
+          : s
+      ));
+    }
+    
+    // Reset selection
+    setSelectedSymbol(null);
   };
 
-  // Handle symbol click
-  const handleSymbolClick = (id: number) => {
-    if (connectionMode) {
-      if (connecting === null) {
-        // Start connection
-        setConnecting(id);
-      } else if (connecting !== id) {
-        // Complete connection if not already connected
-        setSymbols(prev => prev.map(s => {
-          if (s.id === connecting && !s.connections.includes(id)) {
-            return { ...s, connections: [...s.connections, id] };
-          }
-          if (s.id === id && !s.connections.includes(connecting)) {
-            return { ...s, connections: [...s.connections, connecting] };
-          }
-          return s;
-        }));
-        
-        // Add both to active symbols
-        if (!activeSymbols.includes(connecting)) {
-          setActiveSymbols(prev => [...prev, connecting]);
-        }
-        if (!activeSymbols.includes(id)) {
-          setActiveSymbols(prev => [...prev, id]);
-        }
-        
-        // Check pattern after connection
-        const pattern = symbols.filter(s => activeSymbols.includes(s.id) || s.id === connecting || s.id === id)
-          .map(s => s.glyph).join('');
-        
-        const analysis = analyzeSymbolPattern(pattern);
-        
+  const handleActivate = () => {
+    if (connections.length === 0) {
+      toast({
+        title: "No Connections",
+        description: "Create connections between symbols first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsActivating(true);
+    
+    // Sort connections by highest power first
+    const sortedConnections = [...connections].sort((a, b) => b.power - a.power);
+    
+    // Create pattern from connected symbols
+    const pattern = sortedConnections.map(conn => {
+      const sourceSymbol = symbols.find(s => s.id === conn.source);
+      const targetSymbol = symbols.find(s => s.id === conn.target);
+      return sourceSymbol?.glyph + targetSymbol?.glyph;
+    }).join('');
+    
+    setTimeout(() => {
+      // Analyze the pattern
+      const result = analyzeSymbolPattern(pattern);
+      
+      // Extract effects, providing fallbacks if properties don't exist
+      const effect = result.effect || "The symbols resonate with each other.";
+      const dimensionalEffect = 
+        'dimensionalEffect' in result ? result.dimensionalEffect : 
+        "The dimensional membrane fluctuates slightly.";
+      
+      // Show results
+      toast({
+        title: "Symbol Pattern Activated",
+        description: effect,
+        duration: 4000,
+      });
+      
+      // Show dimensional effect toast after a delay
+      setTimeout(() => {
         toast({
-          title: "Symbol Connection",
-          description: analysis.effect,
+          title: "Dimensional Effect",
+          description: dimensionalEffect || "The fabric of reality shifts subtly.",
           duration: 3000,
         });
-        
-        if (analysis.dimensionalEffect) {
-          setTimeout(() => {
-            toast({
-              title: "Dimensional Effect",
-              description: analysis.dimensionalEffect,
-              duration: 3000,
-            });
-          }, 1500);
-        }
-        
-        // Reset connecting state
-        setConnecting(null);
-      } else {
-        // Clicked same symbol, cancel connection
-        setConnecting(null);
-      }
-    } else {
-      // Toggle active state when not in connection mode
-      if (activeSymbols.includes(id)) {
-        setActiveSymbols(prev => prev.filter(sid => sid !== id));
-      } else {
-        setActiveSymbols(prev => [...prev, id]);
-        
-        // If we have multiple active symbols, analyze the pattern
-        if (activeSymbols.length > 0) {
-          const newActiveSet = [...activeSymbols, id];
-          const pattern = symbols
-            .filter(s => newActiveSet.includes(s.id))
-            .map(s => s.glyph)
-            .join('');
-          
-          const analysis = analyzeSymbolPattern(pattern);
-          
-          if (analysis.effect) {
-            toast({
-              title: "Symbol Pattern",
-              description: analysis.effect,
-              duration: 3000,
-            });
-          }
-        }
-      }
-    }
+      }, 1000);
+      
+      setIsActivating(false);
+    }, 2000);
   };
 
-  // Reset connections
-  const resetConnections = () => {
-    setSymbols(prev => prev.map(s => ({ ...s, connections: [] })));
-    setActiveSymbols([]);
-    setConnecting(null);
-    setConnectionMode(false);
-    
-    toast({
-      title: "Symbol Grid Reset",
-      description: "All connections have been cleared.",
-      duration: 2000,
-    });
-  };
-
-  // Toggle connection mode
-  const toggleConnectionMode = () => {
-    setConnectionMode(!connectionMode);
-    setConnecting(null);
-  };
-
-  // Generate new symbols
-  const handleRegenerateSymbols = () => {
-    generateSymbols();
-    
-    toast({
-      title: "Symbols Regenerated",
-      description: "New symbol grid has been created.",
-      duration: 2000,
-    });
+  const handleClearConnections = () => {
+    setConnections([]);
+    setSymbols(symbols.map(s => ({ ...s, connected: false })));
+    setSelectedSymbol(null);
   };
 
   return (
     <Card className="symbol-connection-system bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-quantum-purple">Symbol Connection System</CardTitle>
-          <Badge variant="outline" className="bg-quantum-purple/20 text-quantum-purple">
-            {connectionMode ? "Connection Mode" : "Selection Mode"}
+          <CardTitle className="text-quantum-gold">Symbol Connection System</CardTitle>
+          <Badge variant="outline" className="bg-quantum-gold/20 text-quantum-gold">
+            {connections.length} Connections
           </Badge>
         </div>
       </CardHeader>
       <CardContent>
-        <div ref={containerRef} className="relative h-60 border border-dashed border-quantum-purple/30 rounded-md mb-4">
-          {symbols.map((symbol) => (
-            <React.Fragment key={symbol.id}>
-              {/* Draw connections */}
-              {connectionMode && symbol.connections.map(targetId => {
-                const target = symbols.find(s => s.id === targetId);
-                if (!target) return null;
+        <p className="text-sm text-muted-foreground mb-4">
+          Connect quantum symbols to create dimensional effects and reality shifts.
+        </p>
+        
+        {/* Symbol connection canvas */}
+        <div className="relative w-full h-64 border border-quantum-gold/30 rounded-md mb-4 overflow-hidden">
+          {/* Connection lines */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none">
+            {connections.map(conn => {
+              const source = symbols.find(s => s.id === conn.source);
+              const target = symbols.find(s => s.id === conn.target);
+              
+              if (!source || !target) return null;
+              
+              return (
+                <line
+                  key={conn.id}
+                  x1={`${source.x}%`}
+                  y1={`${source.y}%`}
+                  x2={`${target.x}%`}
+                  y2={`${target.y}%`}
+                  stroke={`rgba(255, 215, 0, ${conn.power})`}
+                  strokeWidth="2"
+                  strokeDasharray={isActivating ? "4" : ""}
+                  className={isActivating ? "animate-pulse" : ""}
+                />
+              );
+            })}
+            
+            {/* Line from selected symbol to hovered symbol */}
+            {selectedSymbol && hoveredSymbol && selectedSymbol !== hoveredSymbol && (
+              (() => {
+                const source = symbols.find(s => s.id === selectedSymbol);
+                const target = symbols.find(s => s.id === hoveredSymbol);
+                
+                if (!source || !target) return null;
                 
                 return (
-                  <svg 
-                    key={`${symbol.id}-${targetId}`} 
-                    className="absolute top-0 left-0 w-full h-full pointer-events-none"
-                    style={{ zIndex: 1 }}
-                  >
-                    <line
-                      x1={`${symbol.position.x}%`}
-                      y1={`${symbol.position.y}%`}
-                      x2={`${target.position.x}%`}
-                      y2={`${target.position.y}%`}
-                      stroke="#9b87f5"
-                      strokeWidth="2"
-                      strokeOpacity="0.6"
-                    />
-                  </svg>
+                  <line
+                    x1={`${source.x}%`}
+                    y1={`${source.y}%`}
+                    x2={`${target.x}%`}
+                    y2={`${target.y}%`}
+                    stroke="rgba(255, 215, 0, 0.3)"
+                    strokeWidth="2"
+                    strokeDasharray="4"
+                  />
                 );
-              })}
-              
-              {/* Symbol */}
-              <div 
-                className={`absolute transform -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all ${
-                  activeSymbols.includes(symbol.id) 
-                    ? 'bg-quantum-purple text-white' 
-                    : connecting === symbol.id
-                    ? 'bg-quantum-gold text-black'
-                    : 'bg-quantum-dark border border-quantum-purple/50 text-quantum-purple/80'
-                }`}
-                style={{ 
-                  left: `${symbol.position.x}%`, 
-                  top: `${symbol.position.y}%`,
-                  zIndex: 2
-                }}
-                onClick={() => handleSymbolClick(symbol.id)}
-              >
-                <span className="text-lg">{symbol.glyph}</span>
-              </div>
-            </React.Fragment>
+              })()
+            )}
+          </svg>
+          
+          {/* Symbols */}
+          {symbols.map(symbol => (
+            <div
+              key={symbol.id}
+              className={`absolute w-10 h-10 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full cursor-pointer transition-all ${
+                symbol.connected ? 'bg-quantum-gold/30' : 'bg-quantum-gold/10'
+              } ${
+                selectedSymbol === symbol.id ? 'ring-2 ring-quantum-gold' : ''
+              } ${
+                hoveredSymbol === symbol.id ? 'bg-quantum-gold/20' : ''
+              } ${
+                isActivating && symbol.connected ? 'animate-pulse' : ''
+              }`}
+              style={{
+                left: `${symbol.x}%`,
+                top: `${symbol.y}%`
+              }}
+              onClick={() => handleSymbolClick(symbol.id)}
+              onMouseEnter={() => setHoveredSymbol(symbol.id)}
+              onMouseLeave={() => setHoveredSymbol(null)}
+            >
+              <span className="text-xl text-quantum-gold">{symbol.glyph}</span>
+            </div>
           ))}
         </div>
         
+        <div className="flex justify-between mb-4">
+          <div>
+            <p className="text-xs text-muted-foreground">
+              {selectedSymbol 
+                ? `Select another symbol to connect` 
+                : `Select a symbol to begin`}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-quantum-gold">
+              {symbols.find(s => s.id === hoveredSymbol)?.name || '\u00A0'}
+            </p>
+          </div>
+        </div>
+        
         <div className="flex space-x-2">
-          <Button 
-            variant="outline"
-            className={connectionMode ? "bg-quantum-purple/20 border-quantum-purple" : ""}
-            onClick={toggleConnectionMode}
+          <Button
+            onClick={handleActivate}
+            disabled={connections.length === 0 || isActivating}
+            className="flex-1 bg-quantum-gold hover:bg-quantum-gold/80 text-black"
           >
-            {connectionMode ? "Exit Connection Mode" : "Connect Symbols"}
+            {isActivating ? "Activating..." : "Activate Pattern"}
           </Button>
           
-          <Button 
-            variant="outline" 
-            onClick={resetConnections}
+          <Button
+            onClick={handleClearConnections}
+            disabled={connections.length === 0 || isActivating}
+            variant="outline"
+            className="border-quantum-gold/50 text-quantum-gold hover:bg-quantum-gold/10"
           >
             Clear
           </Button>
-          
-          <Button 
-            variant="outline" 
-            onClick={handleRegenerateSymbols}
-          >
-            Regenerate
-          </Button>
         </div>
-        
-        {activeSymbols.length > 0 && (
-          <div className="mt-4 p-2 border border-quantum-purple/30 rounded-md">
-            <p className="text-sm text-muted-foreground">Active Pattern:</p>
-            <div className="flex items-center space-x-2 mt-1">
-              {activeSymbols.map(id => {
-                const symbol = symbols.find(s => s.id === id);
-                if (!symbol) return null;
-                
-                return (
-                  <span 
-                    key={id}
-                    className="text-lg text-quantum-purple"
-                  >
-                    {symbol.glyph}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

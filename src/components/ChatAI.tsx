@@ -63,10 +63,11 @@ const ChatAI = () => {
     setTimeout(() => {
       let aiResponse = "I'm processing your request through the quantum fields.";
       
-      // If SiderAI is available, use it for responses
-      if (siderAI) {
+      // If SiderAI is available and has processUserQuery method, use it
+      if (siderAI && typeof siderAI.processUserQuery === 'function') {
         const response = siderAI.processUserQuery(input);
-        aiResponse = response.message || aiResponse;
+        aiResponse = response && typeof response === 'object' && 'message' in response ? 
+                    response.message : "I'm analyzing your query through the quantum fields.";
       } else {
         // Fallback responses based on keywords
         if (input.toLowerCase().includes('dimension')) {
