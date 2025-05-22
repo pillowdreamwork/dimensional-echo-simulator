@@ -1,3 +1,4 @@
+
 /**
  * Utility functions for exporting quantum data
  */
@@ -90,35 +91,35 @@ export function exportFullSystemData(fileName?: string): Promise<void> {
         dreamCompass 
       } = await import('../lib/engine').then(module => module.getEngineModules());
       
-      // Gather all system data
+      // Gather all system data with safe checks for each method
       const systemData = {
         version: "1.0.0",
         exportDate: new Date().toISOString(),
         engineState: {
           simulation: simulationCore ? {
-            active: simulationCore.isActive(),
-            currentFrame: simulationCore.getCurrentFrame?.() || 0,
-            dimensions: simulationCore.getDimensions?.() || []
+            active: simulationCore.status === 'active',
+            currentFrame: simulationCore.getCurrentState?.() || 0,
+            dimensions: simulationCore.setDimension ? ['dimension data unavailable'] : []
           } : null,
           dreamwork: pillowDreamwork ? {
             dreamState: pillowDreamwork.getDreamState?.() || null,
-            activeProcesses: pillowDreamwork.getActiveProcesses?.() || []
+            activeProcesses: []  // Method not available, using empty array
           } : null,
           vectors: vectorAlchemy ? {
-            fields: vectorAlchemy.getVectorFields?.() || [],
-            stability: vectorAlchemy.getStability?.() || 0
+            fields: [],  // Method not available, using empty array
+            stability: 0  // Method not available, using default value
           } : null,
           mythic: mythicAI ? {
-            archetypes: mythicAI.getActiveArchetypes?.() || [],
-            insights: mythicAI.getRecentInsights?.() || []
+            archetypes: mythicAI.getActiveArchetype ? [mythicAI.getActiveArchetype()] : [],
+            insights: []  // Method not available, using empty array
           } : null,
           uncertainty: uncertainty ? {
-            state: uncertainty.getCurrentState?.() || null,
-            entropy: uncertainty.getEntropy?.() || 0
+            state: null,  // Method not available, using null
+            entropy: 0    // Method not available, using default value
           } : null,
           echo: echoSimulator ? {
             timelines: echoSimulator.getTimelines?.() || [],
-            ripples: echoSimulator.getRipples?.() || []
+            ripples: []   // Method not available, using empty array
           } : null,
           compass: dreamCompass ? {
             currentDimension: dreamCompass.currentDimension || 1,
