@@ -17,6 +17,7 @@ import { generateDimensionalEffect } from "../utils/quantum";
 import { useToast } from "../hooks/use-toast";
 import { PillowDreamworkShowcase } from '../components/PillowDreamworkShowcase';
 import { initializePillowDreamworkGame } from "../lib/engine";
+import ExportDocButton from "@/components/ExportDocButton";
 
 const Index = () => {
   const { toast } = useToast();
@@ -100,12 +101,20 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-quantum-dark text-foreground p-4 md:p-6">
       <header className="mb-6 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold text-quantum-purple mb-2">
-          Quantum Dimensional Simulator
-        </h1>
-        <p className="text-quantum-blue max-w-xl mx-auto">
-          Explore multidimensional realities through quantum mechanics and symbolic interactions
-        </p>
+        <div className="flex justify-between items-center max-w-6xl mx-auto">
+          <div className="flex-1"></div>
+          <div className="flex-2">
+            <h1 className="text-3xl md:text-4xl font-bold text-quantum-purple mb-2">
+              Quantum Dimensional Simulator
+            </h1>
+            <p className="text-quantum-blue max-w-xl mx-auto">
+              Explore multidimensional realities through quantum mechanics and symbolic interactions
+            </p>
+          </div>
+          <div className="flex-1 flex justify-end">
+            <ExportDocButton />
+          </div>
+        </div>
       </header>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-6xl mx-auto mb-6">

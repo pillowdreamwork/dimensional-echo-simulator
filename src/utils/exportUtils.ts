@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for exporting quantum data
  */
@@ -67,3 +66,203 @@ export const parseQuantumStatesFromUrl = (): {[key: string]: number} | null => {
     return null;
   }
 };
+
+/**
+ * Exports all quantum states and dimensional data to a file
+ * @param fileName Optional file name
+ * @returns Promise that resolves when export is complete
+ */
+export function exportFullSystemData(fileName?: string): Promise<void> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Import engine modules
+      const { 
+        simulationCore, 
+        pillowDreamwork, 
+        vectorAlchemy, 
+        invocationAPI, 
+        mythicAI, 
+        uncertainty, 
+        echoSimulator, 
+        dreamServer, 
+        iuri, 
+        siderAI, 
+        dreamCompass 
+      } = await import('../lib/engine').then(module => module.getEngineModules());
+      
+      // Gather all system data
+      const systemData = {
+        version: "1.0.0",
+        exportDate: new Date().toISOString(),
+        engineState: {
+          simulation: simulationCore ? {
+            active: simulationCore.isActive(),
+            currentFrame: simulationCore.getCurrentFrame?.() || 0,
+            dimensions: simulationCore.getDimensions?.() || []
+          } : null,
+          dreamwork: pillowDreamwork ? {
+            dreamState: pillowDreamwork.getDreamState?.() || null,
+            activeProcesses: pillowDreamwork.getActiveProcesses?.() || []
+          } : null,
+          vectors: vectorAlchemy ? {
+            fields: vectorAlchemy.getVectorFields?.() || [],
+            stability: vectorAlchemy.getStability?.() || 0
+          } : null,
+          mythic: mythicAI ? {
+            archetypes: mythicAI.getActiveArchetypes?.() || [],
+            insights: mythicAI.getRecentInsights?.() || []
+          } : null,
+          uncertainty: uncertainty ? {
+            state: uncertainty.getCurrentState?.() || null,
+            entropy: uncertainty.getEntropy?.() || 0
+          } : null,
+          echo: echoSimulator ? {
+            timelines: echoSimulator.getTimelines?.() || [],
+            ripples: echoSimulator.getRipples?.() || []
+          } : null,
+          compass: dreamCompass ? {
+            currentDimension: dreamCompass.currentDimension || 1,
+            accessibleDimensions: dreamCompass.getAccessibleDimensions?.() || []
+          } : null
+        },
+        quantumStates: [],
+        dimensionalEffects: [],
+        symbolPatterns: [],
+        ritualHistory: []
+      };
+      
+      // Create a download file
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(systemData, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", fileName || "quantum-dimensional-export.json");
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+      
+      resolve();
+    } catch (error) {
+      console.error("Error exporting system data:", error);
+      reject(error);
+    }
+  });
+}
+
+/**
+ * Exports the project codebase structure as a blueprint document
+ */
+export function exportProjectBlueprint(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    try {
+      fetch('/src/docs/ProjectBlueprint.md')
+        .then(response => response.text())
+        .then(text => {
+          const dataStr = "data:text/markdown;charset=utf-8," + encodeURIComponent(text);
+          const downloadAnchorNode = document.createElement('a');
+          downloadAnchorNode.setAttribute("href", dataStr);
+          downloadAnchorNode.setAttribute("download", "quantum-dimensional-simulator-blueprint.md");
+          document.body.appendChild(downloadAnchorNode);
+          downloadAnchorNode.click();
+          downloadAnchorNode.remove();
+          resolve();
+        })
+        .catch(error => {
+          console.error("Error fetching blueprint:", error);
+          reject(error);
+        });
+    } catch (error) {
+      console.error("Error exporting blueprint:", error);
+      reject(error);
+    }
+  });
+}
+
+/**
+ * Exports the full codebase as a structured document
+ */
+export function exportCodebaseDocument(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    try {
+      // In a real implementation, this would gather code from various files
+      // For now, we'll create a sample structure
+      const codeDocument = `# Quantum Dimensional Simulator - Codebase Documentation
+
+## Core Engine Modules
+
+\`\`\`typescript
+// SimulationCore.ts
+// Core simulation engine that drives the dimensional experience
+class SimulationCore {
+  // Implementation details...
+}
+
+// PillowDreamworkModule.ts
+// Manages dream state and logic processing
+class PillowDreamworkModule {
+  // Implementation details...
+}
+
+// VectorAlchemyEngine.ts
+// Processes vector fields and dimensional interactions
+class VectorAlchemyEngine {
+  // Implementation details...
+}
+\`\`\`
+
+## UI Components
+
+\`\`\`tsx
+// Index.tsx
+// Main container component
+function Index() {
+  // Implementation details...
+}
+
+// VirtualCompass.tsx
+// Interface for dimensional navigation
+function VirtualCompass({ currentDimension, onDimensionChange, maxDimension }) {
+  // Implementation details...
+}
+
+// QuantumInterface.tsx
+// Controls for quantum calculations
+function QuantumInterface({ currentDimension, onSuperposition }) {
+  // Implementation details...
+}
+\`\`\`
+
+## Utility Functions
+
+\`\`\`typescript
+// quantum.ts
+// Utilities for quantum calculations
+
+function calculateUncertainty(precision: number, observerStrength: number): number {
+  // Implementation details...
+}
+
+function calculateSuperposition(dimensions: number[], entanglementLevel: number): number[] {
+  // Implementation details...
+}
+
+function collapseQuantumState(states: QuantumState[], observerStrength: number): QuantumState {
+  // Implementation details...
+}
+\`\`\`
+`;
+
+      const dataStr = "data:text/markdown;charset=utf-8," + encodeURIComponent(codeDocument);
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "quantum-dimensional-simulator-code.md");
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+      
+      resolve();
+    } catch (error) {
+      console.error("Error exporting codebase document:", error);
+      reject(error);
+    }
+  });
+}
