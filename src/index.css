@@ -5,35 +5,36 @@
 
 @layer base {
   :root {
-    --background: 240 30% 10%; /* Dark blue-purple background */
+    --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
-    --card: 240 25% 15%;
+    --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
-    --popover: 240 25% 15%;
+    --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 260 75% 75%; /* Quantum purple */
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 195 95% 45%; /* Quantum blue */
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
-    --muted: 240 20% 20%;
-    --muted-foreground: 215 20% 75%;
-
-    --accent: 175 85% 30%; /* Quantum teal */
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 240 20% 20%;
-    --input: 240 20% 20%;
-    --ring: 260 75% 75%;
-
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
     --radius: 0.5rem;
+    --sidebar-background: 224 71% 4%;
+    --sidebar-foreground: 213 31% 91%;
+    --sidebar-muted: 223 47% 11%;
+    --sidebar-muted-foreground: 215.4 16.3% 56.9%;
+    --sidebar-accent: 224 71% 4%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 216 34% 17%;
+    --sidebar-primary: 210 40% 98%;
+    --sidebar-primary-foreground: 222.2 47.4% 1.2%;
+    --sidebar-ring: 224 71% 4%;
   }
 }
 
@@ -42,73 +43,193 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground overflow-x-hidden;
-    background-image: radial-gradient(
-      circle at center,
-      rgba(155, 135, 245, 0.15) 0%,
-      rgba(14, 165, 233, 0.05) 50%,
-      rgba(26, 31, 44, 1) 100%
-    );
-  }
-  
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    @apply bg-muted/50;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    @apply bg-primary/50 rounded-full;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary/70;
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-@layer components {
-  .glyph-container {
-    @apply relative flex items-center justify-center overflow-hidden;
-    filter: drop-shadow(0 0 10px theme('colors.quantum.purple'));
+/* Create an animated background for quantum effects */
+body {
+  background: radial-gradient(circle at center, #1A1F2C, #13151e);
+  background-image: 
+    radial-gradient(circle at center, rgba(155, 135, 245, 0.1) 0%, rgba(14, 165, 233, 0.05) 40%, rgba(0, 0, 0, 0) 70%),
+    linear-gradient(to right, rgba(155, 135, 245, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(155, 135, 245, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 30px 30px, 30px 30px;
+  background-attachment: fixed;
+}
+
+/* Add dimensional border effect for cards */
+.dimensional-border {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+.dimensional-border::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, rgba(155, 135, 245, 0.3), rgba(14, 165, 233, 0.3), rgba(13, 148, 136, 0.3), rgba(245, 158, 11, 0.3));
+  border-radius: 0.6rem;
+  z-index: -1;
+  animation: border-shift 8s linear infinite;
+}
+
+@keyframes border-shift {
+  0% {
+    background-position: 0% 50%;
   }
-  
-  .dimension-line {
-    @apply h-0.5 bg-gradient-to-r from-quantum-purple via-quantum-blue to-quantum-teal animate-pulse-subtle;
+  50% {
+    background-position: 100% 50%;
   }
-  
-  .dimension-dot {
-    @apply absolute w-2 h-2 rounded-full bg-quantum-gold;
-    box-shadow: 0 0 8px theme('colors.quantum.gold');
-  }
-  
-  .quantum-grid {
-    background-size: 25px 25px;
-    @apply bg-quantum-grid;
-  }
-  
-  .dimensional-border {
-    position: relative;
-  }
-  
-  .dimensional-border:before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    padding: 1px;
-    border-radius: inherit;
-    background: linear-gradient(
-      45deg, 
-      theme('colors.quantum.purple'), 
-      theme('colors.quantum.blue'),
-      theme('colors.quantum.teal'),
-      theme('colors.quantum.purple')
-    );
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
+  100% {
+    background-position: 0% 50%;
   }
 }
+
+/* Add soft glow effect for interactive elements */
+.quantum-glow {
+  box-shadow: 0 0 15px rgba(155, 135, 245, 0.3);
+  transition: box-shadow 0.3s ease;
+}
+
+.quantum-glow:hover {
+  box-shadow: 0 0 25px rgba(155, 135, 245, 0.5);
+}
+
+/* Custom button variants */
+.btn-gold {
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  color: white;
+  border: none;
+}
+
+.btn-purple {
+  background: linear-gradient(135deg, #9b87f5, #7c4dff);
+  color: white;
+  border: none;
+}
+
+/* Animation for dimensional transitions */
+.dimension-transition {
+  animation: dimension-shift 2s ease-in-out;
+}
+
+@keyframes dimension-shift {
+  0% {
+    filter: blur(10px);
+    transform: scale(0.9);
+    opacity: 0.3;
+  }
+  50% {
+    filter: blur(5px);
+    transform: scale(1.05);
+    opacity: 0.7;
+  }
+  100% {
+    filter: blur(0px);
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Custom scrollbar for quantum aesthetic */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(155, 135, 245, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(155, 135, 245, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(155, 135, 245, 0.5);
+}
+
+/* Animation for symbol activation */
+.symbol-activate {
+  animation: symbol-pulse 1s ease-in-out;
+}
+
+@keyframes symbol-pulse {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.2);
+    filter: brightness(1.5);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+/* Portal entry animation */
+.portal-enter {
+  animation: portal-open 2s ease-in-out forwards;
+}
+
+@keyframes portal-open {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+    filter: blur(20px);
+  }
+  60% {
+    transform: scale(1.1);
+    opacity: 0.7;
+    filter: blur(5px);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* Pulsing star effect for important elements */
+.star-pulse {
+  position: relative;
+}
+
+.star-pulse::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background: rgba(245, 158, 11, 0.8);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5),
+              0 0 20px rgba(245, 158, 11, 0.3),
+              0 0 30px rgba(245, 158, 11, 0.1);
+  animation: star-pulse 3s infinite;
+  z-index: -1;
+}
+
+@keyframes star-pulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0.4;
+  }
+}
+

@@ -4,20 +4,19 @@ import VirtualCompass from "../components/VirtualCompass";
 import DimensionalView from "../components/DimensionalView";
 import QuantumInterface from "../components/QuantumInterface";
 import SymbolSystem from "../components/SymbolSystem";
-import SymbolConnectionSystem from "../components/SymbolConnectionSystem";
 import QuantumStateCollapser from "../components/QuantumStateCollapser";
-import RitualList from "../components/RitualList";
 import ChatAI from "../components/ChatAI";
 import SystemMonitor from "../components/SystemMonitor";
-import { Separator } from "../components/ui/separator";
-import { Card, CardContent } from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { generateDimensionalEffect } from "../utils/quantum";
 import { useToast } from "../hooks/use-toast";
-import { PillowDreamworkShowcase } from '../components/PillowDreamworkShowcase';
 import { initializePillowDreamworkGame } from "../lib/engine";
 import ExportDocButton from "@/components/ExportDocButton";
+import PortalEntry from "@/components/PortalEntry";
+import RealityShiftingModes from "@/components/RealityShiftingModes";
+import QuantumLog from "@/components/QuantumLog";
+import SymbolDecoder from "@/components/SymbolDecoder";
+import SupportiveAICompanion from "@/components/SupportiveAICompanion";
 
 const Index = () => {
   const { toast } = useToast();
@@ -25,12 +24,35 @@ const Index = () => {
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const [dimensionalEffects, setDimensionalEffects] = useState<string[]>([]);
   const [superpositionValues, setSuperpositionValues] = useState<number[]>([]);
-  const [activeTab, setActiveTab] = useState("dimensional");
+  const [activeTab, setActiveTab] = useState("portal");
+  const [activeMode, setActiveMode] = useState<string>("gentle");
+  const [hasEnteredPortal, setHasEnteredPortal] = useState<boolean>(false);
+  const [isFirstVisit, setIsFirstVisit] = useState<boolean>(true);
   
   // Initialize the game engine
   useEffect(() => {
     initializePillowDreamworkGame();
+    
+    // Check if user has visited before
+    const hasVisited = localStorage.getItem("quantumJourney_hasVisited");
+    if (hasVisited) {
+      setIsFirstVisit(false);
+    } else {
+      localStorage.setItem("quantumJourney_hasVisited", "true");
+    }
   }, []);
+  
+  // Handle portal entry
+  const handleEnterPortal = () => {
+    setHasEnteredPortal(true);
+    setActiveTab("dimensional");
+    
+    toast({
+      title: "Journey Begun",
+      description: "Welcome to the Quantum Dimensional Explorer",
+      duration: 3000,
+    });
+  };
   
   // Transition effect when dimension changes
   const handleDimensionChange = (dimension: number) => {
@@ -97,6 +119,57 @@ const Index = () => {
       }
     }
   };
+
+  // Handle symbol connection from decoder
+  const handleSymbolConnect = (pattern: string[], interpretation: string) => {
+    const patternString = pattern.join('');
+    handleSymbolActivate(patternString);
+  };
+  
+  // Handle shifting mode selection
+  const handleSelectMode = (mode: string) => {
+    setActiveMode(mode);
+    
+    if (mode === "deep") {
+      toast({
+        title: "Deep Dive Mode",
+        description: "Immerse yourself fully in the current dimension",
+        duration: 3000,
+      });
+    } else if (mode === "dream") {
+      toast({
+        title: "Dream Weaver Mode",
+        description: "Your symbols now have enhanced connection abilities",
+        duration: 3000,
+      });
+    }
+  };
+  
+  // If portal hasn't been entered, show portal entry screen
+  if (!hasEnteredPortal) {
+    return (
+      <div className="min-h-screen bg-quantum-dark text-foreground p-4 md:p-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex-1"></div>
+            <div className="flex-2 text-center">
+              <h1 className="text-3xl md:text-4xl font-bold text-quantum-purple mb-2">
+                Quantum Dimensional Explorer
+              </h1>
+              <p className="text-quantum-blue">
+                Journey through multidimensional realities and inner space
+              </p>
+            </div>
+            <div className="flex-1 flex justify-end">
+              <ExportDocButton />
+            </div>
+          </div>
+          
+          <PortalEntry onEnterPortal={handleEnterPortal} isFirstVisit={isFirstVisit} />
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-quantum-dark text-foreground p-4 md:p-6">
@@ -105,10 +178,10 @@ const Index = () => {
           <div className="flex-1"></div>
           <div className="flex-2">
             <h1 className="text-3xl md:text-4xl font-bold text-quantum-purple mb-2">
-              Quantum Dimensional Simulator
+              Quantum Dimensional Explorer
             </h1>
             <p className="text-quantum-blue max-w-xl mx-auto">
-              Explore multidimensional realities through quantum mechanics and symbolic interactions
+              Journey through multidimensional realities and inner space
             </p>
           </div>
           <div className="flex-1 flex justify-end">
@@ -119,136 +192,112 @@ const Index = () => {
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-6xl mx-auto mb-6">
         <TabsList className="grid grid-cols-4 mb-4 w-full max-w-md mx-auto">
-          <TabsTrigger value="dimensional">Dimensional</TabsTrigger>
-          <TabsTrigger value="quantum">Quantum</TabsTrigger>
-          <TabsTrigger value="symbolic">Symbolic</TabsTrigger>
-          <TabsTrigger value="system">System</TabsTrigger>
+          <TabsTrigger value="dimensional">Explorer</TabsTrigger>
+          <TabsTrigger value="journal">Journal</TabsTrigger>
+          <TabsTrigger value="symbols">Symbols</TabsTrigger>
+          <TabsTrigger value="guide">Guide</TabsTrigger>
         </TabsList>
         
         <TabsContent value="dimensional">
           <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Left sidebar - Virtual Compass */}
             <div className="flex flex-col space-y-4">
-              <Card className="bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70">
-                <CardContent className="pt-6 flex flex-col items-center">
-                  <VirtualCompass
-                    currentDimension={currentDimension}
-                    onDimensionChange={handleDimensionChange}
-                    maxDimension={11}
-                  />
-                </CardContent>
-              </Card>
+              <div className="bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70 p-6 rounded-lg flex flex-col items-center">
+                <VirtualCompass
+                  currentDimension={currentDimension}
+                  onDimensionChange={handleDimensionChange}
+                  maxDimension={11}
+                />
+              </div>
               
-              <QuantumStateCollapser />
+              <RealityShiftingModes 
+                onSelectMode={handleSelectMode}
+                currentDimension={currentDimension}
+              />
             </div>
             
             {/* Main content - Dimensional View */}
             <div className="md:col-span-2 flex flex-col space-y-4">
-              <Card className="bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70 h-80">
-                <CardContent className="pt-6">
-                  <DimensionalView 
-                    dimension={currentDimension}
-                    isTransitioning={isTransitioning}
-                  />
-                </CardContent>
-              </Card>
+              <div className="bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70 p-6 rounded-lg h-80">
+                <DimensionalView 
+                  dimension={currentDimension}
+                  isTransitioning={isTransitioning}
+                />
+              </div>
               
               <QuantumInterface
                 currentDimension={currentDimension}
                 onSuperposition={handleSuperposition}
               />
-              
-              {/* Reality log */}
-              <Card className="bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70">
-                <CardContent className="py-4">
-                  <div className="flex items-center mb-3">
-                    <h3 className="text-sm font-medium text-quantum-gold">Reality Log</h3>
-                    <Badge variant="outline" className="ml-2 bg-quantum-gold/10 text-quantum-gold text-xs">
-                      {dimensionalEffects.length} entries
-                    </Badge>
-                  </div>
-                  
-                  <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
-                    {dimensionalEffects.length > 0 ? (
-                      dimensionalEffects.map((effect, index) => (
-                        <div key={index} className="text-sm">
-                          <p className="text-muted-foreground">{effect}</p>
-                          {index < dimensionalEffects.length - 1 && (
-                            <Separator className="my-2" />
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-muted-foreground text-xs italic">No dimensional effects recorded yet</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </div>
         </TabsContent>
         
-        <TabsContent value="quantum">
+        <TabsContent value="journal">
           <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+            <QuantumLog 
+              currentDimension={currentDimension}
+              dimensionalEffects={dimensionalEffects}
+            />
+            
             <div className="space-y-6">
               <QuantumStateCollapser />
-              <RitualList />
+              
+              {/* Reality log moved to inside journal tab */}
+              <div className="bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70 p-6 rounded-lg">
+                <div className="flex items-center mb-3">
+                  <h3 className="text-sm font-medium text-quantum-gold">Reality Log</h3>
+                </div>
+                
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                  {dimensionalEffects.length > 0 ? (
+                    dimensionalEffects.map((effect, index) => (
+                      <div key={index} className="border-b border-muted/20 pb-2 mb-2 last:border-0">
+                        <p className="text-sm text-muted-foreground">{effect}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-muted-foreground text-xs italic">No dimensional effects recorded yet</p>
+                  )}
+                </div>
+              </div>
             </div>
-            <ChatAI />
           </div>
         </TabsContent>
         
-        <TabsContent value="symbolic">
+        <TabsContent value="symbols">
           <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-6">
-              <SymbolSystem 
-                dimension={currentDimension}
-                onSymbolActivate={handleSymbolActivate}
+            <SymbolDecoder 
+              currentDimension={currentDimension}
+              onSymbolConnect={handleSymbolConnect}
+            />
+            <SymbolSystem 
+              dimension={currentDimension}
+              onSymbolActivate={handleSymbolActivate}
+            />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="guide">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="h-[600px]">
+              <SupportiveAICompanion 
+                currentDimension={currentDimension}
+                dimensionalEffects={dimensionalEffects}
               />
             </div>
-            <SymbolConnectionSystem />
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="system">
-          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-6">
               <SystemMonitor />
-            </div>
-            <div className="space-y-6">
-              <Card className="bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70">
-                <CardContent className="py-6">
-                  <h3 className="text-lg font-medium text-quantum-teal mb-4">System Status</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    The System Monitor tab allows you to:
-                  </p>
-                  <ul className="text-sm text-muted-foreground space-y-2 mb-4 list-disc pl-5">
-                    <li>Monitor the health of all quantum modules</li>
-                    <li>Run diagnostics on dimensional interface components</li>
-                    <li>Enable autofix to maintain system stability</li>
-                    <li>Repair any detected issues in the simulation</li>
-                  </ul>
-                  <p className="text-sm text-muted-foreground">
-                    When autofix is enabled, the system will automatically attempt to repair 
-                    any detected issues every 30 seconds, keeping your multidimensional 
-                    experience stable and responsive.
-                  </p>
-                </CardContent>
-              </Card>
+              <ChatAI />
             </div>
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* PillowDreamwork showcase components */}
-      <div className="mt-8">
-        <PillowDreamworkShowcase />
-      </div>
       
       <footer className="mt-8 text-center text-xs text-muted-foreground">
-        <p>Quantum Dimensional Simulator v1.0.0</p>
+        <p>Quantum Dimensional Explorer v1.0.0</p>
         <p className="mt-1">
-          Exploring dimensions 1-11 through quantum mechanics and symbolic language
+          A sacred space for dimensional exploration and inner discovery
         </p>
       </footer>
     </div>
