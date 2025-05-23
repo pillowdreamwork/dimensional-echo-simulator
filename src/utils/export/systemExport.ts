@@ -32,7 +32,7 @@ export function exportFullSystemData(fileName?: string): Promise<void> {
         exportDate: new Date().toISOString(),
         engineState: {
           simulation: simulationCore ? {
-            active: simulationCore.getCurrentState ? true : false,
+            active: typeof simulationCore.getCurrentState === 'function', // Check if getCurrentState exists instead of isActive
             currentFrame: simulationCore.getCurrentState?.() || 0,
             dimensions: simulationCore.setDimension ? ['dimension data unavailable'] : []
           } : null,
@@ -83,4 +83,3 @@ export function exportFullSystemData(fileName?: string): Promise<void> {
     }
   });
 }
-
