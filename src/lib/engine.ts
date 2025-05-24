@@ -1,15 +1,17 @@
 
-import { SimulationCore } from './simulation-core';
-import { PillowDreamworkModule } from './pillowdreamwork';
-import { VectorAlchemyEngine } from './vector-alchemy';
-import { InvocationAPI } from './invocation-api';
-import { MythicIntelligence } from './mythic-intelligence';
-import { UncertaintyEngine } from './uncertainty';
-import { EchoSimulator } from './echo-simulator';
-import { MultiversalDreamServer } from './multiversal-dream-server';
-import { IURI } from './iuri';
-import { SiderAI } from './sider-ai';
-import { DreamCompass } from './dream-compass';
+import { 
+  SimulationCore,
+  PillowDreamworkModule,
+  VectorAlchemyEngine,
+  InvocationAPI,
+  MythicIntelligence,
+  UncertaintyEngine,
+  EchoSimulator,
+  MultiversalDreamServer,
+  IURI,
+  SiderAI,
+  DreamCompass
+} from './pillowdreamwork';
 
 let gameState: any = {
   initialized: false,
@@ -63,6 +65,24 @@ export function getEngineModules() {
   }
   
   return gameState.modules;
+}
+
+export function resetEngine() {
+  console.log("Resetting engine...");
+  
+  // Stop any running processes
+  if (gameState.modules?.simulationCore?.stop) {
+    gameState.modules.simulationCore.stop();
+  }
+  
+  // Clear game state
+  gameState = {
+    initialized: false,
+    modules: {},
+    status: 'offline'
+  };
+  
+  console.log("Engine reset complete");
 }
 
 export function checkEngineStatus() {

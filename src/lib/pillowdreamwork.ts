@@ -102,7 +102,7 @@ interface CompassCalibrationData {
 }
 
 export class PillowDreamworkModule {
-  private isActive: boolean = false;
+  private isActiveFlag: boolean = false;
   private currentSession: any = null;
   private dreamState: any = {};
   private sessionStartTime: Date | null = null;
@@ -125,7 +125,7 @@ export class PillowDreamworkModule {
   }
 
   startDreamSession() {
-    this.isActive = true;
+    this.isActiveFlag = true;
     this.sessionStartTime = new Date();
     this.currentSession = {
       id: Date.now().toString(),
@@ -145,11 +145,11 @@ export class PillowDreamworkModule {
   }
 
   stopDreamSession() {
-    if (!this.isActive) {
+    if (!this.isActiveFlag) {
       return { status: 'inactive', message: 'No active session to stop' };
     }
 
-    this.isActive = false;
+    this.isActiveFlag = false;
     const endTime = new Date();
     const duration = this.sessionStartTime ? endTime.getTime() - this.sessionStartTime.getTime() : 0;
     
@@ -172,7 +172,7 @@ export class PillowDreamworkModule {
   }
 
   isActive(): boolean {
-    return this.isActive;
+    return this.isActiveFlag;
   }
 
   getCurrentSession() {
@@ -180,7 +180,7 @@ export class PillowDreamworkModule {
   }
 
   recordDreamEvent(event: any) {
-    if (!this.isActive || !this.currentSession) {
+    if (!this.isActiveFlag || !this.currentSession) {
       return { success: false, message: 'No active dream session' };
     }
 
@@ -223,7 +223,7 @@ export class PillowDreamworkModule {
   getDreamState() {
     return {
       ...this.dreamState,
-      isActive: this.isActive,
+      isActive: this.isActiveFlag,
       currentSession: this.currentSession,
       sessionDuration: this.sessionStartTime ? 
         new Date().getTime() - this.sessionStartTime.getTime() : 0
@@ -231,7 +231,7 @@ export class PillowDreamworkModule {
   }
 
   analyzeDreamPattern(symbols: string[]) {
-    if (!this.isActive) {
+    if (!this.isActiveFlag) {
       return { analysis: 'No active dream session for pattern analysis' };
     }
 
@@ -280,7 +280,7 @@ export class PillowDreamworkModule {
   }
 
   processRitualInvocation(ritual: any) {
-    if (!this.isActive) {
+    if (!this.isActiveFlag) {
       this.startDreamSession(); // Auto-start if ritual is invoked
     }
 
@@ -298,7 +298,7 @@ export class PillowDreamworkModule {
   }
 
   enhanceDimensionalAwareness(targetDimension: number) {
-    if (!this.isActive) {
+    if (!this.isActiveFlag) {
       return { success: false, message: 'No active dream session' };
     }
 
