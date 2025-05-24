@@ -1,4 +1,3 @@
-
 /**
  * Quantum Mechanics Utility Functions
  */
@@ -136,72 +135,42 @@ export const generateDimensionalEffect = (dimension: number): string => {
 };
 
 // NEW: Analyze symbol pattern and determine effect
-export const analyzeSymbolPattern = (pattern: string): {effect: string, power: number} => {
-  let power = 0;
-  let effectType = "";
+export const analyzeSymbolPattern = (pattern: string, dimension: number) => {
+  // Calculate pattern complexity
+  const uniqueChars = new Set(pattern).size;
+  const complexity = uniqueChars / pattern.length;
   
-  // Calculate power based on symbol count and types
-  power = pattern.length * 10; // Base power from number of symbols
+  // Base power calculation
+  const basePower = Math.min(100, (uniqueChars * 15) + (dimension * 5));
+  const power = Math.max(10, basePower * complexity);
   
-  // Special symbols have more power
-  if (pattern.includes("⊛")) power += 25;
-  if (pattern.includes("⊕")) power += 30;
-  if (pattern.includes("☉")) power += 40;
-  if (pattern.includes("⏧")) power += 35;
+  // Generate insights based on pattern characteristics
+  const insights = [
+    "a bridge between conscious and unconscious realms",
+    "an invitation to explore hidden dimensions of experience", 
+    "a key to unlocking deeper layers of perception",
+    "a pathway for integrating multiple states of awareness",
+    "a catalyst for transformative inner experiences"
+  ];
   
-  // Calculate effect type based on pattern composition
-  if (pattern.includes("—") || pattern.includes("┼")) {
-    effectType = "structural";
-  } else if (pattern.includes("⬠") || pattern.includes("⧫")) {
-    effectType = "spatial";
-  } else if (pattern.includes("⎔") || pattern.includes("⌬")) {
-    effectType = "probabilistic";
-  } else if (pattern.includes("⍟") || pattern.includes("⎈")) {
-    effectType = "vibrational";
-  } else if (pattern.includes("⏣")) {
-    effectType = "holographic";
-  } else {
-    effectType = "unknown";
-  }
+  const effects = [
+    `Enhanced dimensional awareness in ${dimension}D space`,
+    `Increased resonance with quantum field fluctuations`,
+    `Amplified intuitive perception and symbolic recognition`,
+    `Deeper connection to archetypal energy patterns`,
+    `Strengthened bridge between dimensions ${dimension} and ${dimension + 1}`
+  ];
   
-  // Generate specific effect based on type
-  const effects = {
-    structural: [
-      "Reality foundations stabilize around you",
-      "Dimensional grid patterns become visible",
-      "Spacetime rigidity increases temporarily"
-    ],
-    spatial: [
-      "Space folds briefly between dimensions",
-      "Volumetric awareness expands in your consciousness",
-      "Spatial boundaries become permeable"
-    ],
-    probabilistic: [
-      "Future pathways branch visibly before you",
-      "Probability waves collapse into new patterns",
-      "Quantum uncertainty temporarily decreases"
-    ],
-    vibrational: [
-      "Resonant frequencies harmonize across dimensions",
-      "Vibrational patterns sync with your consciousness",
-      "Energy flows become visible as geometric patterns"
-    ],
-    holographic: [
-      "Information fields overlay your perception",
-      "Fractal patterns reveal deeper reality structures",
-      "Holographic encoding of reality becomes apparent"
-    ],
-    unknown: [
-      "Strange effects ripple through reality",
-      "Unexplained phenomena manifest briefly",
-      "Reality responds in unpredictable ways"
-    ]
+  // Select based on pattern characteristics
+  const selectedInsight = insights[Math.floor(pattern.length % insights.length)];
+  const selectedEffect = effects[Math.floor(uniqueChars % effects.length)];
+  
+  return {
+    effect: selectedEffect,
+    power: Math.round(power),
+    insight: selectedInsight,
+    resonance: power / 100 // Convert to 0-1 range for resonance percentage
   };
-  
-  const typeEffects = effects[effectType as keyof typeof effects] || effects.unknown;
-  const effect = typeEffects[Math.floor(Math.random() * typeEffects.length)];
-  
-  return { effect, power };
 };
 
 // NEW: Process ritual with IURI system

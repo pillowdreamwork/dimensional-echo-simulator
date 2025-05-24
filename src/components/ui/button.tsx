@@ -22,7 +22,9 @@ const buttonVariants = cva(
         gold: "bg-quantum-gold text-black hover:bg-quantum-gold/90",
         purple: "bg-quantum-purple text-white hover:bg-quantum-purple/90",
         teal: "bg-quantum-teal text-white hover:bg-quantum-teal/90",
-        blue: "bg-quantum-blue text-white hover:bg-quantum-blue/90"
+        blue: "bg-quantum-blue text-white hover:bg-quantum-blue/90",
+        quantum: "bg-gradient-to-r from-quantum-purple to-quantum-blue text-white hover:opacity-90",
+        superimpose: "bg-gradient-to-r from-quantum-gold to-quantum-teal text-white hover:opacity-90"
       },
       size: {
         default: "h-10 px-4 py-2",

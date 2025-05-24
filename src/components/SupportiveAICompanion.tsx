@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -61,7 +60,7 @@ const SupportiveAICompanion: React.FC<SupportiveAICompanionProps> = ({
     // Get suggestions from SiderAI if available
     if (siderAI && typeof siderAI.getSuggestions === 'function') {
       try {
-        const aiSuggestions = siderAI.getSuggestions({ dimension: currentDimension });
+        const aiSuggestions = siderAI.getSuggestions(currentDimension);
         return aiSuggestions.length > 0 ? aiSuggestions : baseSuggestions;
       } catch (e) {
         return baseSuggestions;
@@ -93,10 +92,7 @@ const SupportiveAICompanion: React.FC<SupportiveAICompanionProps> = ({
       // Try to use mythicAI if available
       if (mythicAI && typeof mythicAI.interactWithArchetype === 'function') {
         try {
-          const interaction = mythicAI.interactWithArchetype("Guide", {
-            message: inputMessage,
-            dimension: currentDimension
-          });
+          const interaction = mythicAI.interactWithArchetype("Guide", inputMessage);
           response = interaction.response || generateFallbackResponse(inputMessage);
         } catch (e) {
           response = generateFallbackResponse(inputMessage);
