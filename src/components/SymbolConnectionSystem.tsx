@@ -116,8 +116,8 @@ const SymbolConnectionSystem = () => {
     }).join('');
     
     setTimeout(() => {
-      // Analyze the pattern
-      const result = analyzeSymbolPattern(pattern);
+      // Analyze the pattern with current dimension (defaulting to 1)
+      const result = analyzeSymbolPattern(pattern, 1);
       
       // Extract effects, providing fallbacks if properties don't exist
       const effect = typeof result === 'object' && result !== null && 'effect' in result 

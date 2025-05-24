@@ -78,7 +78,7 @@ const ChatAI = () => {
           // Try to analyze any symbols in the input
           const symbolMatch = input.match(/[⊕⊗⊛⊙⊚⊝⌬✸⍟]+/);
           if (symbolMatch) {
-            const analysis = analyzeSymbolPattern(symbolMatch[0]);
+            const analysis = analyzeSymbolPattern(symbolMatch[0], 1);
             aiResponse += " " + analysis.effect;
           }
         } else if (input.toLowerCase().includes('ritual')) {

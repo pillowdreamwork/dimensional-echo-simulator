@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -92,7 +93,7 @@ const SupportiveAICompanion: React.FC<SupportiveAICompanionProps> = ({
       // Try to use mythicAI if available
       if (mythicAI && typeof mythicAI.interactWithArchetype === 'function') {
         try {
-          const interaction = mythicAI.interactWithArchetype("Guide", inputMessage);
+          const interaction = mythicAI.interactWithArchetype("Guide");
           response = interaction.response || generateFallbackResponse(inputMessage);
         } catch (e) {
           response = generateFallbackResponse(inputMessage);
