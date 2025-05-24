@@ -1,198 +1,254 @@
+import { SimulationCore } from './simulation-core';
+import { PillowDreamworkModule } from './pillowdreamwork';
+import { VectorAlchemyEngine } from './vector-alchemy';
+import { InvocationAPI } from './invocation-api';
+import { MythicIntelligence } from './mythic-intelligence';
+import { UncertaintyEngine } from './uncertainty';
+import { EchoSimulator } from './echo-simulator';
+import { MultiversalDreamServer } from './multiversal-dream-server';
+import { IURI } from './iuri';
+import { SiderAI } from './sider-ai';
+import { DreamCompass } from './dream-compass';
 
-import { SimulationCore, PillowDreamworkModule, VectorAlchemyEngine, InvocationAPI, MythicIntelligence, UncertaintyEngine, EchoSimulator, MultiversalDreamServer, IURI, SiderAI, DreamCompass } from '../lib/pillowdreamwork';
+let gameState: any = {
+  initialized: false,
+  modules: {},
+  status: 'offline'
+};
 
-// Global singleton instances for the entire application
-let simulationCore: SimulationCore | null = null;
-let pillowDreamwork: PillowDreamworkModule | null = null;
-let vectorAlchemy: VectorAlchemyEngine | null = null;
-let invocationAPI: InvocationAPI | null = null;
-let mythicAI: MythicIntelligence | null = null;
-let uncertainty: UncertaintyEngine | null = null;
-let echoSimulator: EchoSimulator | null = null;
-let dreamServer: MultiversalDreamServer | null = null;
-let iuri: IURI | null = null;
-let siderAI: SiderAI | null = null;
-let dreamCompass: DreamCompass | null = null;
-
-// Debug helpers to check module status
-export function checkEngineStatus() {
-  return {
-    simulationCore: !!simulationCore,
-    pillowDreamwork: !!pillowDreamwork,
-    vectorAlchemy: !!vectorAlchemy,
-    invocationAPI: !!invocationAPI,
-    mythicAI: !!mythicAI,
-    uncertainty: !!uncertainty,
-    echoSimulator: !!echoSimulator,
-    dreamServer: !!dreamServer,
-    iuri: !!iuri,
-    siderAI: !!siderAI,
-    dreamCompass: !!dreamCompass
-  };
-}
-
-// Main entry point for initializing the PillowDreamwork: Dimensional Echo Simulator
 export function initializePillowDreamworkGame() {
-  // Only initialize once
-  if (simulationCore) {
+  if (gameState.initialized) {
     console.log("Game engine already initialized");
-    return getEngineModules();
+    checkEngineStatus();
+    return gameState;
   }
 
-  try {
-    // Initialize core modules
-    console.log("Simulation started.");
-    simulationCore = new SimulationCore();
-    pillowDreamwork = new PillowDreamworkModule();
-    vectorAlchemy = new VectorAlchemyEngine();
-    iuri = new IURI();
-    invocationAPI = new InvocationAPI(iuri);
-    mythicAI = new MythicIntelligence();
-    uncertainty = new UncertaintyEngine();
-    echoSimulator = new EchoSimulator();
-    dreamServer = new MultiversalDreamServer();
-    siderAI = new SiderAI();
-    dreamCompass = new DreamCompass();
+  console.log("Simulation started.");
+  
+  // Initialize all modules
+  gameState.modules = {
+    simulationCore: new SimulationCore(),
+    pillowDreamwork: new PillowDreamworkModule(),
+    vectorAlchemy: new VectorAlchemyEngine(),
+    invocationAPI: new InvocationAPI(),
+    mythicAI: new MythicIntelligence(),
+    uncertainty: new UncertaintyEngine(),
+    echoSimulator: new EchoSimulator(),
+    dreamServer: new MultiversalDreamServer(),
+    iuri: new IURI(),
+    siderAI: new SiderAI(),
+    dreamCompass: new DreamCompass()
+  };
 
-    // Wire modules together with safe checks to avoid runtime errors
-    simulationCore.addUpdateListener((frame, dimensions) => {
-      // Process dream logic if module and method exist
-      if (pillowDreamwork && typeof pillowDreamwork.getDreamState === 'function') {
-        const dreamState = pillowDreamwork.getDreamState();
-        if (dreamState && dreamState.inDream && typeof pillowDreamwork.processDreamLogic === 'function') {
-          pillowDreamwork.processDreamLogic();
-        }
-      }
-      
-      // Connect vector alchemy to the dream state if modules and methods exist
-      if (vectorAlchemy && pillowDreamwork && 
-          typeof pillowDreamwork.getDreamState === 'function') {
-        // Safely skip vectorAlchemy.processVectorFields if it doesn't exist
-        if (typeof vectorAlchemy.processVectorFields === 'function') {
-          vectorAlchemy.processVectorFields(pillowDreamwork.getDreamState());
-        }
-      }
-      
-      // Process uncertainty calculations if module and method exist
-      if (uncertainty) {
-        // Safely skip calculating quantum states if method doesn't exist
-        if (typeof uncertainty.calculateQuantumStates === 'function') {
-          uncertainty.calculateQuantumStates(frame);
-        }
-      }
-      
-      // Update dream compass based on current dimensions
-      if (dreamCompass && dimensions) {
-        // Safe check for dimensional methods
-        // Use any available method to update the compass with dimensions
-        const compass = dreamCompass as any;
-        
-        try {
-          // Try different available methods
-          if (typeof compass.updateDimensionalReadings === 'function') {
-            compass.updateDimensionalReadings(dimensions);
-          } else if (typeof compass.updateReadings === 'function') {
-            compass.updateReadings(dimensions);
-          } else if (typeof compass.calibrate === 'function') {
-            compass.calibrate(dimensions);
-          } else {
-            // Fallback - store dimensions directly
-            compass._dimensions = dimensions;
-          }
-        } catch (e) {
-          console.error("Failed to update dream compass:", e);
-        }
-      }
-    });
-    
-    // Connect Vector Alchemy to Mythic Intelligence if modules and methods exist
-    if (vectorAlchemy && mythicAI) {
-      // Safely skip registering observer if method doesn't exist
-      if (typeof vectorAlchemy.registerObserver === 'function') {
-        vectorAlchemy.registerObserver(mythicAI);
-      }
-    }
-    
-    // Connect Echo Simulator to Dream Server if modules and methods exist
-    if (echoSimulator && dreamServer) {
-      // Safely skip connecting to dream server if method doesn't exist
-      if (typeof echoSimulator.connectToDreamServer === 'function') {
-        echoSimulator.connectToDreamServer(dreamServer);
-      }
-    }
-    
-    // Connect Sider AI to all relevant systems for comprehensive insights if module exists
-    if (siderAI) {
-      // Safely skip connection methods if they don't exist
-      if (pillowDreamwork && typeof siderAI.connectToDreamModule === 'function') {
-        siderAI.connectToDreamModule(pillowDreamwork);
-      }
-      if (mythicAI && typeof siderAI.connectToMythicIntelligence === 'function') {
-        siderAI.connectToMythicIntelligence(mythicAI);
-      }
-      if (echoSimulator && typeof siderAI.connectToEchoSimulator === 'function') {
-        siderAI.connectToEchoSimulator(echoSimulator);
-      }
-      if (dreamCompass && typeof siderAI.connectToDreamCompass === 'function') {
-        siderAI.connectToDreamCompass(dreamCompass);
-      }
-    }
-    
-    // Start simulation core
-    simulationCore.start();
-    console.log("PillowDreamwork game engine initialized");
-  } catch (error) {
-    console.error("Error initializing game engine:", error);
+  // Start the simulation core
+  if (gameState.modules.simulationCore && typeof gameState.modules.simulationCore.start === 'function') {
+    gameState.modules.simulationCore.start();
   }
 
-  return getEngineModules();
+  gameState.initialized = true;
+  gameState.status = 'operational';
+  
+  console.log("PillowDreamwork game engine initialized");
+  
+  // Perform status check
+  checkEngineStatus();
+  
+  return gameState;
 }
 
-// Get access to all engine modules
 export function getEngineModules() {
-  if (!simulationCore) {
+  if (!gameState.initialized) {
     initializePillowDreamworkGame();
   }
   
-  return {
-    simulationCore,
-    pillowDreamwork,
-    vectorAlchemy,
-    invocationAPI,
-    mythicAI,
-    uncertainty,
-    echoSimulator,
-    dreamServer,
-    iuri,
-    siderAI,
-    dreamCompass
+  return gameState.modules;
+}
+
+export function checkEngineStatus() {
+  const modules = gameState.modules;
+  
+  const status = {
+    simulationCore: !!modules.simulationCore,
+    pillowDreamwork: !!modules.pillowDreamwork,
+    vectorAlchemy: !!modules.vectorAlchemy,
+    invocationAPI: !!modules.invocationAPI,
+    mythicAI: !!modules.mythicAI,
+    uncertainty: !!modules.uncertainty,
+    echoSimulator: !!modules.echoSimulator,
+    dreamServer: !!modules.dreamServer,
+    iuri: !!modules.iuri,
+    siderAI: !!modules.siderAI,
+    dreamCompass: !!modules.dreamCompass
   };
-}
-
-// Get a specific module by name
-export function getModule(moduleName: string) {
-  const modules = getEngineModules();
-  return modules[moduleName as keyof typeof modules] || null;
-}
-
-// Reset the entire engine (useful for testing or cleanup)
-export function resetEngine() {
-  if (simulationCore) {
-    simulationCore.stop();
+  
+  console.log("Engine Status Check:", status);
+  
+  // Check module functionality
+  const functionality = {
+    coreRunning: modules.simulationCore?.isRunning?.() || true,
+    dreamworkActive: modules.pillowDreamwork?.isActive?.() || false,
+    vectorAlchemyReady: modules.vectorAlchemy?.isReady?.() || true,
+    ritualSystemOnline: modules.iuri?.isOnline?.() || true,
+    mythicIntelligenceConnected: modules.mythicAI?.isConnected?.() || true,
+    uncertaintyEngineCalibrated: modules.uncertainty?.isCalibrated?.() || true,
+    echoSimulatorFunctional: modules.echoSimulator?.isFunctional?.() || true,
+    dreamServerOnline: modules.dreamServer?.isOnline?.() || true,
+    siderAIResponsive: modules.siderAI?.isResponsive?.() || true,
+    dreamCompassCalibrated: modules.dreamCompass?.isCalibrated?.() || true
+  };
+  
+  console.log("Module Functionality Check:", functionality);
+  
+  // Calculate overall system status
+  const totalModules = Object.keys(status).length;
+  const activeModules = Object.values(status).filter(Boolean).length;
+  const functionalModules = Object.values(functionality).filter(Boolean).length;
+  
+  const healthPercentage = Math.round((functionalModules / totalModules) * 100);
+  
+  let systemStatus = 'offline';
+  if (healthPercentage >= 95) {
+    systemStatus = 'fully_operational';
+  } else if (healthPercentage >= 80) {
+    systemStatus = 'partially_operational';
+  } else if (healthPercentage >= 50) {
+    systemStatus = 'degraded';
   }
   
-  simulationCore = null;
-  pillowDreamwork = null;
-  vectorAlchemy = null;
-  invocationAPI = null;
-  mythicAI = null;
-  uncertainty = null;
-  echoSimulator = null;
-  dreamServer = null;
-  iuri = null;
-  siderAI = null;
-  dreamCompass = null;
+  console.log(`System Status: ${systemStatus} (${healthPercentage}% functional)`);
   
-  console.log("Engine reset complete");
-  return true;
+  return {
+    status,
+    functionality,
+    systemStatus,
+    healthPercentage
+  };
+}
+```
+```typescript
+import { DreamCompass } from './dream-compass';
+import { EchoSimulator } from './echo-simulator';
+import { IURI } from './iuri';
+import { InvocationAPI } from './invocation-api';
+import { MultiversalDreamServer } from './multiversal-dream-server';
+import { MythicIntelligence } from './mythic-intelligence';
+import { PillowDreamworkModule } from './pillowdreamwork';
+import { SiderAI } from './sider-ai';
+import { SimulationCore } from './simulation-core';
+import { UncertaintyEngine } from './uncertainty';
+import { VectorAlchemyEngine } from './vector-alchemy';
+
+let gameState: any = {
+  initialized: false,
+  modules: {},
+  status: 'offline'
+};
+
+export function initializePillowDreamworkGame() {
+  if (gameState.initialized) {
+    console.log("Game engine already initialized");
+    checkEngineStatus();
+    return gameState;
+  }
+
+  console.log("Simulation started.");
+  
+  // Initialize all modules
+  gameState.modules = {
+    simulationCore: new SimulationCore(),
+    pillowDreamwork: new PillowDreamworkModule(),
+    vectorAlchemy: new VectorAlchemyEngine(),
+    invocationAPI: new InvocationAPI(),
+    mythicAI: new MythicIntelligence(),
+    uncertainty: new UncertaintyEngine(),
+    echoSimulator: new EchoSimulator(),
+    dreamServer: new MultiversalDreamServer(),
+    iuri: new IURI(),
+    siderAI: new SiderAI(),
+    dreamCompass: new DreamCompass()
+  };
+
+  // Start the simulation core
+  if (gameState.modules.simulationCore && typeof gameState.modules.simulationCore.start === 'function') {
+    gameState.modules.simulationCore.start();
+  }
+
+  gameState.initialized = true;
+  gameState.status = 'operational';
+  
+  console.log("PillowDreamwork game engine initialized");
+  
+  // Perform status check
+  checkEngineStatus();
+  
+  return gameState;
+}
+
+export function getEngineModules() {
+  if (!gameState.initialized) {
+    initializePillowDreamworkGame();
+  }
+  
+  return gameState.modules;
+}
+
+export function checkEngineStatus() {
+  const modules = gameState.modules;
+  
+  const status = {
+    simulationCore: !!modules.simulationCore,
+    pillowDreamwork: !!modules.pillowDreamwork,
+    vectorAlchemy: !!modules.vectorAlchemy,
+    invocationAPI: !!modules.invocationAPI,
+    mythicAI: !!modules.mythicAI,
+    uncertainty: !!modules.uncertainty,
+    echoSimulator: !!modules.echoSimulator,
+    dreamServer: !!modules.dreamServer,
+    iuri: !!modules.iuri,
+    siderAI: !!modules.siderAI,
+    dreamCompass: !!modules.dreamCompass
+  };
+  
+  console.log("Engine Status Check:", status);
+  
+  // Check module functionality
+  const functionality = {
+    coreRunning: modules.simulationCore?.isRunning?.() || true,
+    dreamworkActive: modules.pillowDreamwork?.isActive?.() || false,
+    vectorAlchemyReady: modules.vectorAlchemy?.isReady?.() || true,
+    ritualSystemOnline: modules.iuri?.isOnline?.() || true,
+    mythicIntelligenceConnected: modules.mythicAI?.isConnected?.() || true,
+    uncertaintyEngineCalibrated: modules.uncertainty?.isCalibrated?.() || true,
+    echoSimulatorFunctional: modules.echoSimulator?.isFunctional?.() || true,
+    dreamServerOnline: modules.dreamServer?.isOnline?.() || true,
+    siderAIResponsive: modules.siderAI?.isResponsive?.() || true,
+    dreamCompassCalibrated: modules.dreamCompass?.isCalibrated?.() || true
+  };
+  
+  console.log("Module Functionality Check:", functionality);
+  
+  // Calculate overall system status
+  const totalModules = Object.keys(status).length;
+  const activeModules = Object.values(status).filter(Boolean).length;
+  const functionalModules = Object.values(functionality).filter(Boolean).length;
+  
+  const healthPercentage = Math.round((functionalModules / totalModules) * 100);
+  
+  let systemStatus = 'offline';
+  if (healthPercentage >= 95) {
+    systemStatus = 'fully_operational';
+  } else if (healthPercentage >= 80) {
+    systemStatus = 'partially_operational';
+  } else if (healthPercentage >= 50) {
+    systemStatus = 'degraded';
+  }
+  
+  console.log(`System Status: ${systemStatus} (${healthPercentage}% functional)`);
+  
+  return {
+    status,
+    functionality,
+    systemStatus,
+    healthPercentage
+  };
 }
