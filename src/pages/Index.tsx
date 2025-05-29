@@ -7,6 +7,8 @@ import QuantumStateCollapser from "../components/QuantumStateCollapser";
 import ChatAI from "../components/ChatAI";
 import SystemMonitor from "../components/SystemMonitor";
 import RealityMonitor from "@/components/RealityMonitor";
+import RealitySyncDashboard from "@/components/RealitySyncDashboard";
+import UpdateNotification from "@/components/UpdateNotification";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { generateDimensionalEffect } from "../utils/quantum";
 import { useToast } from "../hooks/use-toast";
@@ -17,6 +19,7 @@ import RealityShiftingModes from "@/components/RealityShiftingModes";
 import QuantumLog from "@/components/QuantumLog";
 import SymbolDecoder from "@/components/SymbolDecoder";
 import SupportiveAICompanion from "@/components/SupportiveAICompanion";
+import PushNotificationService from "@/components/PushNotificationService";
 
 const Index = () => {
   const { toast } = useToast();
@@ -149,6 +152,8 @@ const Index = () => {
   if (!hasEnteredPortal) {
     return (
       <div className="min-h-screen bg-quantum-dark text-foreground p-4 md:p-6">
+        <UpdateNotification />
+        <PushNotificationService />
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <div className="flex-1"></div>
@@ -173,6 +178,9 @@ const Index = () => {
   
   return (
     <div className="min-h-screen bg-quantum-dark text-foreground p-4 md:p-6">
+      <UpdateNotification />
+      <PushNotificationService />
+      
       <header className="mb-6 text-center">
         <div className="flex justify-between items-center max-w-6xl mx-auto">
           <div className="flex-1"></div>
@@ -191,8 +199,9 @@ const Index = () => {
       </header>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-6xl mx-auto mb-6">
-        <TabsList className="grid grid-cols-4 mb-4 w-full max-w-md mx-auto">
+        <TabsList className="grid grid-cols-5 mb-4 w-full max-w-lg mx-auto">
           <TabsTrigger value="dimensional">Explorer</TabsTrigger>
+          <TabsTrigger value="reality-sync">Reality Sync</TabsTrigger>
           <TabsTrigger value="journal">Journal</TabsTrigger>
           <TabsTrigger value="symbols">Symbols</TabsTrigger>
           <TabsTrigger value="guide">Guide</TabsTrigger>
@@ -230,6 +239,12 @@ const Index = () => {
                 onSuperposition={handleSuperposition}
               />
             </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="reality-sync">
+          <div className="max-w-6xl mx-auto">
+            <RealitySyncDashboard currentDimension={currentDimension} />
           </div>
         </TabsContent>
         
