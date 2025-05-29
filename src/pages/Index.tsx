@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import VirtualCompass from "../components/VirtualCompass";
 import DimensionalView from "../components/DimensionalView";
@@ -7,6 +6,7 @@ import SymbolSystem from "../components/SymbolSystem";
 import QuantumStateCollapser from "../components/QuantumStateCollapser";
 import ChatAI from "../components/ChatAI";
 import SystemMonitor from "../components/SystemMonitor";
+import RealityMonitor from "@/components/RealityMonitor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { generateDimensionalEffect } from "../utils/quantum";
 import { useToast } from "../hooks/use-toast";
@@ -287,6 +287,7 @@ const Index = () => {
               />
             </div>
             <div className="space-y-6">
+              <RealityMonitor currentDimension={currentDimension} />
               <SystemMonitor />
               <ChatAI />
             </div>
