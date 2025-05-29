@@ -29,8 +29,15 @@ const RealityMonitor: React.FC<RealityMonitorProps> = ({ currentDimension }) => 
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const { toast } = useToast();
   
-  // Get engine modules
-  const { echoSimulator, dreamServer, iuri } = getEngineModules();
+  // Get engine modules safely
+  const getEngineModulesSafely = () => {
+    try {
+      return getEngineModules();
+    } catch (error) {
+      console.log('Engine modules not available:', error);
+      return { echoSimulator: null, dreamServer: null, iuri: null };
+    }
+  };
 
   // Simulate real global events (these represent actual types of events happening worldwide)
   const generateRealWorldEvents = (): GlobalEvent[] => {
@@ -113,27 +120,38 @@ const RealityMonitor: React.FC<RealityMonitorProps> = ({ currentDimension }) => 
     
     // Simulate using our dimensional system to create positive influence
     setTimeout(() => {
+      // Get engine modules safely
+      const { echoSimulator, dreamServer, iuri } = getEngineModulesSafely();
+      
       // Use IURI for ritual intervention if available
       if (iuri && typeof iuri.invokeRitual === 'function') {
-        const ritualResult = iuri.invokeRitual({
-          glyph: '☉', // Transcendent unity glyph
-          intensity: 75,
-          intention: `Positive influence on: ${event.event}`
-        });
-        
-        toast({
-          title: "Dimensional Intervention Initiated",
-          description: `Portal opened: ${event.portalOpportunity}`,
-          duration: 4000,
-        });
+        try {
+          const ritualResult = iuri.invokeRitual({
+            glyph: '☉', // Transcendent unity glyph
+            intensity: 75,
+            intention: `Positive influence on: ${event.event}`
+          });
+          
+          toast({
+            title: "Dimensional Intervention Initiated",
+            description: `Portal opened: ${event.portalOpportunity}`,
+            duration: 4000,
+          });
+        } catch (error) {
+          console.log('IURI ritual invocation failed:', error);
+        }
       }
       
       // Create timeline ripple effect
       if (echoSimulator && typeof echoSimulator.createRippleEffect === 'function') {
-        echoSimulator.createRippleEffect({
-          description: `Positive intervention in ${event.location}`,
-          dimension: currentDimension
-        });
+        try {
+          echoSimulator.createRippleEffect({
+            description: `Positive intervention in ${event.location}`,
+            dimension: currentDimension
+          });
+        } catch (error) {
+          console.log('Echo simulator ripple effect failed:', error);
+        }
       }
       
       setIsMonitoring(false);
