@@ -3,11 +3,8 @@ import sys
 import re
 
 # Import autorun from the same directory
-from autorun import autorun
+# (autorun feature removed)
 
-DECORATOR = '@autorun\n'
-
-@autorun
 def add_autorun_decorator_to_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
         lines = f.readlines()
@@ -34,7 +31,6 @@ def add_autorun_decorator_to_file(filepath):
     with open(filepath, 'w', encoding='utf-8') as f:
         f.writelines(new_lines)
 
-@autorun
 def process_directory(directory):
     for root, dirs, files in os.walk(directory):
         # Skip hidden and cache directories
