@@ -468,32 +468,49 @@ export function SiderAIShowcase() {
     
     // Get suggestions from SiderAI if available
     if (siderAI && typeof siderAI.getSuggestions === 'function') {
-      const contextSuggestions = siderAI.getSuggestions({ dimension });
-      setSuggestions(contextSuggestions);
+      try {
+        const contextSuggestions = siderAI.getSuggestions({ dimension });
+        // Ensure all suggestions are either strings or valid AISuggestion objects
+        const validSuggestions = contextSuggestions.map(s => 
+          isAISuggestion(s) ? s : String(s)
+        );
+        setSuggestions(validSuggestions);
+      } catch (err) {
+        console.error('Error getting AI suggestions:', err);
+        // Fall back to basic suggestions if there's an error
+        setFallbackSuggestions();
+      }
     } else {
-      // Fallback suggestions
-      setSuggestions([
-        'Try exploring a new dimension for unique dream archetypes.',
-        'Use the Vector Alchemy Engine to manipulate 5D fields.',
-        'Invoke a ritual in IURI to unlock hidden pathways.',
-        'Interact with the Mythic Intelligence to gain insights.',
-        'Create a ripple effect to see multiverse branching.',
-        'Try connecting symbols in different patterns for varied effects.',
-      ]);
+      setFallbackSuggestions();
     }
   }, [siderAI, dreamCompass]);
   
-  const handleSuggestionClick = (suggestion: string) => {
+  // Helper function to set fallback suggestions
+  const setFallbackSuggestions = () => {
+    setSuggestions([
+      'Try exploring a new dimension for unique dream archetypes.',
+      'Use the Vector Alchemy Engine to manipulate 5D fields.',
+      'Invoke a ritual in IURI to unlock hidden pathways.',
+      'Interact with the Mythic Intelligence to gain insights.',
+      'Create a ripple effect to see multiverse branching.',
+      'Try connecting symbols in different patterns for varied effects.',
+    ]);
+  };
+
+  const handleSuggestionClick = (suggestion: string | AISuggestion) => {
+    const suggestionText = isAISuggestion(suggestion) ? suggestion.text : String(suggestion);
     toast({
       title: "AI Suggestion",
-      description: suggestion,
+      description: suggestionText,
       duration: 3000,
     });
   };
   
-  // Helper type guard
-  function isAISuggestion(s: string | AISuggestion): s is AISuggestion {
-    return typeof s === "object" && s !== null && "text" in s;
+  // Helper type guard with runtime validation
+  function isAISuggestion(s: unknown): s is AISuggestion {
+    if (typeof s !== 'object' || s === null) return false;
+    const candidate = s as Record<string, unknown>;
+    return 'text' in candidate && typeof candidate.text === 'string';
   }
 
   return (
@@ -511,18 +528,23 @@ export function SiderAIShowcase() {
       </CardHeader>
       <CardContent>
         <ul className="space-y-2">
-          {suggestions.slice(0, showMore ? suggestions.length : 3).map((s, i) => (
-            <li 
-              key={i} 
-              className="flex items-start cursor-pointer"
-              onClick={() => handleSuggestionClick(isAISuggestion(s) ? s.text : s)}
-            >
-              <div className="h-6 w-6 rounded-full bg-quantum-blue/20 text-quantum-blue flex items-center justify-center text-xs mr-2 mt-0.5">
-                {i + 1}
-              </div>
-              <p className="text-sm hover:text-quantum-blue transition-colors">{isAISuggestion(s) ? s.text : s}</p>
-            </li>
-          ))}
+          {suggestions.slice(0, showMore ? suggestions.length : 3).map((s, i) => {
+            const displayText = isAISuggestion(s) ? s.text : String(s);
+            return (
+              <li 
+                key={i} 
+                className="flex items-start cursor-pointer"
+                onClick={() => handleSuggestionClick(s)}
+              >
+                <div className="h-6 w-6 rounded-full bg-quantum-blue/20 text-quantum-blue flex items-center justify-center text-xs mr-2 mt-0.5">
+                  {i + 1}
+                </div>
+                <p className="text-sm hover:text-quantum-blue transition-colors">
+                  {displayText}
+                </p>
+              </li>
+            );
+          })}
         </ul>
         
         {suggestions.length > 3 && (
