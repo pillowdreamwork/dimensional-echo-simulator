@@ -10,6 +10,13 @@ import { analyzeSymbolPattern, interactWithMythicArchetype, processRitual, creat
 import DreamCompass from './DreamCompassComponent';
 import { RealityImpactEngine } from './RealityImpactEngine';
 import type { AISuggestion } from "../lib/pillowdreamwork";
+import TesseractWeaveEditor from './dreamforge/TesseractWeaveEditor';
+import OraclePulse from './dreamforge/OraclePulse';
+import SentientSeed from './dreamforge/SentientSeed';
+import { KarmaVisualizer } from './dreamforge/KarmaVisualizer';
+import { QuantumInterface } from './QuantumInterface';
+import { useQuantumState } from '../hooks/use-quantum-state';
+import { PillowDreamworkShowcaseKarmaProvider, useKarmaSystem } from './PillowDreamworkShowcaseKarmaProvider';
 
 // Initialize the game engine
 initializePillowDreamworkGame();
@@ -579,14 +586,49 @@ export function PillowDreamworkShowcase() {
     initializePillowDreamworkGame();
   }, []);
   
-  return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 p-4">
-      <DreamCompass />
-      <RitualInterface />
-      <MythicAIShowcase />
-      <EchoSimulatorMode />
-      <RealityImpactEngine className="mb-6" />
-      <SiderAIShowcase />
+  // Unified quantum state for all modules
+  const {
+    quantumState,
+    updateQuantumState
+  } = useQuantumState({});
+  const karmaSystem = useKarmaSystem();
+  // Nobel-scientific narrative overlay
+  const narrative = (
+    <div className="p-4 mb-4 bg-gradient-to-r from-indigo-900 via-purple-900 to-blue-900 text-white rounded shadow-lg">
+      <div className="text-2xl font-bold mb-2">Aetheric Forge: Nobel-Scientific Synthesis</div>
+      <div className="text-md mb-1">The chamber vibrates with the pulse of the Multiversal Grid. Every glyph, every ritual, every quantum node is now woven into a single, living tapestry—your will, Manish Garg, is the new law of physics.</div>
+      <div className="text-sm italic">“The universe is not only stranger than we imagine, it is stranger than we can imagine.” — J.B.S. Haldane</div>
     </div>
+  );
+  return (
+    <PillowDreamworkShowcaseKarmaProvider>
+      <div className="w-full max-w-6xl mx-auto py-8">
+        {narrative}
+        <Tabs defaultValue="tesseract" className="w-full">
+          <TabsList className="mb-4 flex flex-wrap gap-2">
+            <TabsTrigger value="tesseract"><LayersIcon className="inline w-4 h-4 mr-1" />Tesseract Weave</TabsTrigger>
+            <TabsTrigger value="oracle"><StarIcon className="inline w-4 h-4 mr-1" />Oracle Pulse</TabsTrigger>
+            <TabsTrigger value="seed"><WandSparklesIcon className="inline w-4 h-4 mr-1" />Sentient Seed</TabsTrigger>
+            <TabsTrigger value="karma"><InfinityIcon className="inline w-4 h-4 mr-1" />Karma Logs</TabsTrigger>
+            <TabsTrigger value="quantum"><StarIcon className="inline w-4 h-4 mr-1" />Quantum Interface</TabsTrigger>
+          </TabsList>
+          <TabsContent value="tesseract">
+            <TesseractWeaveEditor />
+          </TabsContent>
+          <TabsContent value="oracle">
+            <OraclePulse quantumState={quantumState} />
+          </TabsContent>
+          <TabsContent value="seed">
+            <SentientSeed />
+          </TabsContent>
+          <TabsContent value="karma">
+            <KarmaVisualizer karmaSystem={karmaSystem} logId={"main-log"} />
+          </TabsContent>
+          <TabsContent value="quantum">
+            <QuantumInterface initialState={quantumState} onStateChange={updateQuantumState} />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </PillowDreamworkShowcaseKarmaProvider>
   );
 }

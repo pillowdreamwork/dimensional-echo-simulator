@@ -110,8 +110,8 @@ const SymbolConnectionSystem: React.FC = () => {
     }
 
     setIsActivating(true);
-    const pattern = analyzeCurrentPattern();
-    setPatternAnalysis(pattern);
+    const currentPattern = analyzeCurrentPattern();
+    setPatternAnalysis(currentPattern);
 
     // Simulate activation process
     for (let i = 0; i <= 100; i += 10) {
@@ -119,10 +119,10 @@ const SymbolConnectionSystem: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 200));
     }
 
-    if (pattern.stability >= 0.7) {
+    if (currentPattern.stability >= 0.7) {
       toast({
         title: "Pattern Activated",
-        description: `${pattern.description} (Power: ${(pattern.power * 100).toFixed(1)}%)`,
+        description: `${currentPattern.description} (Power: ${(currentPattern.power * 100).toFixed(1)}%)`,
         variant: "default"
       });
     } else {

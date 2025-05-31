@@ -1,19 +1,35 @@
 import { useState, useCallback } from 'react';
+import { QuantumState as CoreQuantumState } from '../types/quantum';
 
-export interface QuantumState {
-  superposition: number;
-  coherence: number;
-  entanglementStrength: number;
-  phase: number;
-  spin: -1 | 0 | 1;
-}
+export interface QuantumState extends CoreQuantumState {}
 
 const DEFAULT_QUANTUM_STATE: QuantumState = {
-  superposition: 100,
-  coherence: 100,
-  entanglementStrength: 100,
+  state: 'stable',
+  probability: 1,
+  coherence: 1,
+  entanglement: 1,
+  superposition: 1,
   phase: 0,
-  spin: 0
+  dimensionalResonance: 1,
+  aethericResonance: 1,
+  dimensionalStability: 1,
+  timelineConvergence: 1,
+  realityAnchors: {
+    primary: '',
+    secondary: [],
+    strength: 1
+  },
+  quantumSignature: {
+    hash: '',
+    timestamp: Date.now(),
+    validityPeriod: 1000 * 60 * 60
+  },
+  forgeMetadata: {
+    version: '1.0',
+    lastModified: Date.now(),
+    stabilityIndex: 1,
+    energyConsumption: 0
+  }
 };
 
 interface UseQuantumStateProps {
@@ -48,13 +64,13 @@ export function useQuantumState({
     updateQuantumState({
       superposition: 0,
       coherence: Math.max(0, quantumState.coherence * collapseStrength),
-      entanglementStrength: Math.max(0, quantumState.entanglementStrength * (collapseStrength + 0.2))
+      entanglement: Math.max(0, quantumState.entanglement * (collapseStrength + 0.2))
     });
   }, [quantumState, updateQuantumState]);
 
   const stabilizeQuantumState = useCallback((stabilityFactor = 0.8) => {
     const currentCoherence = quantumState.coherence;
-    const currentEntanglement = quantumState.entanglementStrength;
+    const currentEntanglement = quantumState.entanglement;
     
     // Calculate stability metrics
     const coherenceStability = Math.min(100, currentCoherence * (1 + stabilityFactor));
@@ -62,14 +78,14 @@ export function useQuantumState({
     
     updateQuantumState({
       coherence: coherenceStability,
-      entanglementStrength: entanglementStability,
+      entanglement: entanglementStability,
       superposition: Math.max(0, quantumState.superposition * stabilityFactor)
     });
   }, [quantumState, updateQuantumState]);
 
   const calculateResonance = useCallback((targetDimension: number): number => {
     const baseFactor = quantumState.coherence / 100;
-    const entanglementFactor = quantumState.entanglementStrength / 100;
+    const entanglementFactor = quantumState.entanglement / 100;
     const dimensionalDifference = Math.abs(targetDimension - currentDimension);
     
     return Math.max(0, Math.min(100,
@@ -87,7 +103,7 @@ export function useQuantumState({
     // Apply dimensional shift effects
     updateQuantumState({
       coherence: Math.max(0, quantumState.coherence - stabilityImpact * 10),
-      entanglementStrength: Math.max(0, quantumState.entanglementStrength - stabilityImpact * 5),
+      entanglement: Math.max(0, quantumState.entanglement - stabilityImpact * 5),
       superposition: Math.max(0, quantumState.superposition - stabilityImpact * 15)
     });
 
@@ -102,10 +118,11 @@ export function useQuantumState({
   return {
     quantumState,
     updateQuantumState,
+    currentDimension,
+    setCurrentDimension,
     collapseQuantumState,
     stabilizeQuantumState,
     calculateResonance,
-    shiftDimension,
-    currentDimension
+    shiftDimension
   };
 }

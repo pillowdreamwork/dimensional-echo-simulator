@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getEngineModules } from '../lib/engine';
 import { analyzeSymbolPattern } from '../utils/quantum';
+import { askGPT, streamGPT } from '../lib/ai/gptService';
 
 type Message = {
   id: string;
@@ -21,7 +21,8 @@ const ChatAI = () => {
   const [isThinking, setIsThinking] = useState(false);
   const { siderAI } = getEngineModules();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  
+  const [streamed, setStreamed] = useState('');
+
   // Add initial greeting
   useEffect(() => {
     const initialMessage = {
@@ -44,8 +45,9 @@ const ChatAI = () => {
     }
   }, [messages]);
   
-  const handleSendMessage = () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
+    setIsThinking(true);
     
     // Add user message
     const userMessage: Message = {
@@ -57,67 +59,22 @@ const ChatAI = () => {
     
     setMessages(prev => [...prev, userMessage]);
     setInput('');
-    setIsThinking(true);
+    setStreamed('');
     
-    // Process user input and generate response
-    setTimeout(() => {
-      let aiResponse = "I'm processing your request through the quantum fields.";
-      
-      // If SiderAI is available and has processUserQuery method, use it
-      if (siderAI && typeof siderAI.processUserQuery === 'function') {
-        const response = siderAI.processUserQuery(input);
-        aiResponse = response && typeof response === 'object' && 'message' in response ? 
-                    response.message : "I'm analyzing your query through the quantum fields.";
-      } else {
-        // Fallback responses based on keywords
-        if (input.toLowerCase().includes('dimension')) {
-          aiResponse = "Dimensions are layers of reality that interact through quantum entanglement. The Dream Compass helps you navigate between them.";
-        } else if (input.toLowerCase().includes('symbol') || input.toLowerCase().includes('glyph')) {
-          aiResponse = "Symbols act as quantum anchors across dimensions. Connect them in patterns to create effects in the dreamfield.";
-          
-          // Try to analyze any symbols in the input
-          const symbolMatch = input.match(/[⊕⊗⊛⊙⊚⊝⌬✸⍟]+/);
-          if (symbolMatch) {
-            const analysis = analyzeSymbolPattern(symbolMatch[0], 1);
-            aiResponse += " " + analysis.effect;
-          }
-        } else if (input.toLowerCase().includes('ritual')) {
-          aiResponse = "Rituals combine intention, symbols, and quantum field manipulation to create dimensional shifts. Try using the IURI interface.";
-        } else if (input.toLowerCase().includes('dream')) {
-          aiResponse = "Dreams are quantum entanglements with parallel realities. The PillowDreamwork module helps map and navigate these connections.";
-        } else if (input.toLowerCase().includes('echo')) {
-          aiResponse = "Timeline echoes represent decision branches in the multiverse. The Echo Simulator helps predict ripple effects across dimensions.";
-        } else {
-          // Generic responses
-          const responses = [
-            "The quantum field suggests focusing on dimensional pattern recognition.",
-            "I sense a connection between your question and the fifth dimension of possibility.",
-            "Consider exploring symbol combinations to enhance your understanding.",
-            "The dream state may reveal more insights about this topic.",
-            "Vector alchemy indicates a potential resonance with mythic archetypes here.",
-            "Have you tried mapping this concept through the Dream Compass?",
-            "This query has interesting implications for timeline resonance."
-          ];
-          aiResponse = responses[Math.floor(Math.random() * responses.length)];
-        }
-      }
-      
-      // Add AI response
-      const aiMessage: Message = {
-        id: Date.now().toString(),
-        text: aiResponse,
-        sender: 'ai',
-        timestamp: new Date(),
-      };
-      
-      setMessages(prev => [...prev, aiMessage]);
-      setIsThinking(false);
-    }, 1000);
+    // Use streaming for real-time feedback
+    let aiResponse = '';
+    for await (const chunk of streamGPT(input)) {
+      aiResponse += chunk;
+      setStreamed(aiResponse);
+    }
+    
+    setMessages(msgs => [...msgs, { role: 'assistant', content: aiResponse }]);
+    setIsThinking(false);
   };
   
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      handleSendMessage();
+      sendMessage();
     }
   };
 
@@ -179,7 +136,7 @@ const ChatAI = () => {
             className="flex-grow"
           />
           <Button 
-            onClick={handleSendMessage} 
+            onClick={sendMessage} 
             disabled={isThinking || !input.trim()}
             className="bg-quantum-blue hover:bg-quantum-blue/80"
           >

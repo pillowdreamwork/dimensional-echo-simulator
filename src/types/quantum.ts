@@ -1,10 +1,32 @@
 // Core quantum mechanics types
 export interface QuantumState {
-  superposition: number;       // 0-100: Degree of quantum superposition
-  coherence: number;          // 0-100: Quantum coherence level
-  entanglementStrength: number; // 0-100: Strength of quantum entanglement
-  phase: number;             // 0-360: Quantum phase in degrees
-  spin: -1 | 0 | 1;         // Quantum spin state
+  // Core quantum state
+  state: string;
+  probability: number;
+  coherence: number;       // 0-1: Quantum state coherence level
+  entanglement: number;    // 0-1: Degree of quantum entanglement
+  superposition: number;   // 0-1: Superposition state magnitude
+  phase: number;           // 0-2π: Quantum phase angle
+  dimensionalResonance: number; // 0-1: Resonance with current dimension
+  aethericResonance: number;
+  dimensionalStability: number;
+  timelineConvergence: number;
+  realityAnchors: {
+    primary: string;
+    secondary: string[];
+    strength: number;
+  };
+  quantumSignature: {
+    hash: string;
+    timestamp: number;
+    validityPeriod: number;
+  };
+  forgeMetadata: {
+    version: string;
+    lastModified: number;
+    stabilityIndex: number;
+    energyConsumption: number;
+  };
 }
 
 export interface DimensionalProperties {
@@ -17,10 +39,11 @@ export interface DimensionalProperties {
 }
 
 export interface TimelineState {
-  branchFactor: number;      // Number of active timeline branches
-  stabilityIndex: number;    // 0-100: Timeline stability
-  convergencePoint: number;  // 0-1: Probability of timeline convergence
-  divergenceDegree: number; // 0-100: Degree of timeline separation
+  probability: number;
+  stability: number;
+  convergence: number;
+  branchingFactor: number;
+  currentTimestamp: number;
 }
 
 export type DimensionalEffect = {
@@ -85,34 +108,6 @@ export interface ResonancePattern {
     amplitude: number;
     phase: number;
     harmonics: number[];
-}
-
-// Update existing QuantumState interface to include more properties
-export interface QuantumState {
-    state: string;
-    probability: number;
-    coherence: number;
-    entanglement: number;
-    superposition: number;
-    aethericResonance: number;
-    dimensionalStability: number;
-    timelineConvergence: number;
-    realityAnchors: {
-        primary: string;
-        secondary: string[];
-        strength: number;
-    };
-    quantumSignature: {
-        hash: string;
-        timestamp: number;
-        validityPeriod: number;
-    };
-    forgeMetadata: {
-        version: string;
-        lastModified: number;
-        stabilityIndex: number;
-        energyConsumption: number;
-    };
 }
 
 export interface AethericForgeConfig {

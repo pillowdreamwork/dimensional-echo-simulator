@@ -1,153 +1,220 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from '@/components/ui/badge';
-import { CompassIcon } from "lucide-react";
+import { CompassIcon, WavesIcon, ClockIcon, LayersIcon } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { getEngineModules } from '../lib/engine';
+import { Slider } from "@/components/ui/slider";
 
-// Improved Dream Compass component with interactive elements
+interface TimelineEffect {
+  id: string;
+  strength: number;
+  duration: number;
+  type: 'convergence' | 'divergence' | 'ripple';
+}
+
+interface RealityRipple {
+  id: string;
+  origin: { x: number; y: number };
+  intensity: number;
+  radius: number;
+  frequency: number;
+}
+
 export function DreamCompass() {
   const { toast } = useToast();
-  const [activeDirection, setActiveDirection] = useState<string | null>(null);
   const [isCalibrating, setIsCalibrating] = useState(false);
   const [compassState, setCompassState] = useState({
     currentDimension: 1,
     accessibleDimensions: [1, 2, 3]
   });
-
-  // Get engine modules
-  const { dreamCompass } = getEngineModules();
   
-  // Initialize compass state
+  const [timelineEffects, setTimelineEffects] = useState<TimelineEffect[]>([]);
+  const [realityRipples, setRealityRipples] = useState<RealityRipple[]>([]);
+  const [timelineStability, setTimelineStability] = useState(1.0);
+  const [dimensionalResonance, setDimensionalResonance] = useState(0.5);
+  
+  // Get engine modules
+  const { dreamCompass, echoSimulator } = getEngineModules();
+
+  // Initialize compass state and timeline effects
   useEffect(() => {
-    if (dreamCompass) {
+    if (dreamCompass && echoSimulator) {
       setCompassState({
         currentDimension: dreamCompass.currentDimension || 1,
-        accessibleDimensions: typeof dreamCompass.getAccessibleDimensions === 'function' ? 
-          dreamCompass.getAccessibleDimensions() : [1, 2, 3]
+        accessibleDimensions: dreamCompass.getAccessibleDimensions?.() || [1, 2, 3]
       });
+
+      // Initialize timeline monitoring
+      const cleanup = echoSimulator.monitorTimeline((effects) => {
+        setTimelineEffects(effects);
+        setTimelineStability(
+          effects.reduce((stability, effect) => 
+            stability * (1 - effect.strength * 0.1), 1)
+        );
+      });
+
+      return cleanup;
     }
+  }, [dreamCompass, echoSimulator]);
+
+  // Handle reality ripple creation
+  const createRealityRipple = useCallback((x: number, y: number) => {
+    const newRipple: RealityRipple = {
+      id: Math.random().toString(36).substr(2, 9),
+      origin: { x, y },
+      intensity: Math.random() * 0.5 + 0.5,
+      radius: 0,
+      frequency: Math.random() * 2 + 1
+    };
+
+    setRealityRipples(ripples => [...ripples, newRipple]);
+    
+    // Animate ripple expansion
+    const animate = () => {
+      setRealityRipples(ripples => 
+        ripples.map(ripple => 
+          ripple.id === newRipple.id
+            ? { ...ripple, radius: ripple.radius + 2 }
+            : ripple
+        ).filter(ripple => ripple.radius < 100) // Remove fully expanded ripples
+      );
+    };
+
+    const intervalId = setInterval(animate, 16);
+    setTimeout(() => clearInterval(intervalId), 3000);
   }, []);
 
-  const handleDirectionClick = (direction: string) => {
-    setActiveDirection(direction);
+  // Handle dimensional transition
+  const handleDimensionalShift = async (targetDimension: number) => {
+    if (!dreamCompass) return;
+
     setIsCalibrating(true);
-    
-    setTimeout(() => {
-      // Map direction to dimensional effect
-      let dimensionChange = 0;
+    try {
+      await dreamCompass.initiateDimensionalShift(targetDimension);
       
-      switch(direction) {
-        case "North":
-          dimensionChange = 1;
-          break;
-        case "South":
-          dimensionChange = -1;
-          break;
-        case "East":
-        case "West":
-          // Lateral movement - same dimension but different perspective
-          break;  
-        case "Above":
-          dimensionChange = 2;
-          break;
-        case "Below":
-          dimensionChange = -2;
-          break;
+      // Create reality ripples during transition
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+          createRealityRipple(
+            Math.random() * 100,
+            Math.random() * 100
+          );
+        }, i * 200);
       }
-      
-      // Calculate target dimension
-      const targetDimension = Math.max(1, Math.min(11, compassState.currentDimension + dimensionChange));
-      
-      // Check if dimension is accessible
-      if (compassState.accessibleDimensions.includes(targetDimension)) {
-        // Update compass
-        if (dreamCompass && typeof dreamCompass.navigateToDimension === 'function') {
-          dreamCompass.navigateToDimension(targetDimension);
-          
-          setCompassState({
-            currentDimension: targetDimension,
-            accessibleDimensions: typeof dreamCompass.getAccessibleDimensions === 'function' ?
-              dreamCompass.getAccessibleDimensions() : compassState.accessibleDimensions
-          });
-        } else {
-          // If method doesn't exist, just update local state
-          setCompassState(prev => ({
-            ...prev,
-            currentDimension: targetDimension
-          }));
-        }
-        
-        toast({
-          title: "Dimensional Shift",
-          description: `Navigated to ${targetDimension}D via ${direction.toLowerCase()} direction`,
-          duration: 3000,
-        });
-      } else {
-        toast({
-          title: "Navigation Failed",
-          description: `Dimension ${targetDimension}D is not currently accessible`,
-          variant: "destructive",
-          duration: 3000,
-        });
-      }
-      
+
+      // Update compass state
+      setCompassState(prev => ({
+        ...prev,
+        currentDimension: targetDimension
+      }));
+
+      toast({
+        title: "Dimensional Shift Complete",
+        description: `Shifted to dimension ${targetDimension}D`,
+      });
+    } catch (error) {
+      toast({
+        title: "Shift Failed",
+        description: "Failed to complete dimensional transition",
+        variant: "destructive"
+      });
+    } finally {
       setIsCalibrating(false);
-    }, 1500);
+    }
   };
 
   return (
-    <Card className="dream-compass bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70 mb-6">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <CardTitle className="flex items-center">
-            <CompassIcon className="mr-2 text-quantum-blue" size={20} />
+    <Card className="w-full max-w-4xl mx-auto">
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CompassIcon className="h-6 w-6" />
             Dream Compass
-          </CardTitle>
-          <Badge variant="outline" className="bg-quantum-blue/20 text-quantum-blue">
-            {compassState.currentDimension}D
+          </div>
+          <Badge variant={timelineStability > 0.7 ? "default" : "destructive"}>
+            Timeline Stability: {(timelineStability * 100).toFixed(1)}%
           </Badge>
-        </div>
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground mb-4">
-          Navigate across dimensions using dreams, vectors, and intention signals.
-        </p>
-        
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          {['North', 'East', 'South', 'West', 'Above', 'Below'].map((dir) => (
-            <Button 
-              key={dir}
-              variant="outline" 
-              className={`h-12 ${activeDirection === dir ? 'bg-quantum-blue/30 border-quantum-blue' : 'hover:bg-quantum-blue/10'}`}
-              onClick={() => handleDirectionClick(dir)}
-              disabled={isCalibrating}
-            >
-              {dir}
-            </Button>
-          ))}
-        </div>
-        
-        {isCalibrating && (
-          <div className="text-center text-sm text-quantum-blue animate-pulse mt-2">
-            Calibrating dream coordinates...
+        <div className="space-y-6">
+          {/* Timeline Effects Display */}
+          <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+              <ClockIcon className="h-4 w-4" />
+              Active Timeline Effects
+            </h3>
+            <div className="space-y-2">
+              {timelineEffects.map(effect => (
+                <div key={effect.id} className="flex items-center justify-between">
+                  <span className="text-sm">
+                    {effect.type.charAt(0).toUpperCase() + effect.type.slice(1)}
+                  </span>
+                  <div className="w-32 h-1 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-500 transition-all duration-200"
+                      style={{ width: `${effect.strength * 100}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        )}
-        
-        <div className="mt-4">
-          <div className="text-sm font-medium mb-2">Accessible Dimensions</div>
-          <div className="flex flex-wrap gap-2">
-            {compassState.accessibleDimensions.map(dim => (
-              <Badge 
-                key={dim} 
-                variant={dim === compassState.currentDimension ? "default" : "outline"}
-                className={dim === compassState.currentDimension ? "bg-quantum-blue" : ""}
-              >
-                {dim}D
-              </Badge>
+
+          {/* Reality Ripples Visualization */}
+          <div className="relative h-[200px] border rounded-lg overflow-hidden">
+            {realityRipples.map(ripple => (
+              <div
+                key={ripple.id}
+                className="absolute border-2 border-blue-500 rounded-full opacity-50 transition-all duration-200"
+                style={{
+                  left: `${ripple.origin.x}%`,
+                  top: `${ripple.origin.y}%`,
+                  width: `${ripple.radius * 2}px`,
+                  height: `${ripple.radius * 2}px`,
+                  transform: `translate(-50%, -50%) scale(${1 + Math.sin(Date.now() * ripple.frequency / 1000) * 0.1})`,
+                  opacity: Math.max(0, 0.5 - ripple.radius / 200),
+                }}
+              />
             ))}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <WavesIcon className="h-8 w-8 text-blue-500" />
+            </div>
+          </div>
+
+          {/* Dimensional Controls */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Dimensional Resonance</span>
+              <Slider
+                value={[dimensionalResonance]}
+                onValueChange={([value]) => setDimensionalResonance(value)}
+                max={1}
+                step={0.01}
+                className="w-[60%]"
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              {compassState.accessibleDimensions.map(dim => (
+                <Button
+                  key={dim}
+                  variant={compassState.currentDimension === dim ? "default" : "outline"}
+                  disabled={isCalibrating}
+                  onClick={() => handleDimensionalShift(dim)}
+                  className="relative overflow-hidden"
+                >
+                  <LayersIcon className="h-4 w-4 mr-2" />
+                  {dim}D
+                  {isCalibrating && compassState.currentDimension === dim && (
+                    <div className="absolute inset-0 bg-blue-500 opacity-20" 
+                         style={{ width: `${dimensionalResonance * 100}%` }} />
+                  )}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       </CardContent>

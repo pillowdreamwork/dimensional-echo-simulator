@@ -1,0 +1,12 @@
+{
+  "sessionId": "53078983-2922-40f9-9b88-03733b40b14c",
+  "title": "Chat with Neat",
+  "models": {
+    "gpt-4-1106-preview": {
+      "id": "gpt-4-1106-preview",
+      "uri": "https://api.openai.com/v1/chat/completions",
+      "interface": "OpenAI"
+    }
+  },
+  "messages": []
+}

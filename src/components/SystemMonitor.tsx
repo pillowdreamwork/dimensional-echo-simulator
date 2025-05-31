@@ -2,36 +2,47 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CustomProgress } from "@/components/ui/custom-progress";
+import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { 
   ActivityIcon, 
   ShieldCheckIcon, 
   ShieldAlertIcon, 
-  RefreshCwIcon
+  RefreshCwIcon,
+  AlertCircleIcon,
+  CheckCircleIcon
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "../hooks/use-toast";
 import { runSystemCheck } from '../utils/moduleCheck';
-import { resetEngine, initializePillowDreamworkGame } from '../lib/engine';
+import { resetEngine, getEngineModules } from '../lib/engine';
 
-const SystemMonitor = () => {
+interface SystemStatus {
+  status: 'healthy' | 'warning' | 'critical' | 'unknown';
+  functionalityScore: number;
+  moduleChecks: Record<string, boolean>;
+  issues: string[];
+}
+
+const CRITICAL_THRESHOLD = 60;
+const WARNING_THRESHOLD = 80;
+
+const SystemMonitor: React.FC = () => {
   const { toast } = useToast();
-  const [systemHealth, setSystemHealth] = useState<{
-    status: string;
-    functionalityScore: number;
-    moduleChecks: Record<string, boolean>;
-  }>({
+  const [systemHealth, setSystemHealth] = useState<SystemStatus>({
     status: 'unknown',
     functionalityScore: 0,
-    moduleChecks: {}
+    moduleChecks: {},
+    issues: []
   });
   const [isAutoFixEnabled, setIsAutoFixEnabled] = useState<boolean>(false);
   const [isRepairing, setIsRepairing] = useState<boolean>(false);
   const [lastCheck, setLastCheck] = useState<Date | null>(null);
   const [repairHistory, setRepairHistory] = useState<string[]>([]);
+  const [repairProgress, setRepairProgress] = useState<number>(0);
   
-  // Run initial check
+  // Run initial check and set up monitoring
   useEffect(() => {
     checkSystemHealth();
     
@@ -39,7 +50,9 @@ const SystemMonitor = () => {
     const timer = setInterval(() => {
       if (isAutoFixEnabled) {
         checkSystemHealth();
-        repairSystem();
+        if (systemHealth.functionalityScore < WARNING_THRESHOLD) {
+          repairSystem();
+        }
       }
     }, 30000); // Check every 30 seconds if auto-fix enabled
     
@@ -47,202 +60,229 @@ const SystemMonitor = () => {
   }, [isAutoFixEnabled]);
   
   // Check system health
-  const checkSystemHealth = () => {
-    const systemStatus = runSystemCheck();
-    setSystemHealth(systemStatus);
+  const checkSystemHealth = async () => {
+    const systemStatus = await runSystemCheck();
+    const { echoSimulator, dreamServer, iuri } = getEngineModules();
+    
+    // Validate core modules
+    const moduleChecks = {
+      'Echo Simulator': !!echoSimulator?.isInitialized(),
+      'Dream Server': !!dreamServer?.isConnected(),
+      'IURI System': !!iuri?.isOperational(),
+      'Reality Engine': systemStatus.realityEngineStatus,
+      'Quantum Core': systemStatus.quantumCoreStatus
+    };
+    
+    // Calculate overall functionality score
+    const functionalityScore = Object.values(moduleChecks)
+      .reduce((score, status) => score + (status ? 20 : 0), 0);
+    
+    // Determine system status
+    let status: SystemStatus['status'] = 'healthy';
+    if (functionalityScore <= CRITICAL_THRESHOLD) status = 'critical';
+    else if (functionalityScore <= WARNING_THRESHOLD) status = 'warning';
+    
+    // Identify issues
+    const issues = Object.entries(moduleChecks)
+      .filter(([_, status]) => !status)
+      .map(([module]) => `${module} is not operational`);
+    
+    setSystemHealth({
+      status,
+      functionalityScore,
+      moduleChecks,
+      issues
+    });
+    
     setLastCheck(new Date());
     
-    // Show toast if system is not fully operational
-    if (systemStatus.status !== 'fully_operational' && !isRepairing) {
+    // Notify if status is not healthy
+    if (status !== 'healthy') {
       toast({
-        title: "System Status Alert",
-        description: `${systemStatus.functionalityScore}% functionality detected, some modules may need repair.`,
-        variant: "destructive",
-        duration: 5000,
+        title: `System Status: ${status.toUpperCase()}`,
+        description: `Functionality Score: ${functionalityScore}%`,
+        variant: status === 'critical' ? 'destructive' : 'default'
       });
     }
-  };
-  
-  // Repair system
-  const repairSystem = () => {
-    setIsRepairing(true);
-    
-    // Record what we're fixing
-    const issueModules = Object.entries(systemHealth.moduleChecks)
-      .filter(([_, isWorking]) => !isWorking)
-      .map(([name]) => name);
-    
-    const repairMessage = issueModules.length > 0 
-      ? `Repairing modules: ${issueModules.join(', ')}`
-      : 'Running diagnostic repair on all modules';
-    
-    // Add to repair history
-    setRepairHistory(prev => [
-      `[${new Date().toLocaleTimeString()}] ${repairMessage}`,
-      ...prev.slice(0, 9)
-    ]);
-    
-    setTimeout(() => {
-      // Reset and reinitialize the engine
-      resetEngine();
-      initializePillowDreamworkGame();
-      
-      // Check if repair was successful
-      const newStatus = runSystemCheck();
-      setSystemHealth(newStatus);
-      
-      // Show result
-      const wasSuccessful = newStatus.functionalityScore > systemHealth.functionalityScore;
-      toast({
-        title: wasSuccessful ? "System Repair Successful" : "System Repair Complete",
-        description: wasSuccessful
-          ? `System functionality improved to ${newStatus.functionalityScore}%`
-          : `System maintained at ${newStatus.functionalityScore}% functionality`,
-        variant: wasSuccessful ? "default" : "destructive",
-        duration: 3000,
-      });
-      
-      setIsRepairing(false);
-    }, 3000);
-  };
-  
-  // Get status color based on functionality score
-  const getStatusColor = (score: number) => {
-    if (score >= 90) {
-      return 'text-green-500';
-    }
-    if (score >= 70) {
-      return 'text-yellow-500';
-    }
-    return 'text-red-500';
-  };
-  
-  // Get progress indicator class based on score
-  const getProgressClass = (score: number) => {
-    if (score >= 90) {
-      return 'bg-green-500';
-    }
-    if (score >= 70) {
-      return 'bg-yellow-500';
-    }
-    return 'bg-red-500';
   };
 
+  // Repair system issues
+  const repairSystem = async () => {
+    if (isRepairing) return;
+    
+    setIsRepairing(true);
+    setRepairProgress(0);
+    
+    try {
+      // Reset engine modules
+      await resetEngine();
+      
+      // Simulate repair process
+      for (let i = 0; i <= 100; i += 10) {
+        setRepairProgress(i);
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      
+      // Log repair attempt
+      const repairLog = `System repair completed at ${new Date().toLocaleTimeString()}`;
+      setRepairHistory(prev => [repairLog, ...prev.slice(0, 4)]);
+      
+      // Recheck system health
+      await checkSystemHealth();
+      
+      toast({
+        title: "System Repair Completed",
+        description: "All modules have been reset and reinitialized.",
+        variant: "default"
+      });
+    } catch (error) {
+      toast({
+        title: "Repair Failed",
+        description: "Unable to complete system repairs. Manual intervention required.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRepairing(false);
+      setRepairProgress(0);
+    }
+  };
+
+  // Replace direct property access with safe checks and use allowed badge variants
+  const monitoredModules = [
+    { label: 'Core', value: systemHealth.status },
+    { label: 'Functionality', value: systemHealth.functionalityScore },
+    { label: 'Dreamwork', value: systemHealth.moduleChecks.dreamworkActive ? 'Active' : 'Inactive' },
+    { label: 'Vector Alchemy', value: systemHealth.moduleChecks.vectorAlchemyReady ? 'Ready' : 'Not Ready' },
+    { label: 'Ritual System', value: systemHealth.moduleChecks.ritualSystemOnline ? 'Online' : 'Offline' },
+    { label: 'Mythic Intelligence', value: systemHealth.moduleChecks.mythicIntelligenceConnected ? 'Connected' : 'Disconnected' },
+    { label: 'Dream Compass', value: systemHealth.moduleChecks.dreamCompassCalibrated ? 'Calibrated' : 'Uncalibrated' }
+  ];
+
   return (
-    <Card className="bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <CardTitle className="flex items-center">
-            <ActivityIcon className="mr-2 text-quantum-teal" size={20} />
+    <Card className="w-full max-w-4xl mx-auto">
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {systemHealth.status === 'healthy' ? (
+              <ShieldCheckIcon className="h-6 w-6 text-green-500" />
+            ) : systemHealth.status === 'warning' ? (
+              <ShieldAlertIcon className="h-6 w-6 text-yellow-500" />
+            ) : (
+              <AlertCircleIcon className="h-6 w-6 text-red-500" />
+            )}
             System Monitor
-          </CardTitle>
-          <Badge 
-            variant="outline" 
-            className={`${
-              systemHealth.functionalityScore >= 90
-                ? 'bg-green-500/20 text-green-500'
-                : systemHealth.functionalityScore >= 70
-                ? 'bg-yellow-500/20 text-yellow-500'
-                : 'bg-red-500/20 text-red-500'
-            }`}
+          </div>
+          <Badge
+            variant={
+              systemHealth.status === 'healthy' ? "default" :
+              systemHealth.status === 'warning' ? "secondary" :
+              "destructive"
+            }
           >
-            {systemHealth.status === 'fully_operational' ? 'Online' : 'Needs Attention'}
+            {systemHealth.status.toUpperCase()}
           </Badge>
-        </div>
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center">
-              {systemHealth.functionalityScore >= 90 ? (
-                <ShieldCheckIcon className="mr-2 text-green-500" size={16} />
-              ) : (
-                <ShieldAlertIcon className="mr-2 text-yellow-500" size={16} />
-              )}
-              <span className="font-medium">System Health</span>
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">System Functionality</span>
+              <span className="text-sm text-gray-500">
+                {systemHealth.functionalityScore}%
+              </span>
             </div>
-            <span className={getStatusColor(systemHealth.functionalityScore)}>
-              {systemHealth.functionalityScore}%
-            </span>
+            <Progress value={systemHealth.functionalityScore} />
           </div>
-          
-          <CustomProgress 
-            value={systemHealth.functionalityScore} 
-            className="h-2 mb-2"
-            indicatorClassName={getProgressClass(systemHealth.functionalityScore)}
-          />
-          
-          <div className="text-xs text-muted-foreground">
-            Last checked: {lastCheck ? lastCheck.toLocaleTimeString() : 'Never'}
-          </div>
-        </div>
-        
-        <div className="space-y-1 mb-4">
-          {Object.entries(systemHealth.moduleChecks).map(([name, isWorking]) => (
-            <div key={name} className="flex justify-between items-center text-sm">
-              <span>{name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</span>
-              <Badge variant={isWorking ? "default" : "destructive"} className="text-xs">
-                {isWorking ? 'OK' : 'Error'}
-              </Badge>
-            </div>
-          ))}
-        </div>
-        
-        <div className="flex items-center space-x-2 mb-4">
-          <Switch 
-            id="auto-fix" 
-            checked={isAutoFixEnabled}
-            onCheckedChange={setIsAutoFixEnabled}
-            disabled={isRepairing}
-          />
-          <Label htmlFor="auto-fix">Enable Auto-Fix</Label>
-        </div>
-        
-        <div className="flex space-x-2 mb-4">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={checkSystemHealth}
-            disabled={isRepairing}
-          >
-            <RefreshCwIcon className="mr-1" size={16} />
-            Check
-          </Button>
-          
-          <Button
-            variant="quantum"
-            size="sm"
-            className="flex-1"
-            onClick={repairSystem}
-            disabled={isRepairing}
-          >
-            {isRepairing ? (
-              <>
-                <RefreshCwIcon className="mr-1 animate-spin" size={16} />
-                Repairing...
-              </>
-            ) : (
-              <>
-                <ShieldCheckIcon className="mr-1" size={16} />
-                Repair
-              </>
-            )}
-          </Button>
-        </div>
-        
-        {repairHistory.length > 0 && (
-          <div className="mt-4 border-t border-border pt-2">
-            <p className="text-sm font-medium mb-2">Repair History</p>
-            <div className="space-y-1 max-h-32 overflow-y-auto text-xs">
-              {repairHistory.map((entry, i) => (
-                <div key={i} className="text-muted-foreground">
-                  {entry}
+
+          <Separator />
+
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium">Module Status</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {Object.entries(systemHealth.moduleChecks).map(([module, status]) => (
+                <div key={module} className="flex items-center justify-between p-2 border rounded-lg">
+                  <span className="text-sm">{module}</span>
+                  {status ? (
+                    <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <AlertCircleIcon className="h-4 w-4 text-red-500" />
+                  )}
                 </div>
               ))}
             </div>
           </div>
-        )}
+
+          <div className="flex items-center space-x-4">
+            <Button
+              onClick={repairSystem}
+              disabled={isRepairing || systemHealth.status === 'healthy'}
+              className="relative"
+            >
+              {isRepairing ? (
+                <>
+                  <div 
+                    className="absolute inset-0 bg-blue-500 opacity-20" 
+                    style={{ width: `${repairProgress}%` }} 
+                  />
+                  <RefreshCwIcon className="h-4 w-4 mr-2 animate-spin" />
+                  Repairing...
+                </>
+              ) : (
+                <>
+                  <ActivityIcon className="h-4 w-4 mr-2" />
+                  Repair System
+                </>
+              )}
+            </Button>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="auto-fix"
+                checked={isAutoFixEnabled}
+                onCheckedChange={setIsAutoFixEnabled}
+              />
+              <Label htmlFor="auto-fix">Auto-Fix</Label>
+            </div>
+          </div>
+
+          {systemHealth.issues.length > 0 && (
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <h3 className="font-semibold mb-2 text-red-600 dark:text-red-400">
+                Active Issues
+              </h3>
+              <ul className="space-y-1 text-sm text-red-600 dark:text-red-400">
+                {systemHealth.issues.map((issue, index) => (
+                  <li key={index}>{issue}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {repairHistory.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Repair History</h3>
+              <div className="space-y-1 text-sm text-gray-500">
+                {repairHistory.map((log, index) => (
+                  <p key={index}>{log}</p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="text-xs text-gray-500 text-right">
+            Last checked: {lastCheck?.toLocaleString() || 'Never'}
+          </div>
+
+          {monitoredModules.map(module => (
+            <div key={module.label} className="flex items-center justify-between">
+              <span>{module.label}</span>
+              <Badge variant={module.value === 'Active' || module.value === 'Ready' || module.value === 'Online' || module.value === 'Connected' || module.value === 'Calibrated' ? 'default' : 'destructive'}>
+                {module.value}
+              </Badge>
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

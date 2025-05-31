@@ -146,7 +146,7 @@ const RealityMonitor: React.FC<RealityMonitorProps> = ({ currentDimension }) => 
                   <h3 className="font-semibold">{event.location}</h3>
                   <Badge variant={
                     event.severity === 'critical' ? "destructive" :
-                    event.severity === 'high' ? "warning" :
+                    event.severity === 'high' ? "secondary" :
                     "default"
                   }>
                     {event.severity.toUpperCase()}
