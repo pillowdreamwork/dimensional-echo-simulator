@@ -108,15 +108,23 @@ const SystemMonitor = () => {
   
   // Get status color based on functionality score
   const getStatusColor = (score: number) => {
-    if (score >= 90) return 'text-green-500';
-    if (score >= 70) return 'text-yellow-500';
+    if (score >= 90) {
+      return 'text-green-500';
+    }
+    if (score >= 70) {
+      return 'text-yellow-500';
+    }
     return 'text-red-500';
   };
   
   // Get progress indicator class based on score
   const getProgressClass = (score: number) => {
-    if (score >= 90) return 'bg-green-500';
-    if (score >= 70) return 'bg-yellow-500';
+    if (score >= 90) {
+      return 'bg-green-500';
+    }
+    if (score >= 70) {
+      return 'bg-yellow-500';
+    }
     return 'bg-red-500';
   };
 

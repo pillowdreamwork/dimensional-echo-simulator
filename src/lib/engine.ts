@@ -1,4 +1,3 @@
-
 import { 
   SimulationCore,
   PillowDreamworkModule,
@@ -86,8 +85,8 @@ export function resetEngine() {
 }
 
 export function checkEngineStatus() {
-  const modules = gameState.modules;
-  
+  const { modules } = gameState;
+
   const status = {
     simulationCore: !!modules.simulationCore,
     pillowDreamwork: !!modules.pillowDreamwork,
@@ -101,7 +100,7 @@ export function checkEngineStatus() {
     siderAI: !!modules.siderAI,
     dreamCompass: !!modules.dreamCompass
   };
-  
+
   console.log("Engine Status Check:", status);
   
   // Check module functionality
