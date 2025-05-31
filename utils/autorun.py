@@ -1,3 +1,5 @@
+from autorun import autorun
+@autorun
 def autorun(func):
     """
     Decorator that can be used to automatically run or register functions as needed.
