@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getEngineModules, initializePillowDreamworkGame } from '../lib/engine';
 import { analyzeSymbolPattern, interactWithMythicArchetype, processRitual, createTimelineRipple } from '../utils/quantum';
 import DreamCompass from './DreamCompassComponent';
+import { RealityImpactEngine } from './RealityImpactEngine';
 import type { AISuggestion } from "../lib/pillowdreamwork";
 
 // Initialize the game engine
@@ -584,6 +585,7 @@ export function PillowDreamworkShowcase() {
       <RitualInterface />
       <MythicAIShowcase />
       <EchoSimulatorMode />
+      <RealityImpactEngine className="mb-6" />
       <SiderAIShowcase />
     </div>
   );

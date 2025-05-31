@@ -6,8 +6,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import { ForgeDashboard } from "./components/dreamforge/ForgeDashboard";
 import { useEffect } from "react";
 import { runSystemCheck } from "./utils/moduleCheck";
+import { TesseractWeaveEditor } from "./components/TesseractWeaveEditor";
 
 // Create a new query client
 const queryClient = new QueryClient({
@@ -35,6 +37,8 @@ const App = () => {
           <Sonner />
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/forge" element={<ForgeDashboard />} />
+            <Route path="/weaver" element={<TesseractWeaveEditor />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -1,0 +1,49 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { AethericForgeController } from './AethericForgeController';
+import { QuantumValidationMonitor } from './QuantumValidationMonitor';
+import { QuantumPerformanceMonitor } from './QuantumPerformanceMonitor';
+import { TimelineBranchVisualizer } from './TimelineBranchVisualizer';
+import { QuantumErrorMonitor } from './QuantumErrorMonitor';
+
+export const ForgeDashboard: React.FC = () => {
+    return (
+        <Card className="w-full h-full">
+            <CardHeader>
+                <CardTitle>Aetheric Forge Dashboard</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Tabs defaultValue="forge" className="w-full">
+                    <TabsList className="grid w-full grid-cols-5">
+                        <TabsTrigger value="forge">Forge Control</TabsTrigger>
+                        <TabsTrigger value="validation">Validation</TabsTrigger>
+                        <TabsTrigger value="performance">Performance</TabsTrigger>
+                        <TabsTrigger value="timeline">Timeline</TabsTrigger>
+                        <TabsTrigger value="errors">Errors</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="forge" className="mt-4">
+                        <AethericForgeController />
+                    </TabsContent>
+                    
+                    <TabsContent value="validation" className="mt-4">
+                        <QuantumValidationMonitor />
+                    </TabsContent>
+                    
+                    <TabsContent value="performance" className="mt-4">
+                        <QuantumPerformanceMonitor />
+                    </TabsContent>
+                    
+                    <TabsContent value="timeline" className="mt-4">
+                        <TimelineBranchVisualizer />
+                    </TabsContent>
+                    
+                    <TabsContent value="errors" className="mt-4">
+                        <QuantumErrorMonitor />
+                    </TabsContent>
+                </Tabs>
+            </CardContent>
+        </Card>
+    );
+};
