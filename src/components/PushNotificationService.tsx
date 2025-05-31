@@ -48,7 +48,7 @@ const PushNotificationService: React.FC = () => {
     // Simulate receiving push notifications
     const showNotification = (notification: PushNotification, delay: number) => {
       setTimeout(() => {
-        let description = notification.message;
+        const description = notification.message;
         let duration = 6000;
         
         switch (notification.type) {

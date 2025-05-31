@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,13 +17,17 @@ import { resetEngine, initializePillowDreamworkGame } from '../lib/engine';
 
 const SystemMonitor = () => {
   const { toast } = useToast();
-  const [systemHealth, setSystemHealth] = useState({
+  const [systemHealth, setSystemHealth] = useState<{
+    status: string;
+    functionalityScore: number;
+    moduleChecks: Record<string, boolean>;
+  }>({
     status: 'unknown',
     functionalityScore: 0,
-    moduleChecks: {} as Record<string, boolean>
+    moduleChecks: {}
   });
-  const [isAutoFixEnabled, setIsAutoFixEnabled] = useState(false);
-  const [isRepairing, setIsRepairing] = useState(false);
+  const [isAutoFixEnabled, setIsAutoFixEnabled] = useState<boolean>(false);
+  const [isRepairing, setIsRepairing] = useState<boolean>(false);
   const [lastCheck, setLastCheck] = useState<Date | null>(null);
   const [repairHistory, setRepairHistory] = useState<string[]>([]);
   
