@@ -1,27 +1,44 @@
-
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from '@/components/ui/badge';
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { toast } from "@/hooks/use-toast";
-import { getEngineModules } from '../lib/engine';
-import { CustomProgress } from './ui/custom-progress';
+import { useQuantumState } from '@/hooks/use-quantum-state';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { useToast } from '@/hooks/use-toast';
+import { Progress } from '@/components/ui/progress';
+import { LayersIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const CustomProgress = ({ value, className, indicatorClassName }: any) => (
+  <Progress
+    value={value}
+    className={cn("h-2", className)}
+    indicatorClassName={indicatorClassName}
+  />
+);
 
 const QuantumStateCollapser = () => {
-  const [quantumStates, setQuantumStates] = useState<{[key: string]: number}>({
+  const { toast } = useToast();
+  const [stabilityFactor, setStabilityFactor] = useState(50);
+  const [collapsing, setCollapsing] = useState(false);
+  const [collapsedState, setCollapsedState] = useState<string | null>(null);
+  const [wasReset, setWasReset] = useState(false);
+  const [quantumStates, setQuantumStates] = useState({
     alpha: 0.5,
     beta: 0.5,
     gamma: 0.5,
     delta: 0.5
   });
-  const [collapsing, setCollapsing] = useState(false);
-  const [collapsedState, setCollapsedState] = useState<string | null>(null);
-  const [stabilityFactor, setStabilityFactor] = useState(50);
-  const [wasReset, setWasReset] = useState(false);
-  
-  const { uncertainty } = getEngineModules();
-  
+
+  const { quantumState, collapseQuantumState, stabilizeQuantumState } = useQuantumState({
+    onStateChange: (newState) => {
+      // Update UI when quantum state changes
+      toast({
+        title: "Quantum State Updated",
+        description: `Coherence: ${Math.round(newState.coherence)}%, Entanglement: ${Math.round(newState.entanglementStrength)}%`,
+      });
+    }
+  });
+
   // Calculate quantum probabilities
   const calculateProbabilities = () => {
     const sum = Object.values(quantumStates).reduce((acc, val) => acc + val * val, 0);
@@ -29,7 +46,7 @@ const QuantumStateCollapser = () => {
       Object.entries(quantumStates).map(([key, value]) => [key, (value * value) / sum])
     );
   };
-  
+
   // Quantum state names
   const stateNames: {[key: string]: string} = {
     alpha: "Reality Prime",
@@ -37,16 +54,7 @@ const QuantumStateCollapser = () => {
     gamma: "Symbolic Realm",
     delta: "Echo Space"
   };
-  
-  // Calculate entropy of the system
-  const calculateEntropy = () => {
-    const probs = calculateProbabilities();
-    return -Object.values(probs).reduce(
-      (acc, p) => acc + (p > 0 ? p * Math.log2(p) : 0),
-      0
-    );
-  };
-  
+
   // Handle quantum state change
   const handleStateChange = (state: string, value: number) => {
     setQuantumStates(prev => ({
@@ -54,7 +62,7 @@ const QuantumStateCollapser = () => {
       [state]: value
     }));
   };
-  
+
   // Superimpose quantum states
   const handleSuperimpose = () => {
     setCollapsing(true);
@@ -87,8 +95,8 @@ const QuantumStateCollapser = () => {
       setCollapsing(false);
     }, 1500);
   };
-  
-  // Collapse quantum state - this simulates the quantum collapse without requiring the actual engine function
+
+  // Collapse quantum state
   const handleCollapseState = () => {
     setCollapsing(true);
     
@@ -108,6 +116,9 @@ const QuantumStateCollapser = () => {
       if (collapsedState && Math.random() < (stabilityFactor / 100)) {
         stateKey = collapsedState;
       }
+
+      // Collapse the quantum state
+      collapseQuantumState(stabilityFactor / 100);
       
       setCollapsedState(stateKey || null);
       
@@ -116,6 +127,7 @@ const QuantumStateCollapser = () => {
         setCollapsedState(null);
         setWasReset(true);
         setTimeout(() => setWasReset(false), 500);
+        stabilizeQuantumState(0.8); // Stabilize after collapse
       }, 5000);
       
       // Show toast with results
@@ -138,6 +150,7 @@ const QuantumStateCollapser = () => {
       delta: 0.5
     });
     setCollapsedState(null);
+    stabilizeQuantumState(1.0); // Full stability on reset
     
     toast({
       title: "Quantum States Reset",
@@ -147,25 +160,49 @@ const QuantumStateCollapser = () => {
   };
 
   return (
-    <Card className={`quantum-state-collapser bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70 ${wasReset ? 'animate-pulse' : ''}`}>
+    <Card className="bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70 w-full">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-quantum-purple">Quantum State Collapser</CardTitle>
-          <Badge variant="outline" className={`
-            ${collapsedState ? 'bg-quantum-purple text-white' : 'bg-quantum-purple/20 text-quantum-purple'}
-          `}>
-            {collapsedState ? stateNames[collapsedState] : "Superposition"}
-          </Badge>
+          <CardTitle className="text-lg flex items-center">
+            <LayersIcon className="mr-2 text-quantum-purple" size={18} />
+            Quantum Control Interface
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleSuperimpose}
+              disabled={collapsing || !!collapsedState}
+            >
+              Superimpose
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleCollapseState}
+              disabled={collapsing || !!collapsedState}
+            >
+              Collapse
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleReset}
+              disabled={collapsing}
+            >
+              Reset
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground mb-4">
-          Adjust quantum probability amplitudes and collapse the wavefunction.
-        </p>
-        
         {Object.entries(quantumStates).map(([state, value]) => (
-          <div key={state} className="mb-4">
-            <div className="flex justify-between items-center mb-1">
+          <div key={state} className={cn(
+            "mb-4",
+            wasReset && "animate-quantum-reset",
+            collapsedState === state && "animate-quantum-collapse"
+          )}>
+            <div className="flex justify-between mb-1">
               <label className="text-sm">
                 {stateNames[state]}
               </label>
@@ -193,7 +230,9 @@ const QuantumStateCollapser = () => {
         <div className="mb-4 mt-6">
           <div className="flex justify-between items-center mb-1">
             <label className="text-sm">Stability Factor</label>
-            <span className="text-xs text-muted-foreground">{stabilityFactor}%</span>
+            <span className="text-xs text-muted-foreground">
+              {stabilityFactor}%
+            </span>
           </div>
           <Slider
             value={[stabilityFactor]}
@@ -201,59 +240,28 @@ const QuantumStateCollapser = () => {
             max={100}
             step={1}
             onValueChange={(vals) => setStabilityFactor(vals[0])}
-            disabled={collapsing || !!collapsedState}
+            disabled={collapsing}
           />
         </div>
-        
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <span className="text-xs text-muted-foreground">Entropy: </span>
-            <span className="text-sm">{calculateEntropy().toFixed(2)}</span>
+
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          <div className="text-sm">
+            <div className="font-medium mb-1">Coherence</div>
+            <CustomProgress 
+              value={quantumState.coherence}
+              className="mb-2"
+              indicatorClassName="bg-blue-400"
+            />
           </div>
-          <Badge variant={calculateEntropy() > 1.5 ? "default" : "outline"} className="bg-quantum-teal/20 text-quantum-teal">
-            {calculateEntropy() > 1.5 ? "High Uncertainty" : "Low Uncertainty"}
-          </Badge>
-        </div>
-        
-        <div className="grid grid-cols-1 gap-2">
-          <Button
-            onClick={handleCollapseState}
-            disabled={collapsing || !!collapsedState}
-            variant="quantum"
-            className="w-full"
-          >
-            {collapsing ? "Collapsing Quantum State..." : "Collapse Quantum State"}
-          </Button>
-          
-          <Button
-            onClick={handleSuperimpose}
-            disabled={collapsing || !!collapsedState}
-            variant="superimpose"  
-            className="w-full"
-          >
-            Superimpose States
-          </Button>
-          
-          <Button
-            onClick={handleReset}
-            disabled={collapsing}
-            variant="outline"
-            className="w-full"
-          >
-            Reset States
-          </Button>
-        </div>
-        
-        {collapsedState && (
-          <div className="mt-4 p-3 border border-quantum-purple/30 rounded-md bg-quantum-purple/10">
-            <p className="text-sm font-medium text-quantum-purple">
-              State collapsed to: {stateNames[collapsedState]}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Wavefunction will reset to superposition in a few seconds...
-            </p>
+          <div className="text-sm">
+            <div className="font-medium mb-1">Entanglement</div>
+            <CustomProgress 
+              value={quantumState.entanglementStrength}
+              className="mb-2"
+              indicatorClassName="bg-purple-400"
+            />
           </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );

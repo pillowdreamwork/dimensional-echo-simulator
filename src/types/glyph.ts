@@ -83,6 +83,22 @@ export interface GlyphTransformation {
     }>;
 }
 
+export interface Symbol {
+    id: string;
+    glyph: string;
+    name: string;
+    x: number;
+    y: number;
+    connected: boolean;
+}
+
+export interface Connection {
+    id: string;
+    source: string;
+    target: string;
+    power: number;
+}
+
 // Helper function to create a new GlyphNode with default values
 export function createGlyphNode(
     id: string,

@@ -135,43 +135,132 @@ export const generateDimensionalEffect = (dimension: number): string => {
 };
 
 // NEW: Analyze symbol pattern and determine effect
-export const analyzeSymbolPattern = (pattern: string, dimension: number) => {
-  // Calculate pattern complexity
-  const uniqueChars = new Set(pattern).size;
-  const complexity = uniqueChars / pattern.length;
+import { Symbol, Connection } from '../types/glyph';
+
+interface PatternAnalysis {
+  resonance: number;
+  stability: number;
+  description: string;
+}
+
+const PATTERN_DESCRIPTIONS = {
+  triangle: "Triangular formation creates a stable energy flow",
+  square: "Square pattern enhances dimensional stability",
+  pentagram: "Pentagonic resonance amplifies reality manipulation",
+  linear: "Linear connection provides direct energy transfer",
+  scattered: "Scattered pattern suggests chaotic energy distribution"
+};
+
+export function analyzeSymbolPattern(
+  symbols: Symbol[],
+  connections: Connection[]
+): PatternAnalysis {
+  // Calculate pattern type based on symbol positions and connections
+  const patternType = detectPatternType(symbols, connections);
   
-  // Base power calculation
-  const basePower = Math.min(100, (uniqueChars * 15) + (dimension * 5));
-  const power = Math.max(10, basePower * complexity);
+  // Calculate resonance based on symbol types and their positions
+  const resonance = calculateResonance(symbols, connections);
   
-  // Generate insights based on pattern characteristics
-  const insights = [
-    "a bridge between conscious and unconscious realms",
-    "an invitation to explore hidden dimensions of experience", 
-    "a key to unlocking deeper layers of perception",
-    "a pathway for integrating multiple states of awareness",
-    "a catalyst for transformative inner experiences"
-  ];
-  
-  const effects = [
-    `Enhanced dimensional awareness in ${dimension}D space`,
-    `Increased resonance with quantum field fluctuations`,
-    `Amplified intuitive perception and symbolic recognition`,
-    `Deeper connection to archetypal energy patterns`,
-    `Strengthened bridge between dimensions ${dimension} and ${dimension + 1}`
-  ];
-  
-  // Select based on pattern characteristics
-  const selectedInsight = insights[Math.floor(pattern.length % insights.length)];
-  const selectedEffect = effects[Math.floor(uniqueChars % effects.length)];
+  // Calculate stability based on connection strengths and symbol positions
+  const stability = calculateStability(symbols, connections);
   
   return {
-    effect: selectedEffect,
-    power: Math.round(power),
-    insight: selectedInsight,
-    resonance: power / 100 // Convert to 0-1 range for resonance percentage
+    resonance,
+    stability,
+    description: PATTERN_DESCRIPTIONS[patternType] || "Unique pattern detected"
   };
-};
+}
+
+function detectPatternType(
+  symbols: Symbol[],
+  connections: Connection[]
+): keyof typeof PATTERN_DESCRIPTIONS {
+  const connectedSymbols = symbols.filter(s => s.connected);
+  
+  if (connections.length === 0) return 'scattered';
+  if (isTriangle(connectedSymbols, connections)) return 'triangle';
+  if (isSquare(connectedSymbols, connections)) return 'square';
+  if (isPentagram(connectedSymbols, connections)) return 'pentagram';
+  if (isLinear(connectedSymbols, connections)) return 'linear';
+  
+  return 'scattered';
+}
+
+function calculateResonance(symbols: Symbol[], connections: Connection[]): number {
+  if (connections.length === 0) return 0;
+  
+  // Calculate average connection power
+  const avgPower = connections.reduce((sum, conn) => sum + conn.power, 0) / connections.length;
+  
+  // Factor in the number of connected symbols
+  const connectedSymbols = symbols.filter(s => s.connected).length;
+  const symbolFactor = Math.min(connectedSymbols / 5, 1); // Max benefit from 5 symbols
+  
+  return avgPower * symbolFactor * (0.7 + Math.random() * 0.3); // Add some randomness
+}
+
+function calculateStability(symbols: Symbol[], connections: Connection[]): number {
+  if (connections.length === 0) return 0;
+  
+  // More connections generally mean more stability
+  const connectionFactor = Math.min(connections.length / 4, 1); // Max benefit from 4 connections
+  
+  // Calculate pattern symmetry based on symbol positions
+  const symmetryFactor = calculateSymmetry(symbols.filter(s => s.connected));
+  
+  return connectionFactor * symmetryFactor * (0.8 + Math.random() * 0.2); // Add some randomness
+}
+
+function calculateSymmetry(symbols: Symbol[]): number {
+  if (symbols.length < 2) return 0;
+  
+  // Calculate center point
+  const centerX = symbols.reduce((sum, s) => sum + s.x, 0) / symbols.length;
+  const centerY = symbols.reduce((sum, s) => sum + s.y, 0) / symbols.length;
+  
+  // Calculate average distance from center
+  const avgDistance = symbols.reduce((sum, s) => {
+    const dx = s.x - centerX;
+    const dy = s.y - centerY;
+    return sum + Math.sqrt(dx * dx + dy * dy);
+  }, 0) / symbols.length;
+  
+  // Calculate variance in distances (lower variance = more symmetrical)
+  const variance = symbols.reduce((sum, s) => {
+    const dx = s.x - centerX;
+    const dy = s.y - centerY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const diff = distance - avgDistance;
+    return sum + diff * diff;
+  }, 0) / symbols.length;
+  
+  // Convert variance to a 0-1 scale (lower variance = higher symmetry)
+  return Math.max(0, 1 - Math.min(variance / 100, 1));
+}
+
+// Pattern detection helpers
+function isTriangle(symbols: Symbol[], connections: Connection[]): boolean {
+  return connections.length === 3 && symbols.filter(s => s.connected).length === 3;
+}
+
+function isSquare(symbols: Symbol[], connections: Connection[]): boolean {
+  return connections.length === 4 && symbols.filter(s => s.connected).length === 4;
+}
+
+function isPentagram(symbols: Symbol[], connections: Connection[]): boolean {
+  return connections.length === 5 && symbols.filter(s => s.connected).length === 5;
+}
+
+function isLinear(symbols: Symbol[], connections: Connection[]): boolean {
+  // Check if all connections form a single line
+  return connections.every(conn => {
+    const connectedConns = connections.filter(c => 
+      c !== conn && (c.source === conn.source || c.source === conn.target || 
+                    c.target === conn.source || c.target === conn.target)
+    );
+    return connectedConns.length <= 2;
+  });
+}
 
 // NEW: Process ritual with IURI system
 export const processRitual = (glyph: string, intensity: number): {

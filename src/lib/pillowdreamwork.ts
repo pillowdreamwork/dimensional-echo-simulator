@@ -6,21 +6,12 @@ interface VectorData {
   y: number;
   z: number;
   magnitude?: number;
-  dimensions?: number[];
-  metadata?: {
-    quantumState: string;
-    dimensionalResonance: number;
-  }
 }
 
 interface TensorData {
-  dimensions: number[];
-  values: any[];  // Using any[] to support arbitrary dimension nesting
-  metadata?: {
-    dimensionCount: number;
-    resonancePattern: string[];
-    quantumSignature: string;
-  }
+  rows: number;
+  cols: number;
+  values: number[][];
 }
 
 interface AlchemyResult {
@@ -28,7 +19,6 @@ interface AlchemyResult {
   message: string;
   transformedVector?: VectorData;
   transformedTensor?: TensorData;
-  dimensionalEffects?: string[];
 }
 
 // Interfaces for Invocation API
@@ -105,28 +95,10 @@ export interface AISuggestion {
 }
 
 // Interfaces for Dream Compass
-interface DimensionalState {
-  level: number;
-  stability: number;
-  resonance: number;
-  harmonics: string[];
-  effects: string[];
-  quantumSignature: string;
-}
-
-interface NavigationResult {
-  success: boolean;
-  newDimension: number;
-  stabilityReport: {
-    overall: number;
-    factors: {
-      resonance: number;
-      quantumCoherence: number;
-      timelineStability: number;
-    }
-  };
-  effects: string[];
-  warnings: string[];
+interface CompassCalibrationData {
+  userProfile: any;
+  dimensionalAlignment: number;
+  symbolResonance: number;
 }
 
 export class PillowDreamworkModule {
@@ -394,17 +366,17 @@ export class SimulationCore {
 
 export class VectorAlchemyEngine {
   private isReadyFlag: boolean = false;
-  private readonly MAX_DIMENSIONS = 12; // Support up to 12 dimensions
 
   constructor() {
     this.initialize();
   }
 
   private initialize() {
+    // Simulate initialization process
     console.log("Initializing Vector Alchemy Engine...");
     setTimeout(() => {
       this.isReadyFlag = true;
-      console.log("Vector Alchemy Engine is ready for multi-dimensional operations.");
+      console.log("Vector Alchemy Engine is ready.");
     }, 500);
   }
 
@@ -419,143 +391,39 @@ export class VectorAlchemyEngine {
 
     const magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
     const transformedVector: VectorData = {
-      x: this.applyQuantumTransformation(vector.x),
-      y: this.applyQuantumTransformation(vector.y),
-      z: this.applyQuantumTransformation(vector.z),
-      magnitude: this.applyQuantumTransformation(magnitude),
-      dimensions: vector.dimensions,
-      metadata: {
-        quantumState: this.generateQuantumState(),
-        dimensionalResonance: this.calculateResonance(vector)
-      }
+      x: vector.x * 2,
+      y: vector.y * 2,
+      z: vector.z * 2,
+      magnitude: magnitude * 2
     };
 
     return {
       status: 'success',
       message: 'Vector transformed',
-      transformedVector,
-      dimensionalEffects: this.generateDimensionalEffects(vector.dimensions || [3])
+      transformedVector: transformedVector
     };
   }
 
-  transformHyperTensor(tensor: TensorData): AlchemyResult {
+  transformTensor(tensor: TensorData): AlchemyResult {
     if (!this.isReadyFlag) {
       return { status: 'error', message: 'Engine not ready' };
     }
 
-    if (tensor.dimensions.length > this.MAX_DIMENSIONS) {
-      return { 
-        status: 'error', 
-        message: `Dimension count exceeds maximum of ${this.MAX_DIMENSIONS}` 
-      };
-    }
-
-    const transformedValues = this.processHyperDimensionalTensor(tensor.values, tensor.dimensions);
-    const resonancePatterns = this.calculateResonancePatterns(tensor.dimensions);
+    const transformedValues: number[][] = tensor.values.map(row =>
+      row.map(value => value * 1.5)
+    );
 
     const transformedTensor: TensorData = {
-      dimensions: tensor.dimensions,
-      values: transformedValues,
-      metadata: {
-        dimensionCount: tensor.dimensions.length,
-        resonancePattern: resonancePatterns,
-        quantumSignature: this.generateQuantumSignature(tensor.dimensions)
-      }
+      rows: tensor.rows,
+      cols: tensor.cols,
+      values: transformedValues
     };
 
     return {
       status: 'success',
-      message: 'Hyper-tensor transformed',
-      transformedTensor,
-      dimensionalEffects: this.generateDimensionalEffects(tensor.dimensions)
+      message: 'Tensor transformed',
+      transformedTensor: transformedTensor
     };
-  }
-
-  private processHyperDimensionalTensor(values: any[], dimensions: number[]): any[] {
-    if (dimensions.length === 0) {
-      return [this.applyQuantumTransformation(values[0])];
-    }
-
-    const dim = dimensions[0];
-    const remaining = dimensions.slice(1);
-    const result = Array(dim);
-
-    for (let i = 0; i < dim; i++) {
-      if (Array.isArray(values[i])) {
-        result[i] = this.processHyperDimensionalTensor(values[i], remaining);
-      } else {
-        const value = typeof values[i] === 'number' ? values[i] : 0;
-        result[i] = [this.applyQuantumTransformation(value)];
-      }
-    }
-
-    return result;
-  }
-
-  private calculateResonancePatterns(dimensions: number[]): string[] {
-    return dimensions.map((dim, index) => {
-      const basePattern = Math.sin(dim * Math.PI / 4);
-      const harmonics = this.calculateDimensionalHarmonics(dim);
-      return `D${index+1}:${basePattern.toFixed(3)}:H${harmonics.join(':')}`;
-    });
-  }
-
-  private calculateDimensionalHarmonics(dimension: number): number[] {
-    const harmonics = [];
-    for (let i = 1; i <= 3; i++) {
-      harmonics.push(Math.sin(dimension * i * Math.PI / 6));
-    }
-    return harmonics;
-  }
-
-  private generateQuantumSignature(dimensions: number[]): string {
-    const dimensionHash = dimensions.reduce((acc, dim) => acc * dim, 1);
-    return `QS-${Date.now().toString(36)}-${dimensionHash.toString(16)}`;
-  }
-
-  private generateQuantumState(): string {
-    const states = [
-      'superposed', 'entangled', 'collapsed', 'quantum-locked',
-      'hyper-entangled', 'dimensionally-shifted', 'resonance-aligned'
-    ];
-    return states[Math.floor(Math.random() * states.length)];
-  }
-
-  private calculateResonance(vector: VectorData): number {
-    const baseResonance = Math.sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
-    const quantumFactor = 0.1 + Math.random() * 0.9;
-    const dimensionalBonus = vector.dimensions ? 
-      Math.log(vector.dimensions.length + 1) * 0.5 : 
-      0;
-    return baseResonance * quantumFactor * (1 + dimensionalBonus);
-  }
-
-  private applyQuantumTransformation(value: number): number {
-    const uncertainty = Math.random() * 0.1;
-    const superposition = Math.cos(value * Math.PI) * Math.sin(value * Math.PI);
-    return value * (1 + uncertainty) * (1 + superposition);
-  }
-
-  private generateDimensionalEffects(dimensions: number[]): string[] {
-    const dimensionProperties = {
-      1: "Linear stability",
-      2: "Planar resonance",
-      3: "Spatial harmony",
-      4: "Temporal flux",
-      5: "Probability waves",
-      6: "Consciousness integration",
-      7: "Archetypal alignment",
-      8: "Harmonic convergence",
-      9: "Holographic recursion",
-      10: "Unified field resonance",
-      11: "Transcendent awareness",
-      12: "Quantum godform manifestation"
-    };
-
-    return dimensions.map(d => {
-      const prop = dimensionProperties[Math.min(d, 12) as keyof typeof dimensionProperties];
-      return `${prop} activated at ${(Math.random() * 100).toFixed(1)}% intensity`;
-    });
   }
 }
 
@@ -936,89 +804,18 @@ export class SiderAI {
 
 export class DreamCompass {
   private isCalibratedFlag: boolean = false;
-  private currentDimension: number = 1;
-  private dimensionalStates: Map<number, DimensionalState> = new Map();
-  private readonly MAX_DIMENSION = 12;
+  public currentDimension: number = 1;
 
   constructor() {
-    this.initialize();
-  }
-
-  private initialize() {
-    console.log("Initializing Dream Compass...");
-    this.initializeDimensionalStates();
-    setTimeout(() => {
-      this.calibrate();
-    }, 1000);
-  }
-
-  private initializeDimensionalStates() {
-    for (let i = 1; i <= this.MAX_DIMENSION; i++) {
-      this.dimensionalStates.set(i, {
-        level: i,
-        stability: 100 - (i * 5), // Higher dimensions are less stable
-        resonance: Math.max(20, 100 - (i * 7)), // Higher dimensions have lower initial resonance
-        harmonics: this.generateHarmonics(i),
-        effects: this.generateDimensionalEffects(i),
-        quantumSignature: this.generateQuantumSignature(i)
-      });
-    }
-  }
-
-  private generateHarmonics(dimension: number): string[] {
-    const baseHarmonics = [
-      "Quantum Resonance",
-      "Timeline Stability",
-      "Consciousness Wave",
-      "Reality Matrix",
-      "Divine Light",
-      "Unity Field",
-      "Spirit Lattice",
-      "Akashic Current",
-      "Cosmic Flow",
-      "Ethereal Web",
-      "Source Connection",
-      "Infinite Loop"
-    ];
-
-    return baseHarmonics
-      .slice(0, dimension)
-      .map(h => `${h}-${dimension}D`);
-  }
-
-  private generateDimensionalEffects(dimension: number): string[] {
-    const effects = {
-      1: ["Linear perception", "Time flows uniformly", "Basic awareness"],
-      2: ["Planar sight", "Pattern recognition", "Geometric understanding"],
-      3: ["Spatial awareness", "Physical manifestation", "Material interaction"],
-      4: ["Temporal vision", "Time malleability", "Chronological insight"],
-      5: ["Probability manipulation", "Quantum sight", "Path divergence"],
-      6: ["Conscious projection", "Thought manifestation", "Mind expansion"],
-      7: ["Archetypal resonance", "Symbol mastery", "Mythic awareness"],
-      8: ["Harmonic convergence", "Frequency mastery", "Vibrational sight"],
-      9: ["Holographic perception", "Information mastery", "Pattern synthesis"],
-      10: ["Field unification", "Force integration", "Energy mastery"],
-      11: ["Transcendent awareness", "Reality mastery", "Infinite perception"],
-      12: ["Divine consciousness", "Ultimate unity", "Omnidimensional sight"]
-    };
-
-    return effects[dimension as keyof typeof effects] || 
-           ["Unknown dimensional effects"];
-  }
-
-  private generateQuantumSignature(dimension: number): string {
-    const base = Date.now().toString(36);
-    const dimFactor = Math.pow(dimension, 2).toString(16);
-    return `QS-${base}-D${dimension}-${dimFactor}`;
+    this.calibrate();
   }
 
   calibrate() {
+    // Simulate calibration
     console.log("Calibrating Dream Compass...");
-    
-    // Simulate calibration process
     setTimeout(() => {
       this.isCalibratedFlag = true;
-      console.log("Dream Compass calibrated for multidimensional navigation.");
+      console.log("Dream Compass is calibrated.");
     }, 1000);
   }
 
@@ -1026,162 +823,29 @@ export class DreamCompass {
     return this.isCalibratedFlag;
   }
 
-  getCurrentDimension(): number {
-    return this.currentDimension;
+  navigateToDimension(dimension: number): void {
+    if (!this.isCalibratedFlag) {
+      console.log("Dream Compass is not calibrated. Cannot navigate.");
+      return;
+    }
+
+    this.currentDimension = dimension;
+    console.log(`Navigating to dimension: ${dimension}`);
   }
 
-  getDimensionalState(dimension: number): DimensionalState | undefined {
-    return this.dimensionalStates.get(dimension);
-  }
-
-  async navigateToDimension(targetDimension: number): Promise<NavigationResult> {
+  getCalibrationData(): CompassCalibrationData {
     if (!this.isCalibratedFlag) {
       return {
-        success: false,
-        newDimension: this.currentDimension,
-        stabilityReport: this.getStabilityReport(),
-        effects: [],
-        warnings: ["Compass not calibrated"]
-      };
-    }
-
-    if (targetDimension < 1 || targetDimension > this.MAX_DIMENSION) {
-      return {
-        success: false,
-        newDimension: this.currentDimension,
-        stabilityReport: this.getStabilityReport(),
-        effects: [],
-        warnings: [`Invalid dimension: ${targetDimension}. Must be between 1 and ${this.MAX_DIMENSION}`]
-      };
-    }
-
-    // Calculate navigation parameters
-    const distance = Math.abs(targetDimension - this.currentDimension);
-    const stability = this.calculateTransitionStability(targetDimension);
-    const warnings = this.assessTransitionRisks(targetDimension);
-
-    if (stability.overall < 30) {
-      return {
-        success: false,
-        newDimension: this.currentDimension,
-        stabilityReport: stability,
-        effects: [],
-        warnings: [...warnings, "Transition too unstable to proceed"]
-      };
-    }
-
-    // Perform the transition
-    this.currentDimension = targetDimension;
-    const state = this.dimensionalStates.get(targetDimension);
-    const effects = state ? [...state.effects] : [];
-
-    // Add transition effects
-    effects.push(...this.generateTransitionEffects(distance));
-
-    return {
-      success: true,
-      newDimension: targetDimension,
-      stabilityReport: stability,
-      effects,
-      warnings
-    };
-  }
-
-  private calculateTransitionStability(targetDim: number): NavigationResult['stabilityReport'] {
-    const currentState = this.dimensionalStates.get(this.currentDimension);
-    const targetState = this.dimensionalStates.get(targetDim);
-
-    if (!currentState || !targetState) {
-      return {
-        overall: 0,
-        factors: {
-          resonance: 0,
-          quantumCoherence: 0,
-          timelineStability: 0
-        }
-      };
-    }
-
-    const distance = Math.abs(targetDim - this.currentDimension);
-    const resonance = targetState.resonance * (1 - distance * 0.1);
-    const quantumCoherence = 100 - (distance * 8);
-    const timelineStability = targetState.stability * (1 - distance * 0.05);
-
-    const overall = (resonance + quantumCoherence + timelineStability) / 3;
-
-    return {
-      overall,
-      factors: {
-        resonance,
-        quantumCoherence,
-        timelineStability
-      }
-    };
-  }
-
-  private assessTransitionRisks(targetDim: number): string[] {
-    const warnings: string[] = [];
-    const distance = Math.abs(targetDim - this.currentDimension);
-
-    if (distance > 3) {
-      warnings.push("Large dimensional jump detected - consciousness fragmentation possible");
-    }
-
-    if (targetDim > 7) {
-      warnings.push("High-dimension navigation requires enhanced awareness");
-    }
-
-    if (this.currentDimension < 3 && targetDim > 6) {
-      warnings.push("Rapid ascension detected - recommend intermediate steps");
-    }
-
-    return warnings;
-  }
-
-  private generateTransitionEffects(distance: number): string[] {
-    const baseEffects = [
-      "Reality fabric stretches and bends",
-      "Quantum fields realign",
-      "Timeline streams intersect",
-      "Consciousness expands exponentially",
-      "Dimensional barriers become permeable",
-      "Time flow fluctuates",
-      "Spatial geometry reconfigures",
-      "Energy patterns shift frequency",
-      "Reality matrix recalibrates",
-      "Quantum probability waves collapse",
-      "Archetypal resonances intensify",
-      "Divine light frequencies increase"
-    ];
-
-    // Select effects based on transition distance
-    const numEffects = Math.min(Math.ceil(distance * 1.5), baseEffects.length);
-    return baseEffects
-      .sort(() => Math.random() - 0.5)
-      .slice(0, numEffects);
-  }
-
-  private getStabilityReport(): NavigationResult['stabilityReport'] {
-    const state = this.dimensionalStates.get(this.currentDimension);
-    
-    if (!state) {
-      return {
-        overall: 0,
-        factors: {
-          resonance: 0,
-          quantumCoherence: 0,
-          timelineStability: 0
-        }
+        userProfile: {},
+        dimensionalAlignment: 0,
+        symbolResonance: 0
       };
     }
 
     return {
-      overall: state.stability,
-      factors: {
-        resonance: state.resonance,
-        quantumCoherence: 90 - (this.currentDimension * 5),
-        timelineStability: state.stability
-      }
+      userProfile: { name: 'User', level: 5 },
+      dimensionalAlignment: 0.75,
+      symbolResonance: 0.8
     };
   }
 }

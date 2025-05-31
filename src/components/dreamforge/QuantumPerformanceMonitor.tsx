@@ -3,6 +3,7 @@ import { OptimizationMetrics } from '../../lib/cores/quantum-optimizer';
 import { QuantumTesseractEngine } from '../../lib/cores/quantum-tesseract';
 import { Card } from '../ui/card';
 import { Progress } from '../ui/progress';
+import { Badge } from '../ui/badge';
 import {
   LineChart,
   Line,
@@ -32,13 +33,12 @@ export const QuantumPerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
     memoryUsage: 0,
     operationsPerSecond: 0,
     batchSize: 64,
-    optimizationLevel: 1
+    optimizationLevel: 1,
+    gpuEnabled: false,
+    simdEnabled: false
   });
 
   const [metricsHistory, setMetricsHistory] = useState<MetricHistory[]>([]);
-  const maxHistoryLength = 100;
-
-  useEffect(() => {
     const subscription = engine.observeOptimizationMetrics().subscribe(metrics => {
       setCurrentMetrics(metrics);
       setMetricsHistory(prev => {

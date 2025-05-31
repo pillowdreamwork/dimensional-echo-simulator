@@ -1,5 +1,12 @@
 import { useState, useCallback } from 'react';
-import { QuantumState, DimensionalProperties } from '../types/quantum';
+
+export interface QuantumState {
+  superposition: number;
+  coherence: number;
+  entanglementStrength: number;
+  phase: number;
+  spin: -1 | 0 | 1;
+}
 
 const DEFAULT_QUANTUM_STATE: QuantumState = {
   superposition: 100,
@@ -13,23 +20,20 @@ interface UseQuantumStateProps {
   initialState?: Partial<QuantumState>;
   initialDimension?: number;
   onStateChange?: (state: QuantumState) => void;
-  onDimensionalChange?: (props: DimensionalProperties) => void;
 }
 
 export function useQuantumState({
   initialState,
   initialDimension = 3,
-  onStateChange,
-  onDimensionalChange
+  onStateChange
 }: UseQuantumStateProps = {}) {
   const [quantumState, setQuantumState] = useState<QuantumState>({
     ...DEFAULT_QUANTUM_STATE,
     ...initialState
   });
   const [currentDimension, setCurrentDimension] = useState(initialDimension);
-  const [currentDimension, setCurrentDimension] = useState(0);
 
-  const updateQuantumState = useCallback((updates: Partial<GlyphNode['quantumState']>) => {
+  const updateQuantumState = useCallback((updates: Partial<QuantumState>) => {
     setQuantumState(prev => {
       const newState = {
         ...prev,
@@ -45,20 +49,6 @@ export function useQuantumState({
       superposition: 0,
       coherence: Math.max(0, quantumState.coherence * collapseStrength),
       entanglementStrength: Math.max(0, quantumState.entanglementStrength * (collapseStrength + 0.2))
-    });
-  }, [quantumState, updateQuantumState]);
-
-  const entangleWith = useCallback((targetState: GlyphNode['quantumState'], strength = 0.5) => {
-    const entanglementFactor = Math.min(1, (quantumState.entanglementStrength + targetState.entanglementStrength) / 150);
-    const coherenceFactor = Math.min(1, (quantumState.coherence + targetState.coherence) / 150);
-    
-    updateQuantumState({
-      superposition: Math.max(quantumState.superposition, targetState.superposition) * strength,
-      coherence: Math.min(quantumState.coherence, targetState.coherence) * (1 + coherenceFactor),
-      entanglementStrength: Math.max(
-        quantumState.entanglementStrength,
-        targetState.entanglementStrength
-      ) * entanglementFactor
     });
   }, [quantumState, updateQuantumState]);
 
@@ -113,7 +103,6 @@ export function useQuantumState({
     quantumState,
     updateQuantumState,
     collapseQuantumState,
-    entangleWith,
     stabilizeQuantumState,
     calculateResonance,
     shiftDimension,

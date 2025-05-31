@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { Vector3 } from 'three';
+import React, { useMemo, useRef } from 'react';
+import { Vector3, MeshStandardMaterial } from 'three';
 import { Text } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { DIMENSIONAL_PROPERTIES } from '../../types/dimensional';
@@ -7,74 +7,92 @@ import { GlyphNode } from '../../types/glyph';
 
 interface GlyphNodeMeshProps {
   node: GlyphNode;
-  onClick: () => void;
+  onClick?: () => void;
+  isActive?: boolean;
+  isSelected?: boolean;
+  quantumIntensity?: number;
 }
 
-export const GlyphNodeMesh: React.FC<GlyphNodeMeshProps> = ({ node, onClick }) => {
+export const GlyphNodeMesh: React.FC<GlyphNodeMeshProps> = ({ 
+  node, 
+  onClick, 
+  isActive = false,
+  isSelected = false,
+  quantumIntensity = 1
+}) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const materialRef = useRef<MeshStandardMaterial>(null);
+  
   // Calculate node appearance based on quantum state
   const nodeProperties = useMemo(() => {
     const dimProps = DIMENSIONAL_PROPERTIES[node.dimensionalProperties.level];
     const superpositionScale = 1 + (node.quantumState.superposition / 200);
     const coherenceEmission = node.quantumState.coherence / 100;
+    const entanglementPulse = node.quantumState.entanglementStrength / 100;
     
     return {
-      scale: superpositionScale,
-      color: node.selected ? '#ffffff' : dimProps.color,
-      emissive: dimProps.color,
-      emissiveIntensity: coherenceEmission,
-      roughness: 1 - (node.quantumState.entanglementStrength / 100),
-      metalness: node.dimensionalProperties.resonance / 100
+      scale: superpositionScale * quantumIntensity,
+      emission: coherenceEmission,
+      pulse: entanglementPulse,
+      color: isActive ? dimProps.color : dimProps.color.replace('1)', '0.6)'),
+      glow: isSelected ? 2 : 1
     };
-  }, [node]);
+  }, [node, isActive, isSelected, quantumIntensity]);
 
-  // Quantum state animation
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    const pulseFrequency = 0.5 + (node.quantumState.coherence / 100);
-    const pulseMagnitude = 0.1 * (node.quantumState.superposition / 100);
-    
-    // Apply quantum pulse effect
-    state.scene.getObjectByName(node.id)?.scale.setScalar(
-      nodeProperties.scale * (1 + Math.sin(t * pulseFrequency) * pulseMagnitude)
-    );
+  useFrame((state, delta) => {
+    if (meshRef.current && materialRef.current) {
+      // Quantum animation effects
+      const time = state.clock.getElapsedTime();
+      const pulseFreq = 2 + (nodeProperties.pulse * 3);
+      const pulseMagnitude = 0.2 + (nodeProperties.pulse * 0.3);
+      
+      // Scale pulsing based on quantum state
+      meshRef.current.scale.setScalar(
+        nodeProperties.scale * (1 + Math.sin(time * pulseFreq) * pulseMagnitude)
+      );
+
+      // Material effects
+      materialRef.current.emissiveIntensity = 
+        nodeProperties.emission * (1 + Math.sin(time * 2) * 0.2);
+    }
   });
 
   return (
-    <group
-      position={[node.position.x, node.position.y, node.position.z]}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}
-      name={node.id}
-    >
-      <mesh>
-        <sphereGeometry args={[0.2, 32, 32]} />
+    <group position={node.position}>
+      <mesh 
+        ref={meshRef}
+        onClick={onClick}
+        onPointerOver={() => {
+          if (meshRef.current) {
+            meshRef.current.scale.multiplyScalar(1.1);
+          }
+        }}
+        onPointerOut={() => {
+          if (meshRef.current) {
+            meshRef.current.scale.setScalar(nodeProperties.scale);
+          }
+        }}
+      >
+        <sphereGeometry args={[0.5, 32, 32]} />
         <meshStandardMaterial
-          {...nodeProperties}
-        />
-      </mesh>
-      
-      {/* Quantum state visualization ring */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.3, 0.02, 16, 32]} />
-        <meshPhongMaterial
-          color={nodeProperties.emissive}
-          opacity={node.quantumState.coherence / 100}
+          ref={materialRef}
+          color={nodeProperties.color}
+          emissive={nodeProperties.color}
+          emissiveIntensity={nodeProperties.emission}
+          metalness={0.5}
+          roughness={0.2}
+          opacity={0.8}
           transparent
-          emissive={nodeProperties.emissive}
-          emissiveIntensity={node.quantumState.entanglementStrength / 100}
         />
       </mesh>
-
       <Text
-        position={[0, 0.4, 0]}
-        fontSize={0.15}
+        position={[0, 0.8, 0]}
+        fontSize={0.3}
         color={nodeProperties.color}
         anchorX="center"
         anchorY="middle"
       >
-        {node.glyphPattern || DIMENSIONAL_PROPERTIES[node.dimensionalProperties.level].name}
+        {node.glyphPattern}
       </Text>
     </group>
   );
