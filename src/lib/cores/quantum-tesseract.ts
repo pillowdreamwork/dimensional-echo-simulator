@@ -331,4 +331,115 @@ export class QuantumTesseractEngine {
   public observeErrorState() {
     return this.errorHandler.observeErrorState();
   }
+
+  // Update a node's quantum state with new dimensional properties
+  public async updateNodeQuantumState(node: TesseractNode): Promise<TesseractNode> {
+    try {
+      // Calculate new quantum state
+      const currentState = this.quantumStates.get(node.id) || {
+        stateVector: [1, 0, 0, 0],
+        probability: 1,
+        entanglementMap: new Map(),
+        collapseHistory: []
+      };
+      
+      const evolvedVector = this.applyQuantumEvolution(currentState.stateVector);
+      const probability = this.calculateProbability(evolvedVector);
+      
+      // Update entanglements
+      const newEntanglements = new Map();
+      node.connections.forEach(connId => {
+        const connectedNode = this.nodes.get(connId);
+        if (connectedNode) {
+          newEntanglements.set(connId, this.optimizer.optimizeEntanglementCalculation(node, connectedNode));
+        }
+      });
+
+      const newState: QuantumState = {
+        stateVector: evolvedVector,
+        probability,
+        entanglementMap: newEntanglements,
+        collapseHistory: [...currentState.collapseHistory]
+      };
+
+      // Update node properties
+      const updatedNode = {
+        ...node,
+        energyLevel: probability * 100,
+        timelineStability: probability,
+        glyphPattern: this.generateGlyphPattern()
+      };
+
+      // Store updates
+      this.nodes.set(node.id, updatedNode);
+      this.quantumStates.set(node.id, newState);
+
+      this.stateTransitions.next({
+        from: node.id,
+        to: node.id,
+        energy: updatedNode.energyLevel
+      });
+
+      return updatedNode;
+    } catch (error) {
+      console.error('Quantum state update failed:', error);
+      this.optimizer.optimizeState();
+      throw error;
+    }
+  }
+
+  private applyQuantumEvolution(stateVector: number[]): number[] {
+    // Apply quantum evolution operator
+    const phase = Math.random() * Math.PI * 2;
+    const evolved = stateVector.map((val, i) => {
+      const rotation = i % 2 === 0 ? Math.cos(phase) : Math.sin(phase);
+      return val * rotation;
+    });
+    
+    // Normalize
+    const norm = Math.sqrt(evolved.reduce((sum, val) => sum + val * val, 0));
+    return evolved.map(val => val / norm);
+  }
+
+  private calculateStateProbability(stateVector: number[]): number {
+    // Calculate probability from state vector
+    return stateVector.reduce((sum, val) => sum + val * val, 0);
+  }
+
+  private calculateTimelineStability(state: QuantumState): number {
+    // Calculate timeline stability based on quantum state
+    const coherence = state.stateVector.reduce((sum, val) => sum + Math.abs(val), 0) / state.stateVector.length;
+    const entanglementFactor = Array.from(state.entanglementMap.values()).reduce((sum, val) => sum + val, 0) / 
+                             Math.max(1, state.entanglementMap.size);
+    
+    return Math.min(1, (coherence + entanglementFactor) / 2) * 100;
+  }
+
+  private generateGlyphPattern(state: QuantumState): string {
+    // Generate a glyph pattern based on the quantum state
+    const patternBase = state.stateVector.map(val => 
+        Math.abs(val).toString(16).substring(2, 4)
+    ).join('');
+    
+    return `QG-${patternBase}-${Math.floor(state.probability * 1000)}`;
+  }
+
+  private calculateEntanglementStrength(node1?: TesseractNode, node2?: TesseractNode): number {
+    if (!node1 || !node2) return 0;
+    
+    // Calculate based on spatial and quantum properties
+    const distance = node1.position.distanceTo(node2.position);
+    const energyDiff = Math.abs(node1.energyLevel - node2.energyLevel);
+    
+    return Math.max(0, Math.min(1, (1 / (1 + distance)) * (1 - energyDiff / 100)));
+  }
+
+  private initializeQuantumState(): QuantumState {
+    return {
+      stateVector: [1, 0, 0, 0],  // Initial quantum state vector
+      probability: 1,
+      entanglementMap: new Map(),
+      collapseHistory: []
+    };
+  }
 }

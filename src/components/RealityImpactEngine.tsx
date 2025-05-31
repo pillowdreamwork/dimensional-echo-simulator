@@ -152,103 +152,135 @@ const PersonalEffectNode: React.FC<PersonalEffectNodeProps> = ({ effect }) => {
 };
 
 interface RealityImpactEngineProps {
+  initialResonance?: number;
   className?: string;
 }
 
-export function RealityImpactEngine({ className }: RealityImpactEngineProps) {
-  const [activeTab, setActiveTab] = useState("shifts");
+export const RealityImpactEngine: React.FC<RealityImpactEngineProps> = ({
+  initialResonance = 100,
+  className
+}) => {
+  const [resonance, setResonance] = useState(initialResonance);
+  const [stabilizing, setStabilizing] = useState(false);
+  const [cascadeEffects, setCascadeEffects] = useState<PersonalEffect[]>([]);
+  
   const {
     impacts,
-    feedback,
+    realityFeedback,
     personalEffects,
-    isLoading,
-    error,
-    addImpact,
-    verifyImpact
-  } = useRealityImpact({
-    pollInterval: 5000,
-    maxHistory: 50
-  });
+    verifyImpact,
+    stabilizeReality,
+    processCascadeEffect
+  } = useRealityImpact();
 
-  useEffect(() => {
-    if (error) {
-      console.error('Reality Impact Engine Error:', error);
-    }
-  }, [error]);
-
-  const handleVerification = async (impactId: string, status: 'VERIFIED' | 'UNVERIFIED') => {
+  const handleCascadeEffect = async (effect: PersonalEffect) => {
+    setStabilizing(true);
     try {
-      await verifyImpact(impactId, status);
-    } catch (err) {
-      console.error('Failed to verify impact:', err);
+      const result = await processCascadeEffect(effect);
+      setCascadeEffects(prev => [...prev, result]);
+      
+      // Update resonance based on effect
+      setResonance(prev => Math.max(0, Math.min(100, 
+        prev + (effect.intensity * (effect.type === 'ELEVATION' ? 1 : -1))
+      )));
+      
+      if (resonance < 30) {
+        await stabilizeReality();
+      }
+    } finally {
+      setStabilizing(false);
     }
-  };
-
-  const renderContent = (items: any[], Component: React.FC<any>, props = {}) => {
-    if (isLoading && items.length === 0) {
-      return (
-        <div className="flex items-center justify-center h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      );
-    }
-
-    if (error) {
-      return (
-        <div className="flex flex-col items-center justify-center h-[400px] text-red-500 gap-2">
-          <AlertOctagon className="h-8 w-8" />
-          <p className="text-sm">Failed to load reality impact data</p>
-          <p className="text-xs text-muted-foreground">{error.message}</p>
-        </div>
-      );
-    }
-
-    if (items.length === 0) {
-      return (
-        <div className="flex flex-col items-center justify-center h-[400px] text-muted-foreground gap-2">
-          <Sparkles className="h-8 w-8" />
-          <p className="text-sm">No data available</p>
-        </div>
-      );
-    }
-
-    return (
-      <ScrollArea className="h-[400px] pr-4">
-        {items.map((item, i) => (
-          <Component key={i} {...props} {...{[Component.name.replace('Node', '').toLowerCase()]: item}} />
-        ))}
-      </ScrollArea>
-    );
   };
 
   return (
-    <Card className={cn("reality-impact-engine bg-quantum-dark/90 backdrop-blur-md", className)}>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-bold tracking-tight">
-          Reality Impact Engine
+    <Card className={cn("w-full", className)}>
+      <CardHeader>
+        <CardTitle className="flex justify-between items-center">
+          <span>Reality Impact Interface</span>
+          <Badge 
+            variant="outline" 
+            className={cn(
+              resonance > 70 ? "bg-green-500/20 text-green-500" :
+              resonance > 30 ? "bg-yellow-500/20 text-yellow-500" :
+              "bg-red-500/20 text-red-500"
+            )}
+          >
+            Resonance: {resonance.toFixed(1)}%
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="shifts">Dimensional Shifts</TabsTrigger>
+        <Tabs defaultValue="impacts">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="impacts">Dimensional Impacts</TabsTrigger>
             <TabsTrigger value="feedback">Reality Feedback</TabsTrigger>
-            <TabsTrigger value="personal">Personal Effects</TabsTrigger>
+            <TabsTrigger value="effects">Personal Effects</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="shifts">
-            {renderContent(impacts, ImpactNode, { onVerify: handleVerification })}
+          <TabsContent value="impacts" className="space-y-4">
+            <ScrollArea className="h-[400px] pr-4">
+              {impacts.map(impact => (
+                <ImpactNode 
+                  key={impact.id} 
+                  impact={impact}
+                  onVerify={verifyImpact}
+                />
+              ))}
+            </ScrollArea>
           </TabsContent>
-          
+
           <TabsContent value="feedback">
-            {renderContent(feedback, FeedbackNode)}
+            <ScrollArea className="h-[400px] pr-4">
+              {realityFeedback.map(feedback => (
+                <div key={feedback.id} className={cn(
+                  "border rounded-lg p-4 mb-4",
+                  NODE_COLORS[feedback.type] || NODE_COLORS.UNKNOWN
+                )}>
+                  <h4 className="text-sm font-medium mb-2">{feedback.message}</h4>
+                  <p className="text-xs opacity-70">{feedback.timestamp}</p>
+                </div>
+              ))}
+            </ScrollArea>
           </TabsContent>
-          
-          <TabsContent value="personal">
-            {renderContent(personalEffects, PersonalEffectNode)}
+
+          <TabsContent value="effects">
+            <ScrollArea className="h-[400px] pr-4">
+              <div className="space-y-4">
+                {personalEffects.map(effect => (
+                  <div key={effect.id} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="text-sm font-medium">{effect.description}</h4>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleCascadeEffect(effect)}
+                        disabled={stabilizing}
+                      >
+                        {stabilizing ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Sparkles className="h-4 w-4" />
+                        )}
+                        <span className="ml-2">Process Effect</span>
+                      </Button>
+                    </div>
+                    <p className="text-xs opacity-70">{effect.manifestation}</p>
+                    <Badge 
+                      variant="outline" 
+                      className={cn(
+                        "mt-2",
+                        NODE_COLORS[effect.type] || NODE_COLORS.UNKNOWN
+                      )}
+                    >
+                      Intensity: {effect.intensity}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
           </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
   );
-}
+};
