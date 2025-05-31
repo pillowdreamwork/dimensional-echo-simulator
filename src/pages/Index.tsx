@@ -103,10 +103,8 @@ const Index = () => {
     setDimensionalEffects(prev => [effect, ...prev].slice(0, 5));
     
     // Special patterns that allow dimensional transitions
-    if (pattern.includes("⊛") || pattern.includes("⊕")) {
-      if (currentDimension < 11) {
-        handleDimensionChange(currentDimension + 1);
-      }
+    if ((pattern.includes("⊛") || pattern.includes("⊕")) && currentDimension < 11) {
+      handleDimensionChange(currentDimension + 1);
     }
   };
 
