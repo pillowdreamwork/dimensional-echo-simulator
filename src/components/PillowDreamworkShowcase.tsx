@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getEngineModules, initializePillowDreamworkGame } from '../lib/engine';
 import { analyzeSymbolPattern, interactWithMythicArchetype, processRitual, createTimelineRipple } from '../utils/quantum';
 import DreamCompass from './DreamCompassComponent';
+import type { AISuggestion } from "../lib/pillowdreamwork";
 
 // Initialize the game engine
 initializePillowDreamworkGame();
@@ -453,7 +454,8 @@ export function EchoSimulatorMode() {
 // Enhanced SiderAI assistant with dimension-specific suggestions
 export function SiderAIShowcase() {
   const [showMore, setShowMore] = useState(false);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  // Accept both string and AISuggestion
+  const [suggestions, setSuggestions] = useState<(string | AISuggestion)[]>([]);
   const { toast } = useToast();
   
   // Get engine modules
@@ -488,6 +490,11 @@ export function SiderAIShowcase() {
       duration: 3000,
     });
   };
+  
+  // Helper type guard
+  function isAISuggestion(s: string | AISuggestion): s is AISuggestion {
+    return typeof s === "object" && s !== null && "text" in s;
+  }
 
   return (
     <Card className="sider-ai-showcase bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70">
@@ -508,12 +515,12 @@ export function SiderAIShowcase() {
             <li 
               key={i} 
               className="flex items-start cursor-pointer"
-              onClick={() => handleSuggestionClick(s)}
+              onClick={() => handleSuggestionClick(isAISuggestion(s) ? s.text : s)}
             >
               <div className="h-6 w-6 rounded-full bg-quantum-blue/20 text-quantum-blue flex items-center justify-center text-xs mr-2 mt-0.5">
                 {i + 1}
               </div>
-              <p className="text-sm hover:text-quantum-blue transition-colors">{s}</p>
+              <p className="text-sm hover:text-quantum-blue transition-colors">{isAISuggestion(s) ? s.text : s}</p>
             </li>
           ))}
         </ul>

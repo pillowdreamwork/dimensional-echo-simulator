@@ -89,7 +89,7 @@ interface AISuggestionParams {
   context?: any;
 }
 
-interface AISuggestion {
+export interface AISuggestion {
   text: string;
   relevanceScore: number;
 }
