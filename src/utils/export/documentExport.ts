@@ -1,6 +1,15 @@
-
 /**
  * Utilities for exporting project documentation
+ *
+ * Updated: May 31, 2025
+ *
+ * This module provides functions to export the project blueprint and codebase documentation for the Quantum Dimensional Simulator.
+ *
+ * Recent updates:
+ * - The autorun feature and related decorators/scripts have been removed from the codebase.
+ * - Documentation export now reflects the current set of modules and utilities.
+ * - Core modules: SimulationCore, PillowDreamworkModule, VectorAlchemyEngine, MythicIntelligence, UncertaintyEngine, EchoSimulator, MultiversalDreamServer, IURI, SiderAI, DreamCompass.
+ * - Utility functions and UI components are included in the codebase export.
  */
 
 /**
@@ -60,6 +69,48 @@ class PillowDreamworkModule {
 // VectorAlchemyEngine.ts
 // Processes vector fields and dimensional interactions
 class VectorAlchemyEngine {
+  // Implementation details...
+}
+
+// MythicIntelligence.ts
+// Integrates mythic narrative threads into the simulation
+class MythicIntelligence {
+  // Implementation details...
+}
+
+// UncertaintyEngine.ts
+// Manages uncertainty principles across dimensions
+class UncertaintyEngine {
+  // Implementation details...
+}
+
+// EchoSimulator.ts
+// Simulates echo chambers for idea and narrative testing
+class EchoSimulator {
+  // Implementation details...
+}
+
+// MultiversalDreamServer.ts
+// Connects and manages multiple dream instances
+class MultiversalDreamServer {
+  // Implementation details...
+}
+
+// IURI.ts
+// Universal Resource Identifier interface for dimensional assets
+interface IURI {
+  // Implementation details...
+}
+
+// SiderAI.ts
+// Sidekick AI for user assistance and simulation guidance
+class SiderAI {
+  // Implementation details...
+}
+
+// DreamCompass.ts
+// Navigational aid for exploring the dimensional dreamscape
+class DreamCompass {
   // Implementation details...
 }
 \`\`\`
