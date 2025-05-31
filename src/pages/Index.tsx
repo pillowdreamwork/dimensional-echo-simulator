@@ -20,6 +20,7 @@ import QuantumLog from "@/components/QuantumLog";
 import SymbolDecoder from "@/components/SymbolDecoder";
 import SupportiveAICompanion from "@/components/SupportiveAICompanion";
 import PushNotificationService from "@/components/PushNotificationService";
+import { ExplorerSection } from '../components/PillowDreamworkShowcase';
 
 const Index = () => {
   const { toast } = useToast();
@@ -60,24 +61,10 @@ const Index = () => {
   // Transition effect when dimension changes
   const handleDimensionChange = (dimension: number) => {
     setIsTransitioning(true);
-    
+    setCurrentDimension(dimension);
     setTimeout(() => {
-      setCurrentDimension(dimension);
-      
-      setTimeout(() => {
-        setIsTransitioning(false);
-        
-        // Add dimensional effect
-        const effect = generateDimensionalEffect(dimension);
-        setDimensionalEffects(prev => [effect, ...prev].slice(0, 5));
-        
-        toast({
-          title: `Shifted to ${dimension}D Reality`,
-          description: effect,
-          duration: 3000,
-        });
-      }, 500);
-    }, 1500);
+      setIsTransitioning(false);
+    }, 500);
   };
   
   // Handle superposition calculation
@@ -208,6 +195,7 @@ const Index = () => {
         </TabsList>
         
         <TabsContent value="dimensional">
+          <ExplorerSection />
           <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Left sidebar - Virtual Compass */}
             <div className="flex flex-col space-y-4">

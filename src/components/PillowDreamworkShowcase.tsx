@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -532,6 +531,58 @@ export function SiderAIShowcase() {
     </Card>
   );
 }
+
+// Add an option in the Explore (Explorer) section to trigger autorun
+// This button will appear at the top of the Explorer tab
+
+const ExplorerAutorunButton: React.FC<{ onAutorun: () => void, running: boolean }> = ({ onAutorun, running }) => (
+  <div className="flex justify-end mb-4">
+    <button
+      className={`px-4 py-2 rounded bg-quantum-teal text-white font-semibold shadow ${running ? 'opacity-60 cursor-not-allowed' : 'hover:bg-quantum-teal/80'}`}
+      onClick={onAutorun}
+      disabled={running}
+      title="Run autorun on all Python files"
+    >
+      {running ? 'Autorun Running...' : 'Run Autorun (Python)'}
+    </button>
+  </div>
+);
+
+// Explorer section component
+export const ExplorerSection: React.FC = () => {
+  const [autorunStatus, setAutorunStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
+  const [autorunMessage, setAutorunMessage] = useState('');
+
+  const handleAutorun = async () => {
+    setAutorunStatus('running');
+    setAutorunMessage('Running autorun on all Python files...');
+    try {
+      // Call backend or API to trigger autorun script (simulate for now)
+      // In a real app, you would use fetch('/api/autorun') or similar
+      const res = await fetch('/api/autorun', { method: 'POST' });
+      if (res.ok) {
+        setAutorunStatus('done');
+        setAutorunMessage('Autorun completed successfully!');
+      } else {
+        setAutorunStatus('error');
+        setAutorunMessage('Autorun failed. Check logs.');
+      }
+    } catch (e) {
+      setAutorunStatus('error');
+      setAutorunMessage('Autorun failed. Check logs.');
+    }
+  };
+
+  return (
+    <div>
+      <ExplorerAutorunButton onAutorun={handleAutorun} running={autorunStatus === 'running'} />
+      {autorunStatus !== 'idle' && (
+        <div className={`mt-2 text-sm ${autorunStatus === 'done' ? 'text-green-500' : autorunStatus === 'error' ? 'text-red-500' : 'text-yellow-500'}`}>{autorunMessage}</div>
+      )}
+      {/* ...existing Explorer content... */}
+    </div>
+  );
+};
 
 // Main PillowDreamwork showcase container
 export function PillowDreamworkShowcase() {
