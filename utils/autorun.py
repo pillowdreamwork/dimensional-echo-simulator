@@ -1,4 +1,4 @@
-from utils.autorun import autorun
+from autorun import autorun
 @autorun
 def autorun(func):
     """

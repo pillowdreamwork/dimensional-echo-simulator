@@ -2,6 +2,9 @@ import os
 import sys
 import re
 
+# Import autorun from the same directory
+from autorun import autorun
+
 DECORATOR = '@autorun\n'
 
 @autorun
@@ -10,13 +13,13 @@ def add_autorun_decorator_to_file(filepath):
         lines = f.readlines()
 
     # Ensure the import for autorun exists
-    if not any('from utils.autorun import autorun' in line for line in lines):
+    if not any('from autorun import autorun' in line for line in lines):
         # Insert after any __future__ imports or at the top
         insert_at = 0
         for i, line in enumerate(lines):
             if line.startswith('from __future__'):
                 insert_at = i + 1
-        lines.insert(insert_at, 'from utils.autorun import autorun\n')
+        lines.insert(insert_at, 'from autorun import autorun\n')
 
     new_lines = []
     i = 0
