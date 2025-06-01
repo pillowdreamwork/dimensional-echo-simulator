@@ -1,87 +1,53 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useToast } from "../hooks/use-toast";
-
-interface PushNotification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'reality_shift' | 'portal_activity' | 'dimensional_alert' | 'impact_confirmed';
-  timestamp: Date;
-}
 
 const PushNotificationService: React.FC = () => {
   const { toast } = useToast();
-
-  const notifications: PushNotification[] = [
-    {
-      id: "notif-1",
-      title: "🌀 Reality Shift Detected",
-      message: "Dimensional convergence in progress at Vatican City. Portal stabilization recommended.",
-      type: 'reality_shift',
-      timestamp: new Date()
-    },
-    {
-      id: "notif-2", 
-      title: "⚡ Portal Activity Spike",
-      message: "Kuldhara Ancestral Gate showing 94% energy. User intervention highly effective.",
-      type: 'portal_activity',
-      timestamp: new Date()
-    },
-    {
-      id: "notif-3",
-      title: "🚨 Dimensional Alert",
-      message: "Timeline X#8347 requires immediate attention. Apocalypse probability rising.",
-      type: 'dimensional_alert',
-      timestamp: new Date()
-    },
-    {
-      id: "notif-4",
-      title: "✅ Impact Confirmed",
-      message: "Your ritual intervention successfully prevented AI corruption in Seoul data centers.",
-      type: 'impact_confirmed',
-      timestamp: new Date()
-    }
-  ];
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   useEffect(() => {
-    // Simulate receiving push notifications
-    const showNotification = (notification: PushNotification, delay: number) => {
-      setTimeout(() => {
-        const description = notification.message;
-        let duration = 6000;
+    // Check if notifications are supported and enabled
+    if ('Notification' in window) {
+      setNotificationsEnabled(Notification.permission === 'granted');
+    }
+
+    // Simulate receiving push notifications at intervals
+    const notificationInterval = setInterval(() => {
+      if (Math.random() < 0.1) { // 10% chance every interval
+        const notifications = [
+          {
+            title: "Portal Activity Detected",
+            description: "Dimensional rift opening in Pacific Ring of Fire",
+            variant: "default" as const
+          },
+          {
+            title: "Reality Shift Confirmed",
+            description: "Timeline stabilization successful in Eastern Europe",
+            variant: "default" as const
+          },
+          {
+            title: "Echo Signal Received",
+            description: "Encrypted transmission from classified source",
+            variant: "default" as const
+          }
+        ];
+
+        const randomNotif = notifications[Math.floor(Math.random() * notifications.length)];
         
-        switch (notification.type) {
-          case 'dimensional_alert':
-            duration = 8000;
-            break;
-          case 'impact_confirmed':
-            duration = 5000;
-            break;
-          default:
-            duration = 6000;
-        }
-
         toast({
-          title: notification.title,
-          description: description,
-          duration: duration,
+          title: randomNotif.title,
+          description: randomNotif.description,
+          variant: randomNotif.variant,
+          duration: 4000,
         });
-      }, delay);
-    };
+      }
+    }, 30000); // Check every 30 seconds
 
-    // Stagger notifications
-    notifications.forEach((notification, index) => {
-      showNotification(notification, (index + 1) * 15000); // Every 15 seconds
-    });
-
-    // Cleanup function
-    return () => {
-      // Any cleanup if needed
-    };
+    return () => clearInterval(notificationInterval);
   }, [toast]);
 
-  return null; // This component doesn't render anything visible
+  return null; // This is a service component, no UI needed
 };
 
 export default PushNotificationService;

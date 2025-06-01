@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -61,14 +62,45 @@ const RealityMonitor: React.FC<RealityMonitorProps> = ({ currentDimension }) => 
     }
   };
 
+  // Safe helper to extract text from potential objects
+  const safeTextExtract = (value: any): string => {
+    if (typeof value === 'string') {
+      return value;
+    }
+    if (value && typeof value === 'object') {
+      if (value.text) {
+        return String(value.text);
+      }
+      if (value.message) {
+        return String(value.message);
+      }
+      return JSON.stringify(value);
+    }
+    return String(value || '');
+  };
+
   const processEvents = (rawEvents: GlobalEvent[]) => {
-    if (echoSimulator) {
-      const processedEvents = rawEvents.map(event => ({
-        ...event,
-        dimensionalResonance: echoSimulator.calculateResonance(event)
-      }));
-      setGlobalEvents(processedEvents);
-      analyzeDimensionalStability(processedEvents);
+    if (echoSimulator && typeof echoSimulator.calculateResonance === 'function') {
+      try {
+        const processedEvents = rawEvents.map(event => {
+          const resonanceResult = echoSimulator.calculateResonance(event);
+          // Ensure we extract a number, not an object
+          const resonance = typeof resonanceResult === 'number' ? resonanceResult : 
+                           (resonanceResult && typeof resonanceResult === 'object' && resonanceResult.value) ? 
+                           Number(resonanceResult.value) : event.dimensionalResonance;
+          
+          return {
+            ...event,
+            dimensionalResonance: resonance
+          };
+        });
+        setGlobalEvents(processedEvents);
+        analyzeDimensionalStability(processedEvents);
+      } catch (error) {
+        console.log('Error processing events with echoSimulator:', error);
+        setGlobalEvents(rawEvents);
+        analyzeDimensionalStability(rawEvents);
+      }
     } else {
       setGlobalEvents(rawEvents);
       analyzeDimensionalStability(rawEvents);
@@ -98,11 +130,26 @@ const RealityMonitor: React.FC<RealityMonitorProps> = ({ currentDimension }) => 
 
   const handlePortalDetection = (event: GlobalEvent) => {
     if (iuri && event.portalOpportunity) {
-      const portalStrength = iuri.analyzePortalOpportunity(event);
-      if (portalStrength > 0.7) {
+      try {
+        if (typeof iuri.analyzePortalOpportunity === 'function') {
+          const portalResult = iuri.analyzePortalOpportunity(event);
+          const portalStrength = typeof portalResult === 'number' ? portalResult :
+                               (portalResult && typeof portalResult === 'object' && portalResult.strength) ?
+                               Number(portalResult.strength) : 0.5;
+          
+          if (portalStrength > 0.7) {
+            toast({
+              title: "Portal Opportunity Detected",
+              description: safeTextExtract(event.portalOpportunity),
+              variant: "default"
+            });
+          }
+        }
+      } catch (error) {
+        console.log('Error analyzing portal opportunity:', error);
         toast({
           title: "Portal Opportunity Detected",
-          description: event.portalOpportunity,
+          description: safeTextExtract(event.portalOpportunity),
           variant: "default"
         });
       }
@@ -143,16 +190,16 @@ const RealityMonitor: React.FC<RealityMonitorProps> = ({ currentDimension }) => 
             {globalEvents.map((event) => (
               <div key={event.id} className="p-4 border rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold">{event.location}</h3>
+                  <h3 className="font-semibold">{safeTextExtract(event.location)}</h3>
                   <Badge variant={
                     event.severity === 'critical' ? "destructive" :
                     event.severity === 'high' ? "secondary" :
                     "default"
                   }>
-                    {event.severity.toUpperCase()}
+                    {safeTextExtract(event.severity).toUpperCase()}
                   </Badge>
                 </div>
-                <p>{event.event}</p>
+                <p>{safeTextExtract(event.event)}</p>
                 <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
                   <span>Resonance: {event.dimensionalResonance.toFixed(1)}</span>
                   {event.portalOpportunity && (
