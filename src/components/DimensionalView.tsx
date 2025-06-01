@@ -1,8 +1,11 @@
 import React, { useRef, useMemo } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useQuantumState, QuantumState } from "@/hooks/use-quantum-state";
 import { PerspectiveCamera, Environment, OrbitControls, MeshTransmissionMaterial, useHelper } from "@react-three/drei";
 import * as THREE from "three";
+import { cn } from "@/lib/utils";
+import type { QuantumState } from "@/types/quantum";
+
+import { useQuantumState } from "@/hooks/use-quantum-state";
 
 interface QuantumNodeData {
   id: number;
@@ -33,13 +36,10 @@ const QuantumNode = ({ position, state, pulseFactor = 1, dimensionalShift = 0 }:
   const targetScale = useRef(1);
   const currentScale = useRef(1);
 
-  // Cache light for performance
-  const light = useMemo(() => {
-    return new THREE.PointLight(new THREE.Color(0.5, 0.2, 1), 1, 4);
-  }, []);
-
-  // Create materials with shared geometries for better performance
-  const { materials, geometries } = useMemo(() => {
+  // Cache light and materials for performance
+  const { light, materials, geometries } = useMemo(() => {
+    const light = new THREE.PointLight(new THREE.Color(0.5, 0.2, 1), 1, 4);
+    
     const core = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(0.5, 0.2, 1),
       emissive: new THREE.Color(0.2, 0, 0.5),
@@ -59,6 +59,7 @@ const QuantumNode = ({ position, state, pulseFactor = 1, dimensionalShift = 0 }:
     });
 
     return {
+      light,
       materials: { core, glow },
       geometries: {
         core: new THREE.SphereGeometry(0.5, 32, 32),
@@ -71,13 +72,14 @@ const QuantumNode = ({ position, state, pulseFactor = 1, dimensionalShift = 0 }:
     if (meshRef.current) {
       pulseTime.current += delta;
       
-      // Smooth scaling animation
+      // Smooth scaling animation based on superposition
       targetScale.current = pulseFactor * (1 + Math.sin(pulseTime.current * 2) * 0.1);
       currentScale.current = lerp(currentScale.current, targetScale.current, delta * 5);
       meshRef.current.scale.setScalar(currentScale.current);
       
-      // Dimensional shift with smooth transitions
-      const shiftAmount = Math.sin(pulseTime.current + dimensionalShift) * 0.5;
+      // Apply dimensional shift with smooth transitions
+      const shiftFactor = state.dimensionalShift || dimensionalShift;
+      const shiftAmount = Math.sin(pulseTime.current + shiftFactor) * 0.5;
       const newPosition = originalPosition.clone().add(
         new THREE.Vector3(
           shiftAmount * Math.sin(pulseTime.current * 0.7),
@@ -87,17 +89,18 @@ const QuantumNode = ({ position, state, pulseFactor = 1, dimensionalShift = 0 }:
       );
       meshRef.current.position.lerp(newPosition, delta * 3);
       
-      // Update materials
-      const intensity = (state.superposition / 100) * (0.5 + Math.sin(pulseTime.current * 3) * 0.2);
+      // Update material properties based on quantum state
+      const intensity = state.superposition * (0.5 + Math.sin(pulseTime.current * 3) * 0.2);
       materials.core.emissiveIntensity = intensity;
       materials.glow.opacity = intensity * 0.5;
       
-      // Update light
-      light.intensity = lerp(light.intensity, intensity * 2, delta * 4);
+      // Update light intensity based on coherence
+      const coherenceFactor = state.coherence || 0.5;
+      light.intensity = lerp(light.intensity, intensity * 2 * coherenceFactor, delta * 4);
       light.color.setHSL(
         0.7 + Math.sin(pulseTime.current) * 0.1,
         0.8,
-        0.5 + intensity * 0.2
+        0.5 + intensity * 0.3
       );
     }
   });
@@ -172,6 +175,11 @@ interface QuantumFieldProps {
   dimensionalShift: number;
 }
 
+interface DimensionalViewProps {
+  quantumState: QuantumState;
+  isTransitioning?: boolean;
+}
+
 const QuantumField = ({ state, dimensionalShift }: QuantumFieldProps) => {
   const fieldRef = useRef<THREE.Mesh>(null);
   const { clock } = useThree();
@@ -211,9 +219,8 @@ const QuantumField = ({ state, dimensionalShift }: QuantumFieldProps) => {
   );
 };
 
-const Scene = () => {
-  const { quantumState, currentDimension } = useQuantumState();
-  const dimensionalShift = useMemo(() => currentDimension * Math.PI / 6, [currentDimension]);
+const Scene = ({ quantumState }: { quantumState: QuantumState }) => {
+  const dimensionalShift = useMemo(() => (quantumState.dimensionalShift || 0) * Math.PI / 6, [quantumState.dimensionalShift]);
 
   // Cache camera settings
   const cameraSettings = useMemo(() => ({
@@ -275,9 +282,12 @@ const Scene = () => {
   );
 };
 
-const DimensionalView = () => {
+const DimensionalView: React.FC<DimensionalViewProps> = ({ quantumState, isTransitioning }) => {
   return (
-    <div className="w-full h-[400px] rounded-lg overflow-hidden dimensional-border relative">
+    <div className={cn(
+      "w-full h-[400px] rounded-lg overflow-hidden dimensional-border relative",
+      isTransitioning && "transitioning"
+    )}>
       <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 to-transparent pointer-events-none z-10" />
       <Canvas
         gl={{
@@ -293,7 +303,7 @@ const DimensionalView = () => {
         camera={{ fov: 75, near: 0.1, far: 1000 }}
       >
         <PerspectiveCamera makeDefault position={[0, 0, 8]} />
-        <Scene />
+        <Scene quantumState={quantumState} />
       </Canvas>
     </div>
   );

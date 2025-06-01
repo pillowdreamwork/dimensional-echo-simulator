@@ -9,46 +9,68 @@ import { LayersIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { QuantumState, QuantumMetrics } from '@/types/quantum';
 
-const CustomProgress = ({ value, className, indicatorClassName }: any) => (
+const CustomProgress = ({ value, className, indicatorClassName }: { value: number; className?: string; indicatorClassName?: string }) => (
   <Progress
     value={value}
     className={cn("h-2", className)}
-    indicatorClassName={indicatorClassName}
+    // Handle the indicator class through CSS styling instead
   />
 );
 
 interface Props {
   className?: string;
+  quantumState: QuantumState;
+  onStateChange: (state: Partial<QuantumState>) => void;
 }
 
-export const QuantumStateCollapser = memo(function QuantumStateCollapser({ className }: Props) {
+// Helper functions for quantum state manipulation
+const collapseQuantumState = (state: QuantumState, targetState: string, stabilityFactor: number): Partial<QuantumState> => {
+  const baseStates = ['alpha', 'beta', 'gamma', 'delta'];
+  const updates: Partial<QuantumState> = {
+    superposition: 0,
+    coherence: Math.max(0.1, state.coherence * stabilityFactor),
+    entanglement: Math.max(0, state.entanglement * stabilityFactor),
+    dimensionalStability: Math.min(1, state.dimensionalStability + 0.2),
+    collapseTimestamp: Date.now()
+  };
+
+  // Set probabilities for collapsed state
+  baseStates.forEach(stateKey => {
+    updates[stateKey as keyof QuantumState] = stateKey === targetState ? 1 : 0;
+  });
+
+  return updates;
+};
+
+const stabilizeQuantumState = (state: QuantumState): Partial<QuantumState> => ({
+  coherence: Math.min(1, state.coherence + 0.2),
+  dimensionalStability: Math.min(1, state.dimensionalStability + 0.1),
+  entanglement: Math.max(0, state.entanglement - 0.1)
+});
+
+export const QuantumStateCollapser = memo(function QuantumStateCollapser({ className, quantumState, onStateChange }: Props) {
   const { toast } = useToast();
   const [stabilityFactor, setStabilityFactor] = useState(50);
   const [collapsing, setCollapsing] = useState(false);
   const [collapsedState, setCollapsedState] = useState<string | null>(null);
   const [wasReset, setWasReset] = useState(false);
-  const { quantumState, collapseQuantumState, stabilizeQuantumState, updateQuantumState } = useQuantumState({
-    onStateChange: (newState) => {
-      // Update UI when quantum state changes
-      toast({
-        title: "Quantum State Updated",
-        description: `Coherence: ${Math.round(newState.coherence)}%, Entanglement: ${Math.round(newState.entanglementStrength)}%`,
-      });
-    }
-  });
 
   const metrics = useMemo<QuantumMetrics>(() => ({
     coherence: quantumState.coherence * 100,
-    entanglement: quantumState.entanglementStrength * 100,
+    entanglement: quantumState.entanglement * 100,
     stability: quantumState.dimensionalStability * 100
   }), [quantumState]);
 
-  // Calculate quantum probabilities
+  // Calculate quantum probabilities for the base states only
   const calculateProbabilities = () => {
-    const sum = Object.values(quantumState).reduce((acc, val) => acc + val * val, 0);
-    return Object.fromEntries(
-      Object.entries(quantumState).map(([key, value]) => [key, (value * value) / sum])
-    );
+    const baseStates = ['alpha', 'beta', 'gamma', 'delta'];
+    const sum = baseStates.reduce((acc, state) => 
+      acc + quantumState[state as keyof QuantumState]! * quantumState[state as keyof QuantumState]!, 0);
+    
+    return baseStates.reduce((acc, state) => ({
+      ...acc,
+      [state]: (quantumState[state as keyof QuantumState]! * quantumState[state as keyof QuantumState]!) / sum
+    }), {} as Record<string, number>);
   };
 
   // Quantum state names
@@ -61,10 +83,9 @@ export const QuantumStateCollapser = memo(function QuantumStateCollapser({ class
 
   // Handle quantum state change
   const handleStateChange = (state: string, value: number) => {
-    updateQuantumState(prev => ({
-      ...prev,
+    onStateChange({
       [state]: value
-    }));
+    });
   };
 
   // Superimpose quantum states
@@ -73,27 +94,26 @@ export const QuantumStateCollapser = memo(function QuantumStateCollapser({ class
     
     setTimeout(() => {
       // Create a superposition of states
-      const allStates = Object.keys(quantumState);
+      const allStates = ['alpha', 'beta', 'gamma', 'delta'];
       const superpositionState = allStates[Math.floor(Math.random() * allStates.length)];
       
-      // Update all quantum states based on superposition
-      const newStates = {...quantumState};
+      // Create new state updates
+      const stateUpdates: Partial<QuantumState> = {
+        superposition: 1,
+        coherence: Math.max(0.5, quantumState.coherence),
+        entanglementStrength: Math.min(1, quantumState.entanglementStrength + 0.2)
+      };
       
-      // Redistribute probabilities while maintaining the chosen state as highest
-      Object.keys(newStates).forEach(key => {
-        if (key === superpositionState) {
-          newStates[key] = 0.7 + Math.random() * 0.3;
-        } else {
-          newStates[key] = 0.2 + Math.random() * 0.3;
-        }
+      // Add probability updates
+      allStates.forEach(key => {
+        stateUpdates[key as keyof QuantumState] = key === superpositionState ? 
+          0.7 + Math.random() * 0.3 : 
+          0.2 + Math.random() * 0.3;
       });
       
-      updateQuantumState(newStates);
-      
-      toast({
+      onStateChange(stateUpdates);        toast({
         title: "Quantum States Superimposed",
         description: `Created superposition centered on ${stateNames[superpositionState]} state`,
-        duration: 3000,
       });
       
       setCollapsing(false);
@@ -101,60 +121,63 @@ export const QuantumStateCollapser = memo(function QuantumStateCollapser({ class
   };
 
   // Collapse quantum state
-  const handleCollapseState = () => {
+  const handleCollapseState = useCallback(() => {
     setCollapsing(true);
     
     setTimeout(() => {
       // Calculate probabilities
       const probs = calculateProbabilities();
       
-      // Manual calculation for quantum state collapse
+      // Determine collapse target state using quantum probability distribution
       const random = Math.random();
       let cumulativeProb = 0;
-      let stateKey = Object.entries(probs).find(([key, prob]) => {
+      const targetState = Object.entries(probs).find(([_, prob]) => {
         cumulativeProb += prob;
         return random < cumulativeProb;
-      })?.[0] || Object.keys(probs)[0];
-      
-      // Apply stability factor (higher = more likely to stay in current state)
-      if (collapsedState && Math.random() < (stabilityFactor / 100)) {
-        stateKey = collapsedState;
-      }
+      })?.[0] || 'alpha';
 
-      // Collapse the quantum state
-      collapseQuantumState(stabilityFactor / 100);
-      
-      setCollapsedState(stateKey || null);
-      
-      // Reset to uncollapsed state after a few seconds
-      setTimeout(() => {
-        setCollapsedState(null);
-        setWasReset(true);
-        setTimeout(() => setWasReset(false), 500);
-        stabilizeQuantumState(0.8); // Stabilize after collapse
-      }, 5000);
-      
-      // Show toast with results
+      // Apply stability factor
+      const effectiveState = (collapsedState && Math.random() < (stabilityFactor / 100))
+        ? collapsedState
+        : targetState;
+
+      // Update quantum state
+      const updates = collapseQuantumState(quantumState, effectiveState, stabilityFactor / 100);
+      onStateChange(updates);
+      setCollapsedState(effectiveState);
+
+      // Show collapse result
       toast({
         title: "Quantum State Collapsed",
-        description: `Wavefunction collapsed to ${stateNames[stateKey || '']} state`,
+        description: `Wavefunction collapsed to ${stateNames[effectiveState]} state`,
         duration: 3000,
       });
       
+      // Reset after delay
+      setTimeout(() => {
+        setCollapsedState(null);
+        setWasReset(true);
+        onStateChange(stabilizeQuantumState(quantumState));
+        setTimeout(() => setWasReset(false), 500);
+      }, 5000);
+      
       setCollapsing(false);
     }, 2000);
-  };
-  
+  }, [quantumState, stabilityFactor, collapsedState, toast, onStateChange, stateNames]);
+
   // Reset all quantum states to equal probability
   const handleReset = () => {
-    updateQuantumState({
+    onStateChange({
       alpha: 0.5,
       beta: 0.5,
       gamma: 0.5,
-      delta: 0.5
+      delta: 0.5,
+      coherence: 1,
+      entanglement: 0,
+      superposition: 0,
+      dimensionalStability: 1
     });
     setCollapsedState(null);
-    stabilizeQuantumState(1.0); // Full stability on reset
     
     toast({
       title: "Quantum States Reset",

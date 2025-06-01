@@ -19,4 +19,24 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'quantum-core': [
+            './src/lib/cores/quantum-core.ts',
+            './src/lib/cores/quantum-validator.ts'
+          ],
+          'reality-engine': ['./src/lib/reality-engine.ts'],
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000,
+    sourcemap: true,
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom'],
+    exclude: ['@radix-ui/react-icons']
+  },
 }));

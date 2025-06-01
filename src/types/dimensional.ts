@@ -44,144 +44,92 @@ export interface GlyphNode {
     };
 }
 
-export type DimensionalLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+export interface DimensionalProperties {
+  level: number;              // 1-12: Current dimension level
+  resonance: number;         // 0-100: Resonance with target dimension
+  stability: number;         // 0-100: Stability of dimensional state
+  harmonics: string[];       // Active dimensional harmonics
+  entanglement: number;      // 0-100: Quantum entanglement degree
+  phaseAlignment: number;    // 0-100: Phase alignment with dimension
+}
 
 export interface DimensionalPlane {
+  id: string;
   name: string;
-  color: string;
-  baseFrequency: number;
-  harmonicSeries: number[];
+  description: string;
+  level: number;
+  rules: string[];
+  consciousness: number;     // Consciousness level required
+  harmonicSeries: number[]; // Resonant frequencies
+  color: string;           // Visual representation
   stabilityThreshold: number;
-  consciousness: number;
 }
-
-export const DIMENSIONAL_PROPERTIES: Record<DimensionalLevel, DimensionalPlane> = {
-  1: { 
-    name: "Linear", 
-    color: "#FF0000",
-    baseFrequency: 432,
-    harmonicSeries: [432, 864, 1296],
-    stabilityThreshold: 0.95,
-    consciousness: 0.1
-  },
-  2: { 
-    name: "Planar", 
-    color: "#FF7F00",
-    baseFrequency: 528,
-    harmonicSeries: [528, 1056, 1584],
-    stabilityThreshold: 0.9,
-    consciousness: 0.2
-  },
-  3: { 
-    name: "Spatial", 
-    color: "#FFFF00",
-    baseFrequency: 639,
-    harmonicSeries: [639, 1278, 1917],
-    stabilityThreshold: 0.85,
-    consciousness: 0.3
-  },
-  4: { 
-    name: "Temporal", 
-    color: "#00FF00",
-    baseFrequency: 741,
-    harmonicSeries: [741, 1482, 2223],
-    stabilityThreshold: 0.8,
-    consciousness: 0.4
-  },
-  5: { 
-    name: "Probability", 
-    color: "#0000FF",
-    baseFrequency: 852,
-    harmonicSeries: [852, 1704, 2556],
-    stabilityThreshold: 0.75,
-    consciousness: 0.5
-  },
-  6: { 
-    name: "Consciousness", 
-    color: "#4B0082",
-    baseFrequency: 963,
-    harmonicSeries: [963, 1926, 2889],
-    stabilityThreshold: 0.7,
-    consciousness: 0.6
-  },
-  7: { 
-    name: "Symbolic", 
-    color: "#8F00FF",
-    baseFrequency: 1074,
-    harmonicSeries: [1074, 2148, 3222],
-    stabilityThreshold: 0.65,
-    consciousness: 0.7
-  },
-  8: { 
-    name: "Harmonic", 
-    color: "#FF1493",
-    baseFrequency: 1185,
-    harmonicSeries: [1185, 2370, 3555],
-    stabilityThreshold: 0.6,
-    consciousness: 0.8
-  },
-  9: { 
-    name: "Holographic", 
-    color: "#00FFFF",
-    baseFrequency: 1296,
-    harmonicSeries: [1296, 2592, 3888],
-    stabilityThreshold: 0.55,
-    consciousness: 0.85
-  },
-  10: { 
-    name: "Unified", 
-    color: "#FFD700",
-    baseFrequency: 1407,
-    harmonicSeries: [1407, 2814, 4221],
-    stabilityThreshold: 0.5,
-    consciousness: 0.9
-  },
-  11: { 
-    name: "Transcendent", 
-    color: "#FF00FF",
-    baseFrequency: 1518,
-    harmonicSeries: [1518, 3036, 4554],
-    stabilityThreshold: 0.45,
-    consciousness: 0.95
-  },
-  12: { 
-    name: "Divine", 
-    color: "#FFFFFF",
-    baseFrequency: 1629,
-    harmonicSeries: [1629, 3258, 4887],
-    stabilityThreshold: 0.4,
-    consciousness: 1.0
-  }
-} as const;
 
 export interface DimensionalShift {
-  source: DimensionalLevel;
-  target: DimensionalLevel;
+  from: number;
+  to: number;
+  resonanceChange: number;
+  stabilityImpact: number;
+}
+
+export interface DimensionalEffect {
+  description: string;
   intensity: number;
-  resonance: number;
-  stability: number;
-  harmonics: string[];
-  quantumState: QuantumState;
-  timelineState: TimelineState;
+  dimensionChange?: number;
+  timelineImpact?: number;
+  resonanceShift?: number;
+  stabilityChange?: number;
 }
 
-export interface DimensionalAnchor {
-  position: Vector3;
-  level: DimensionalLevel;
-  strength: number;
-  resonance: number;
-  harmonics: string[];
-  stabilityField: number;
-}
+export type DimensionalLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
-export interface DimensionalGate {
-  sourceAnchor: DimensionalAnchor;
-  targetAnchor: DimensionalAnchor;
-  stability: number;
-  phaseAlignment: number;
-  energyFlow: number;
-  active: boolean;
-}
+export const DIMENSIONAL_PLANES: DimensionalPlane[] = [
+  {
+    id: "1",
+    name: "Physical",
+    description: "Base material reality",
+    level: 1,
+    rules: ["Conservation of Energy", "Causality"],
+    consciousness: 0.1,
+    harmonicSeries: [126, 252, 378],
+    color: "#FF0000",
+    stabilityThreshold: 0.95
+  },
+  {
+    id: "3",
+    name: "Temporal",
+    description: "Time-based phenomena",
+    level: 3,
+    rules: ["Temporal Coherence", "Entropy"],
+    consciousness: 0.3,
+    harmonicSeries: [378, 756, 1134],
+    color: "#FF7F00",
+    stabilityThreshold: 0.85
+  },
+  {
+    id: "6",
+    name: "Quantum",
+    description: "Quantum superposition space",
+    level: 6,
+    rules: ["Quantum Entanglement", "Wave Function"],
+    consciousness: 0.5,
+    harmonicSeries: [756, 1512, 2268],
+    color: "#4B0082",
+    stabilityThreshold: 0.65
+  },
+  {
+    id: "12",
+    name: "Transcendent",
+    description: "Pure consciousness realm",
+    level: 12,
+    rules: ["Unity", "Non-duality"],
+    consciousness: 0.9,
+    harmonicSeries: [1512, 3024, 4536],
+    color: "#8F00FF",
+    stabilityThreshold: 0.45
+  }
+];
+
 
 // Function to calculate harmonic resonance between dimensions
 export function calculateHarmonicResonance(

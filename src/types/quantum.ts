@@ -1,32 +1,35 @@
 import { RitualQuantumState } from './ritual';
 
 // Core quantum mechanics types
-export interface BaseQuantumState {
+export interface QuantumState {
+  // Base state properties
   state: string;
   probability: number;
   coherence: number;       // 0-1: Quantum state coherence level
   entanglement: number;    // 0-1: Degree of quantum entanglement
   superposition: number;   // 0-1: Superposition state magnitude
-  phase: number;           // 0-2π: Quantum phase angle
-  dimensionalResonance: number; // 0-1: Resonance with current dimension
-  aethericResonance: number;
-  dimensionalStability: number;
-  timelineConvergence: number;
-  stateVector: number[];
-  entanglementMap: Map<string, number>;
-  collapseHistory: string[];
-}
-
-export interface QuantumState {
+  phase: number;          // 0-2π: Quantum phase angle
+  
+  // Dimensional properties
+  dimensionalResonance: number;  // 0-1: Resonance with current dimension
+  dimensionalStability: number;  // 0-1: Overall stability
+  dimensionalShift: number;      // Current shift amount
+  
+  // State probabilities
+  alpha: number;   // Reality Prime probability
+  beta: number;    // Dreamfield probability
+  gamma: number;   // Symbolic Realm probability
+  delta: number;   // Echo Space probability
+  
+  // Metadata
   isCollapsed: boolean;
-  dimensionalStability: number;
   collapseTimestamp: number;
-  coherence: number;
-  entanglementStrength: number;
+  
+  // Stability metrics
   stabilityFactor: number;
-  alpha: number;
-  beta: number;
-  phase: number;
+  entanglementStrength: number;
+  aethericResonance: number;
+  timelineConvergence: number;
 }
 
 export type QuantumStateUpdate = Partial<QuantumState>;
@@ -36,48 +39,6 @@ export interface QuantumMetrics {
   entanglement: number;
   stability: number;
 }
-
-export type ExtendedQuantumState = QuantumState & RitualQuantumState;
-
-export const createInitialQuantumState = (): QuantumState => ({
-  state: 'coherent',
-  probability: 1,
-  coherence: 1,
-  entanglement: 0,
-  superposition: 0,
-  phase: 0,
-  dimensionalResonance: 1,
-  aethericResonance: 1,
-  dimensionalStability: 1,
-  timelineConvergence: 1,
-  stateVector: [],
-  entanglementMap: new Map(),
-  collapseHistory: [],
-  dimensionalShift: 0,
-  ritualParticipants: {},
-  realityAnchors: {
-    primary: '',
-    secondary: [],
-    strength: 1
-  },
-  quantumSignature: {
-    hash: '',
-    timestamp: Date.now(),
-    validityPeriod: 3600000 // 1 hour
-  },
-  forgeMetadata: {
-    version: '1.0.0',
-    lastModified: Date.now(),
-    stabilityIndex: 1,
-    energyConsumption: 0
-  },
-  isCollapsed: false,
-  collapseTimestamp: 0,
-  entanglementStrength: 0,
-  stabilityFactor: 1,
-  alpha: 0,
-  beta: 0
-});
 
 export interface DimensionalProperties {
   level: number;              // 1-12: Current dimension level
@@ -105,76 +66,34 @@ export type DimensionalEffect = {
   stabilityChange?: number;
 };
 
-export type SymbolAnalysis = {
-  effect: string;
-  dimensionalEffect?: string;
-  potentialShift?: number;
-};
-
-export type RitualResult = {
-  outcome: string;
-  dimensionalShift: number;
-  timelineEffect: string;
-  energyImpact: number;
-};
-
-export type ArchetypeInteraction = {
-  response: string;
-  insight: string;
-  dimensionalAffinity: number;
-};
-
-export type TimelineRipple = {
-  primaryEffect: string;
-  secondaryEffects: string[];
-  branchFactor: number;
-  stabilityImpact: number;
-};
-
-export interface DreamSymbol {
-    id: string;
-    pattern: string;
-    resonance: number;
-    metadata: {
-        origin: string;
-        timestamp: number;
-        quantumSignature: string;
-    };
-}
-
-export interface CompilationResult {
-    symbolId: string;
-    quantumState: {
-        coherence: number;
-        entanglement: number;
-        superposition: number;
-    };
-    resonance: number;
-    timestamp: number;
-}
-
-export interface ResonancePattern {
-    frequency: number;
-    amplitude: number;
-    phase: number;
-    harmonics: number[];
-}
-
-export interface AethericForgeConfig {
-  resonanceThreshold: number;    // Minimum resonance required for forge operations
-  stabilityMinimum: number;     // Minimum stability required
-  coherenceTarget: number;      // Target coherence level
-  harmonicAlignment: number;    // Required harmonic alignment
-  quantumFieldStrength: number; // Base quantum field strength
-  dimensionalTolerance: number; // Maximum dimensional variation allowed
-}
-
-export type QuantumOperationResult = {
-  success: boolean;
-  quantumState: QuantumState;
-  dimensionalState: DimensionalProperties;
-  timelineState: TimelineState;
-  effects: DimensionalEffect[];
-  energyCost: number;
-  stabilityImpact: number;
-};
+// Factory function for creating initial quantum state
+export const createInitialQuantumState = (): QuantumState => ({
+  // Base state properties
+  state: 'coherent',
+  probability: 1,
+  coherence: 1,
+  entanglement: 0,
+  superposition: 0,
+  phase: 0,
+  
+  // Dimensional properties
+  dimensionalResonance: 1,
+  dimensionalStability: 1,
+  dimensionalShift: 0,
+  
+  // State probabilities
+  alpha: 0.25,
+  beta: 0.25,
+  gamma: 0.25,
+  delta: 0.25,
+  
+  // Metadata
+  isCollapsed: false,
+  collapseTimestamp: Date.now(),
+  
+  // Stability metrics
+  stabilityFactor: 1,
+  entanglementStrength: 0,
+  aethericResonance: 1,
+  timelineConvergence: 1
+});
