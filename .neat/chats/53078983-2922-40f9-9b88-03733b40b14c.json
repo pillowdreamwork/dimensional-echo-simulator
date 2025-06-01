@@ -8,5 +8,38 @@
       "interface": "OpenAI"
     }
   },
-  "messages": []
+  "messages": [
+    {
+      "user": "user",
+      "ts": "2025-06-01T04:54:25.022Z",
+      "payload": {
+        "role": "user",
+        "content": "hi, can you connect with the app code, and copilot for integrated development of app"
+      }
+    },
+    {
+      "user": "user",
+      "ts": "2025-06-01T05:18:10.517Z",
+      "payload": {
+        "role": "user",
+        "content": "`run npm audit fix`"
+      }
+    },
+    {
+      "user": "user",
+      "ts": "2025-06-01T05:25:51.769Z",
+      "payload": {
+        "role": "user",
+        "content": "hi"
+      }
+    },
+    {
+      "user": "user",
+      "ts": "2025-06-01T06:17:57.797Z",
+      "payload": {
+        "role": "user",
+        "content": "`hi`"
+      }
+    }
+  ]
 }

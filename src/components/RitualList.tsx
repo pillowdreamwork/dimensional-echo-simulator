@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { toast } from "@/hooks/use-toast";
 import { processRitual } from '../utils/quantum';
 import { getEngineModules } from '../lib/engine';
+import { askGPT } from '../lib/ai/gptService';
 import { 
   BookMarkedIcon, 
   CircleIcon, 
@@ -63,6 +64,7 @@ export const RitualList = () => {
   const [activeEffects, setActiveEffects] = useState<RitualEffect[]>([]);
   const [systemStability, setSystemStability] = useState<number>(1.0);
   const [ritualProgress, setRitualProgress] = useState<number>(0);
+  const [aiResponse, setAIResponse] = useState<string>('');
   
   const { iuri, dreamCompass } = getEngineModules();
 
@@ -157,6 +159,21 @@ export const RitualList = () => {
     }
   };
 
+  const handleGenerateRitual = async () => {
+    setAIResponse('Generating ritual...');
+    const prompt = `Generate a new advanced quantum ritual for the Dimensional Echo Simulator. Include a glyph, name, description, and intensity.`;
+    const result = await askGPT(prompt);
+    setAIResponse(result);
+  };
+
+  const handleExplainRitual = async () => {
+    if (!selectedRitual) return;
+    setAIResponse('Explaining ritual...');
+    const prompt = `Explain the ritual '${selectedRitual.name}' (glyph: ${selectedRitual.glyph}) in the context of quantum dimensional simulation. Include its effects and best use cases.`;
+    const result = await askGPT(prompt);
+    setAIResponse(result);
+  };
+
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'dimensional':
@@ -171,19 +188,17 @@ export const RitualList = () => {
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="w-full max-w-3xl mx-auto">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BookMarkedIcon className="h-6 w-6" />
-            Ritual Codex
-          </div>
-          <Badge variant={systemStability > 0.7 ? "default" : "destructive"}>
-            System Stability: {(systemStability * 100).toFixed(1)}%
-          </Badge>
-        </CardTitle>
+        <CardTitle>Ritual List</CardTitle>
       </CardHeader>
       <CardContent>
+        <div className="flex gap-2 mb-2">
+          <Button onClick={handleGenerateRitual}>Generate Ritual (AI)</Button>
+          <Button onClick={handleExplainRitual} disabled={!selectedRitual}>Explain Ritual (AI)</Button>
+        </div>
+        {aiResponse && <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded text-sm mb-2">{aiResponse}</div>}
+
         <Tabs value={activeCategory} onValueChange={setActiveCategory}>
           <TabsList className="grid w-full grid-cols-3">
             {Object.keys(ritualCategories).map(category => (

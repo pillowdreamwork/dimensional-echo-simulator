@@ -25,6 +25,8 @@ interface MetricHistory {
   memoryUsage: number;
 }
 
+const maxHistoryLength = 100;
+
 export const QuantumPerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   engine
 }) => {
@@ -39,6 +41,8 @@ export const QuantumPerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   });
 
   const [metricsHistory, setMetricsHistory] = useState<MetricHistory[]>([]);
+
+  useEffect(() => {
     const subscription = engine.observeOptimizationMetrics().subscribe(metrics => {
       setCurrentMetrics(metrics);
       setMetricsHistory(prev => {
@@ -157,7 +161,7 @@ export const QuantumPerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
         </ResponsiveContainer>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .metric-card {
           background: rgba(0, 0, 0, 0.05);
           border-radius: 8px;

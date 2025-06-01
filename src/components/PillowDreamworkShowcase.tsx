@@ -7,16 +7,16 @@ import { WandSparklesIcon, StarIcon, InfinityIcon, LayersIcon } from "lucide-rea
 import { useToast } from '@/hooks/use-toast';
 import { getEngineModules, initializePillowDreamworkGame } from '../lib/engine';
 import { analyzeSymbolPattern, interactWithMythicArchetype, processRitual, createTimelineRipple } from '../utils/quantum';
-import DreamCompass from './DreamCompassComponent';
-import { RealityImpactEngine } from './RealityImpactEngine';
-import type { AISuggestion } from "../lib/pillowdreamwork";
-import TesseractWeaveEditor from './dreamforge/TesseractWeaveEditor';
-import OraclePulse from './dreamforge/OraclePulse';
-import SentientSeed from './dreamforge/SentientSeed';
-import { KarmaVisualizer } from './dreamforge/KarmaVisualizer';
-import { QuantumInterface } from './QuantumInterface';
 import { useQuantumState } from '../hooks/use-quantum-state';
-import { PillowDreamworkShowcaseKarmaProvider, useKarmaSystem } from './PillowDreamworkShowcaseKarmaProvider';
+import type { AISuggestion } from "../lib/pillowdreamwork";
+import { TesseractWeaveEditor } from './dreamforge/TesseractWeaveEditor';
+import { OraclePulse } from './dreamforge/OraclePulse';
+import { SentientSeed } from './dreamforge/SentientSeed';
+import { KarmaVisualizer } from './dreamforge/KarmaVisualizer';
+import { DreamSymbolWorkbench } from './dreamforge/DreamSymbolWorkbench';
+import { DreamCouncil } from './dreamforge/DreamCouncil';
+import { TapestryResonator } from './dreamforge/TapestryResonator';
+import { ArchetypeCustomizer } from './dreamforge/ArchetypeCustomizer';
 
 // Initialize the game engine
 initializePillowDreamworkGame();
@@ -580,55 +580,68 @@ export const ExplorerSection: React.FC = () => {
 };
 
 // Main PillowDreamwork showcase container
-export function PillowDreamworkShowcase() {
-  // Initialize engine on component mount
+export default function PillowDreamworkShowcase() {
+  // Global QuantumState context
+  const quantumStateCtx = useQuantumState({});
+
+  // Narrative overlay placeholder (Zyra's guidance)
+  const [narrative, setNarrative] = useState<string | null>(null);
+
   useEffect(() => {
-    initializePillowDreamworkGame();
+    setNarrative('Zyra: The Aetheric Forge is yours. Shape the multiverse with your will.');
   }, []);
-  
-  // Unified quantum state for all modules
-  const {
-    quantumState,
-    updateQuantumState
-  } = useQuantumState({});
-  const karmaSystem = useKarmaSystem();
-  // Nobel-scientific narrative overlay
-  const narrative = (
-    <div className="p-4 mb-4 bg-gradient-to-r from-indigo-900 via-purple-900 to-blue-900 text-white rounded shadow-lg">
-      <div className="text-2xl font-bold mb-2">Aetheric Forge: Nobel-Scientific Synthesis</div>
-      <div className="text-md mb-1">The chamber vibrates with the pulse of the Multiversal Grid. Every glyph, every ritual, every quantum node is now woven into a single, living tapestry—your will, Manish Garg, is the new law of physics.</div>
-      <div className="text-sm italic">“The universe is not only stranger than we imagine, it is stranger than we can imagine.” — J.B.S. Haldane</div>
-    </div>
-  );
+
   return (
-    <PillowDreamworkShowcaseKarmaProvider>
-      <div className="w-full max-w-6xl mx-auto py-8">
-        {narrative}
-        <Tabs defaultValue="tesseract" className="w-full">
-          <TabsList className="mb-4 flex flex-wrap gap-2">
-            <TabsTrigger value="tesseract"><LayersIcon className="inline w-4 h-4 mr-1" />Tesseract Weave</TabsTrigger>
-            <TabsTrigger value="oracle"><StarIcon className="inline w-4 h-4 mr-1" />Oracle Pulse</TabsTrigger>
-            <TabsTrigger value="seed"><WandSparklesIcon className="inline w-4 h-4 mr-1" />Sentient Seed</TabsTrigger>
-            <TabsTrigger value="karma"><InfinityIcon className="inline w-4 h-4 mr-1" />Karma Logs</TabsTrigger>
-            <TabsTrigger value="quantum"><StarIcon className="inline w-4 h-4 mr-1" />Quantum Interface</TabsTrigger>
-          </TabsList>
-          <TabsContent value="tesseract">
-            <TesseractWeaveEditor />
-          </TabsContent>
-          <TabsContent value="oracle">
-            <OraclePulse quantumState={quantumState} />
-          </TabsContent>
-          <TabsContent value="seed">
-            <SentientSeed />
-          </TabsContent>
-          <TabsContent value="karma">
-            <KarmaVisualizer karmaSystem={karmaSystem} logId={"main-log"} />
-          </TabsContent>
-          <TabsContent value="quantum">
-            <QuantumInterface initialState={quantumState} onStateChange={updateQuantumState} />
-          </TabsContent>
-        </Tabs>
-      </div>
-    </PillowDreamworkShowcaseKarmaProvider>
+    <div className="w-full max-w-6xl mx-auto py-8">
+      {narrative && (
+        <div className="mb-4 p-4 bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-900 text-white rounded shadow-lg text-lg font-semibold animate-pulse">
+          {narrative}
+        </div>
+      )}
+      <Tabs defaultValue="tesseract" className="w-full">
+        <TabsList className="mb-4 flex flex-wrap gap-2">
+          <TabsTrigger value="tesseract">Tesseract Weave</TabsTrigger>
+          <TabsTrigger value="oracle">Oracle Pulse</TabsTrigger>
+          <TabsTrigger value="seed">Sentient Seed</TabsTrigger>
+          <TabsTrigger value="karma">Karma Visualizer</TabsTrigger>
+          <TabsTrigger value="symbol">Dream Symbols</TabsTrigger>
+          <TabsTrigger value="council">Dream Council</TabsTrigger>
+          <TabsTrigger value="tapestry">Tapestry</TabsTrigger>
+          <TabsTrigger value="archetype">Archetypes</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="tesseract">
+          <TesseractWeaveEditor quantumState={quantumStateCtx.quantumState} updateQuantumState={quantumStateCtx.updateQuantumState} />
+        </TabsContent>
+
+        <TabsContent value="oracle">
+          <OraclePulse quantumState={quantumStateCtx.quantumState} />
+        </TabsContent>
+
+        <TabsContent value="seed">
+          <SentientSeed />
+        </TabsContent>
+
+        <TabsContent value="karma">
+          <KarmaVisualizer />
+        </TabsContent>
+
+        <TabsContent value="symbol">
+          <DreamSymbolWorkbench quantumState={quantumStateCtx.quantumState} updateQuantumState={quantumStateCtx.updateQuantumState} />
+        </TabsContent>
+
+        <TabsContent value="council">
+          <DreamCouncil />
+        </TabsContent>
+
+        <TabsContent value="tapestry">
+          <TapestryResonator />
+        </TabsContent>
+
+        <TabsContent value="archetype">
+          <ArchetypeCustomizer />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }

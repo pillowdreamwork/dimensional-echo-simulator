@@ -1,6 +1,6 @@
 // Quantum Tesseract Engine Core
 import { Vector3, Matrix4, Quaternion } from 'three';
-import { Observable, Subject, BehaviorSubject } from 'rxjs';
+import { Observable, Subject, BehaviorSubject, Observer } from 'rxjs';
 import { map, filter, debounceTime, catchError } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { QuantumOptimizer, OptimizationMetrics } from './quantum-optimizer';
@@ -27,6 +27,42 @@ export interface QuantumState {
   probability: number;
   entanglementMap: Map<string, number>;
   collapseHistory: string[];
+  state: string;
+  coherence: number;
+  entanglement: number;
+  superposition: number;
+  phase: number;
+  dimensionalResonance: number;
+  aethericResonance: number;
+  dimensionalStability: number;
+  timelineConvergence: number;
+  activeRitualId?: string;
+  lastEvolvedRitualId?: string;
+  dimensionalShift: number;
+  ritualParticipants: {
+    [ritualId: string]: {
+      [participantId: string]: {
+        lastActive: number;
+        connected: boolean;
+      };
+    };
+  };
+  realityAnchors: {
+    primary: string;
+    secondary: string[];
+    strength: number;
+  };
+  quantumSignature: {
+    hash: string;
+    timestamp: number;
+    validityPeriod: number;
+  };
+  forgeMetadata: {
+    version: string;
+    lastModified: number;
+    stabilityIndex: number;
+    energyConsumption: number;
+  };
 }
 
 export class QuantumTesseractEngine {
@@ -71,7 +107,9 @@ export class QuantumTesseractEngine {
       debounceTime(1000 / this.transitionRate),
       filter(({ energy }) => energy > 0.1)
     ).subscribe(transition => {
-      this.processQuantumTransition(transition);
+      (async () => {
+        await this.processQuantumTransition(transition);
+      })();
     });
   }
 
@@ -105,97 +143,108 @@ export class QuantumTesseractEngine {
     targetStates: string[],
     intensity: number
   ): Observable<QuantumState> {
-    return new Observable(observer => {
-      try {
-        const sourceNode = this.nodes.get(sourceNodeId);
-        if (!sourceNode) {
-          this.errorHandler.reportError(
-            'NODE_NOT_FOUND',
-            `Source node ${sourceNodeId} not found`,
-            ErrorSeverity.HIGH,
-            'weaveQuantumState'
+    return new Observable((observer: Observer<QuantumState>) => {
+      (async () => {
+        try {
+          const sourceNode = this.nodes.get(sourceNodeId);
+          if (!sourceNode) {
+            this.errorHandler.reportError(
+              'NODE_NOT_FOUND',
+              `Source node ${sourceNodeId} not found`,
+              ErrorSeverity.HIGH,
+              'weaveQuantumState'
+            );
+            observer.error(new Error('Source node not found'));
+            return;
+          }
+          const stateVector = await this.optimizer.optimizeStateVector(
+            new Array(16).fill(0),
+            intensity
           );
-          observer.error(new Error('Source node not found'));
-          return;
-        }
+          const newState: QuantumState = {
+            stateVector,
+            probability: this.calculateProbability(stateVector),
+            entanglementMap: new Map(),
+            collapseHistory: [],
+            state: 'INITIAL',
+            coherence: 1.0,
+            entanglement: 0.0,
+            superposition: 1.0,
+            phase: 0,
+            dimensionalResonance: 0,
+            aethericResonance: 0,
+            dimensionalStability: 1.0,
+            timelineConvergence: 0,
+            activeRitualId: undefined,
+            lastEvolvedRitualId: undefined,
+            dimensionalShift: 0,
+            ritualParticipants: {},
+            realityAnchors: {
+              primary: '',
+              secondary: [],
+              strength: 0
+            },
+            quantumSignature: {
+              hash: '',
+              timestamp: Date.now(),
+              validityPeriod: 3600
+            },
+            forgeMetadata: {
+              version: '1.0',
+              lastModified: Date.now(),
+              stabilityIndex: 1.0,
+              energyConsumption: 0
+            }
+          };
 
-        const stateVector = this.optimizer.optimizeStateVector(
-          new Array(16).fill(0),
-          intensity
-        );
-        
-        const newState: QuantumState = {
-          stateVector,
-          probability: this.calculateProbability(stateVector),
-          entanglementMap: new Map(),
-          collapseHistory: []
-        };
-
-        // Process entanglements with error handling
-        targetStates.forEach(targetId => {
-          try {
-            const targetNode = this.nodes.get(targetId);
-            if (targetNode) {
-              newState.entanglementMap.set(
-                targetId,
-                this.optimizer.optimizeEntanglementCalculation(sourceNode, targetNode)
-              );
-            } else {
+          // Process entanglements with error handling
+          targetStates.forEach(targetId => {
+            try {
+              const targetNode = this.nodes.get(targetId);
+              if (targetNode) {
+                newState.entanglementMap.set(
+                  targetId,
+                  this.optimizer.optimizeEntanglementCalculation(sourceNode, targetNode)
+                );
+              } else {
+                this.errorHandler.reportError(
+                  'NODE_NOT_FOUND',
+                  `Target node ${targetId} not found`,
+                  ErrorSeverity.MEDIUM,
+                  'weaveQuantumState'
+                );
+              }
+            } catch (error) {
               this.errorHandler.reportError(
-                'NODE_NOT_FOUND',
-                `Target node ${targetId} not found`,
-                ErrorSeverity.MEDIUM,
-                'weaveQuantumState'
+                'ENTANGLEMENT_FAILURE',
+                `Failed to establish entanglement with node ${targetId}`,
+                ErrorSeverity.HIGH,
+                'weaveQuantumState',
+                { error }
               );
             }
-          } catch (error) {
+          });
+
+          // Validate quantum state before setting
+          if (this.validateQuantumState(newState)) {
+            this.quantumStates.set(sourceNodeId, newState);
+            observer.next(newState);
+          } else {
             this.errorHandler.reportError(
-              'ENTANGLEMENT_FAILURE',
-              `Failed to establish entanglement with node ${targetId}`,
+              'STATE_CORRUPTION',
+              'Invalid quantum state detected',
               ErrorSeverity.HIGH,
               'weaveQuantumState',
-              { error }
+              { state: newState }
             );
+            observer.error(new Error('Invalid quantum state'));
           }
-        });
-
-        // Validate quantum state before setting
-        if (this.validateQuantumState(newState)) {
-          this.quantumStates.set(sourceNodeId, newState);
-          observer.next(newState);
-        } else {
-          this.errorHandler.reportError(
-            'STATE_CORRUPTION',
-            'Invalid quantum state detected',
-            ErrorSeverity.HIGH,
-            'weaveQuantumState',
-            { state: newState }
-          );
-          observer.error(new Error('Invalid quantum state'));
+          observer.complete();
+        } catch (error) {
+          observer.error(error);
         }
-        observer.complete();
-      } catch (error) {
-        this.errorHandler.reportError(
-          'QUANTUM_DECOHERENCE',
-          'Critical error in quantum state weaving',
-          ErrorSeverity.CRITICAL,
-          'weaveQuantumState',
-          { error }
-        );
-        observer.error(error);
-      }
-    }).pipe(
-      catchError(error => {
-        this.errorHandler.reportError(
-          'QUANTUM_DECOHERENCE',
-          'Unhandled error in quantum state weaving',
-          ErrorSeverity.CRITICAL,
-          'weaveQuantumState',
-          { error }
-        );
-        throw error;
-      })
-    );
+      })();
+    });
   }
 
   private validateQuantumState(state: QuantumState): boolean {
@@ -251,30 +300,21 @@ export class QuantumTesseractEngine {
       .join('');
   }
 
-  private processQuantumTransition(
-    transition: {from: string, to: string, energy: number}
-  ): void {
+  private async processQuantumTransition(transition: {from: string, to: string, energy: number}): Promise<void> {
     const sourceState = this.quantumStates.get(transition.from);
     const targetState = this.quantumStates.get(transition.to);
-
     if (!sourceState || !targetState) return;
-
-    // Update state vectors based on energy transfer using optimizer
     const energyTransfer = transition.energy * 0.5;
-    sourceState.stateVector = this.optimizer.optimizeStateVector(
+    sourceState.stateVector = await this.optimizer.optimizeStateVector(
       sourceState.stateVector,
       1 - energyTransfer
     );
-    targetState.stateVector = this.optimizer.optimizeStateVector(
+    targetState.stateVector = await this.optimizer.optimizeStateVector(
       targetState.stateVector,
       1 + energyTransfer
     );
-
-    // Update probabilities
     sourceState.probability = this.calculateProbability(sourceState.stateVector);
     targetState.probability = this.calculateProbability(targetState.stateVector);
-
-    // Record transition in collapse history
     const timestamp = new Date().toISOString();
     sourceState.collapseHistory.push(`${timestamp}: Energy transfer to ${transition.to}`);
     targetState.collapseHistory.push(`${timestamp}: Energy received from ${transition.from}`);

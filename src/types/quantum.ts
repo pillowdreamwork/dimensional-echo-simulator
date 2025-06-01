@@ -1,6 +1,7 @@
+import { RitualQuantumState } from './ritual';
+
 // Core quantum mechanics types
-export interface QuantumState {
-  // Core quantum state
+export interface BaseQuantumState {
   state: string;
   probability: number;
   coherence: number;       // 0-1: Quantum state coherence level
@@ -11,6 +12,26 @@ export interface QuantumState {
   aethericResonance: number;
   dimensionalStability: number;
   timelineConvergence: number;
+  stateVector: number[];
+  entanglementMap: Map<string, number>;
+  collapseHistory: string[];
+}
+
+export interface QuantumState extends BaseQuantumState {
+  // Ritual state
+  activeRitualId?: string;
+  lastEvolvedRitualId?: string;
+  dimensionalShift: number;
+  ritualParticipants: {
+    [ritualId: string]: {
+      [participantId: string]: {
+        lastActive: number;
+        connected: boolean;
+      };
+    };
+  };
+
+  // Reality anchors
   realityAnchors: {
     primary: string;
     secondary: string[];
@@ -28,6 +49,42 @@ export interface QuantumState {
     energyConsumption: number;
   };
 }
+
+export type ExtendedQuantumState = QuantumState & RitualQuantumState;
+
+export const createInitialQuantumState = (): QuantumState => ({
+  state: 'coherent',
+  probability: 1,
+  coherence: 1,
+  entanglement: 0,
+  superposition: 0,
+  phase: 0,
+  dimensionalResonance: 1,
+  aethericResonance: 1,
+  dimensionalStability: 1,
+  timelineConvergence: 1,
+  stateVector: [],
+  entanglementMap: new Map(),
+  collapseHistory: [],
+  dimensionalShift: 0,
+  ritualParticipants: {},
+  realityAnchors: {
+    primary: '',
+    secondary: [],
+    strength: 1
+  },
+  quantumSignature: {
+    hash: '',
+    timestamp: Date.now(),
+    validityPeriod: 3600000 // 1 hour
+  },
+  forgeMetadata: {
+    version: '1.0.0',
+    lastModified: Date.now(),
+    stabilityIndex: 1,
+    energyConsumption: 0
+  }
+});
 
 export interface DimensionalProperties {
   level: number;              // 1-12: Current dimension level

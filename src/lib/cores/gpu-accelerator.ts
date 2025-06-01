@@ -1,5 +1,17 @@
 import { QuantumState } from '../../types/quantum';
 
+// Import GPUBufferUsage and GPUMapMode from quantum-optimizer if not already present
+const GPUBufferUsage = {
+  STORAGE: 0x0080,
+  COPY_SRC: 0x0002,
+  COPY_DST: 0x0004,
+  MAP_READ: 0x0001
+};
+const GPUMapMode = {
+  READ: 0x0001,
+  WRITE: 0x0002
+};
+
 export class GPUAccelerator {
   private device: GPUDevice | null = null;
   private computePipeline: GPUComputePipeline | null = null;
@@ -61,7 +73,7 @@ export class GPUAccelerator {
       `
     });
 
-    this.computePipeline = this.device.createComputePipeline({
+    this.computePipeline = await this.device.createComputePipelineAsync({
       layout: 'auto',
       compute: {
         module: shaderModule,

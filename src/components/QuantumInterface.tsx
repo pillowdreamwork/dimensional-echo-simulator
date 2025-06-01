@@ -164,3 +164,5 @@ export const QuantumInterface: React.FC<QuantumInterfaceProps> = ({
     </Card>
   );
 };
+
+export default QuantumInterface;

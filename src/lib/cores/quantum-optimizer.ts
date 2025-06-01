@@ -1,3 +1,13 @@
+// Add missing WebGPU type aliases for TypeScript
+// These are minimal stubs to satisfy the type checker
+type GPUShaderModuleDescriptor = any;
+type GPUComputePipelineDescriptor = any;
+type GPUBufferDescriptor = any;
+type GPUBindGroupDescriptor = any;
+type GPUCommandBuffer = any;
+type GPUCompilationInfo = any;
+type GPUBindGroupLayout = any;
+
 // WebGPU type declarations
 declare global {
   interface Navigator {

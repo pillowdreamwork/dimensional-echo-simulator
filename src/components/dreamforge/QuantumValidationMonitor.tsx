@@ -97,9 +97,60 @@ export const QuantumValidationMonitor: React.FC = () => {
           {isMonitoring ? 'Stop Monitoring' : 'Start Monitoring'}
         </Button>
       </div>
+      {/* Show errors */}
+      {validationResult && validationResult.errors.length > 0 && (
+        <div>
+          {validationResult.errors.map((error, index) => (
+            <Alert key={index} variant="destructive">
+              <AlertTitle>{error.severity.toUpperCase()}: {error.code}</AlertTitle>
+              <AlertDescription>{error.message} (Field: {error.field})</AlertDescription>
+            </Alert>
+          ))}
+        </div>
+      )}
+      {/* Show warnings */}
+      {validationResult && validationResult.warnings.length > 0 && (
+        <div>
+          {validationResult.warnings.map((warning, index) => (
+            <Alert key={index} variant="default">
+              <AlertTitle>Warning: {warning.code}</AlertTitle>
+              <AlertDescription>{warning.message} (Field: {warning.field}, Threshold: {warning.threshold}, Actual: {warning.actualValue})</AlertDescription>
+            </Alert>
+          ))}
+        </div>
+      )}
+      {/* Validation metrics table */}
+      {validationResult && (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Metric</TableHead>
+              <TableHead>Value</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>Coherence</TableCell>
+              <TableCell>{(validationResult.metrics.coherenceScore * 100).toFixed(1)}%</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Stability</TableCell>
+              <TableCell>{(validationResult.metrics.stabilityScore * 100).toFixed(1)}%</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Integrity</TableCell>
+              <TableCell>{(validationResult.metrics.integrityScore * 100).toFixed(1)}%</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Overall Health</TableCell>
+              <TableCell>{(validationResult.metrics.overallHealth * 100).toFixed(1)}%</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      )}
 
       {validationResult && (
-        <>
+        <React.Fragment>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">System Health Metrics</h3>
@@ -195,34 +246,54 @@ export const QuantumValidationMonitor: React.FC = () => {
               className="w-full" 
             />
           </div>
-        </>
-      )}
-                <TableCell>{result.name}</TableCell>
-                <TableCell>
-                  <span className={result.success ? 'text-green-500' : 'text-red-500'}>
-                    {result.success ? 'PASS' : 'FAIL'}
-                  </span>
-                </TableCell>
-                <TableCell>{formatDuration(result.duration)}</TableCell>
-                <TableCell className={getHealthColor(result.metrics.stability)}>
-                  {(result.metrics.stability * 100).toFixed(1)}%
-                </TableCell>
-                <TableCell className={getHealthColor(result.metrics.performance)}>
-                  {(result.metrics.performance * 100).toFixed(1)}%
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
 
-      {result.error && (
-        <div className="mt-4 p-4 bg-red-100 text-red-700 rounded">
-          <h4 className="font-semibold">Error Details</h4>
-          <pre className="mt-2 text-sm overflow-auto">
-            {result.error.message}
-          </pre>
-        </div>
+          {/* Validation Results Table */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Validation Results</h3>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Test</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead>Stability</TableHead>
+                  <TableHead>Performance</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {validationResult.results.map((result, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{result.name}</TableCell>
+                    <TableCell>
+                      <span className={result.success ? 'text-green-500' : 'text-red-500'}>
+                        {result.success ? 'PASS' : 'FAIL'}
+                      </span>
+                    </TableCell>
+                    <TableCell>{result.duration} ms</TableCell>
+                    <TableCell className={getHealthColor(result.metrics.stability)}>
+                      {(result.metrics.stability * 100).toFixed(1)}%
+                    </TableCell>
+                    <TableCell className={getHealthColor(result.metrics.performance)}>
+                      {(result.metrics.performance * 100).toFixed(1)}%
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Error Details for failed results */}
+          {validationResult.results.map((result, idx) => (
+            result.error ? (
+              <div key={idx} className="mt-4 p-4 bg-red-100 text-red-700 rounded">
+                <h4 className="font-semibold">Error Details</h4>
+                <pre className="mt-2 text-sm overflow-auto">
+                  {result.error.message}
+                </pre>
+              </div>
+            ) : null
+          ))}
+        </React.Fragment>
       )}
     </Card>
   );

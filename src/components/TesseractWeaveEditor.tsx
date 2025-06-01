@@ -7,21 +7,22 @@ import { Button } from './ui/button';
 import { Slider } from './ui/slider';
 import { Badge } from './ui/badge';
 import {
-    Cube,
     InfinityIcon,
     Maximize2Icon,
     MinimizeIcon,
     Plus,
     SaveIcon,
-    Wand2Icon
+    Wand2Icon,
+    Square // Use Square instead of Cube
 } from 'lucide-react';
 import { QuantumTesseractEngine, TesseractNode } from '@/lib/cores/quantum-tesseract';
 import { cn } from '@/lib/utils';
 import { TimelineBranchVisualizer } from './dreamforge/TimelineBranchVisualizer';
 import { InterDimensionalConnection } from './dreamforge/InterDimensionalConnection';
 import { GlyphNodeMesh } from './dreamforge/GlyphNodeMesh';
-import { QuantumState, DimensionalProperties, DimensionalLevel } from '@/types/quantum';
+import { QuantumState, DimensionalProperties } from '@/types/quantum';
 import { GlyphNode, GlyphNodeConnection } from '@/types/glyph';
+import { ClubIcon } from "lucide-react";
 
 interface WeaveNode extends Omit<GlyphNode, 'connections'> {
   position: Vector3;
@@ -104,7 +105,7 @@ export function TesseractWeaveEditor({
       onStateChange({
         ...quantumState,
         superposition: Math.max(0, quantumState.superposition - 20),
-        entanglementStrength: Math.min(100, quantumState.entanglementStrength + 10)
+        coherence: Math.min(100, quantumState.coherence + 10)
       });
 
     } catch (error) {
@@ -152,7 +153,6 @@ export function TesseractWeaveEditor({
       onStateChange({
         ...quantumState,
         coherence: Math.max(0, quantumState.coherence - 10),
-        entanglementStrength: Math.max(0, quantumState.entanglementStrength - 15)
       });
 
     } catch (error) {
@@ -189,6 +189,85 @@ export function TesseractWeaveEditor({
     });
   };
 
+  // Conversion function for WeaveNode to GlyphNode
+  function convertWeaveNodeToGlyphNode(node: WeaveNode): GlyphNode {
+    return {
+      id: node.id,
+      position: node.position,
+      rotation: node.rotation,
+      dimensionalCode: node.dimensionalCode || '',
+      glyphPattern: node.glyphPattern || '',
+      selected: false,
+      aethericResonance: node.aethericResonance || 1,
+      dimensionalStability: node.timelineStability || 1,
+      timelineConvergence: 1,
+      connections: node.connections.map((conn) => ({
+        targetId: conn.targetId,
+        strength: conn.strength,
+        phaseAlignment: 0,
+        dimensionalResonance: 0,
+        quantumBridge: {
+          entanglementStrength: 0,
+          coherenceLevel: 0,
+          phaseMatch: 0,
+        },
+      })),
+      dimensionalProperties: {
+        level: 1,
+        resonance: 100,
+        stability: 100,
+        harmonics: [],
+        entanglement: 100,
+        phaseAlignment: 100,
+        frequency: 432,
+        vibration: 432,
+        consciousness: 0.1,
+      },
+      quantumState: {
+        state: 'stable',
+        probability: 1,
+        coherence: 1,
+        entanglement: 1,
+        superposition: 1,
+        phase: 0,
+        dimensionalResonance: 1,
+        aethericResonance: 1,
+        dimensionalStability: 1,
+        timelineConvergence: 1,
+        stateVector: [],
+        entanglementMap: new Map(),
+        collapseHistory: [],
+        dimensionalShift: 0,
+        ritualParticipants: {},
+        realityAnchors: { primary: '', secondary: [], strength: 1 },
+        quantumSignature: { hash: '', timestamp: Date.now(), validityPeriod: 3600000 },
+        forgeMetadata: { version: '1.0', lastModified: Date.now(), stabilityIndex: 1, energyConsumption: 0 },
+      },
+      timelineState: {
+        probability: 1,
+        stability: 1,
+        convergence: 1,
+        branchingFactor: 1,
+        currentTimestamp: Date.now(),
+      },
+      metadata: {
+        createdAt: Date.now(),
+        lastModified: Date.now(),
+        energySignature: '',
+        dimensionalOrigin: 1,
+        stabilityHistory: [],
+      },
+      visualProperties: {
+        scale: 1,
+        opacity: 1,
+        emissiveIntensity: 1,
+        color: '#fff',
+        pulseFrequency: 0.5,
+        rotationSpeed: 0.01,
+      },
+    };
+  }
+
   // Render the 3D visualization
   return (
     <Card className={cn("w-full overflow-hidden", className)}>
@@ -217,19 +296,21 @@ export function TesseractWeaveEditor({
                     {nodes.map((node) => (
                         <React.Fragment key={node.id}>
                             <GlyphNodeMesh
-                                node={node as GlyphNode}
+                                node={convertWeaveNodeToGlyphNode(node)}
                                 isActive={activeTimeline === 'main'}
-                                onSelect={() => handleTimelineBranch(node)}
                             />
-                            {node.connections.map((conn) => (
+                            {node.connections.map((conn) => {
+                              const target = nodes.find(n => n.id === conn.targetId);
+                              if (!target) return null;
+                              return (
                                 <InterDimensionalConnection
-                                    key={`${node.id}-${conn.targetId}`}
-                                    startNode={node as GlyphNode}
-                                    endNode={nodes.find(n => n.id === conn.targetId) as GlyphNode}
-                                    strength={conn.strength}
-                                    resonance={conn.resonance}
+                                  key={`${node.id}-${conn.targetId}`}
+                                  source={convertWeaveNodeToGlyphNode(node)}
+                                  target={convertWeaveNodeToGlyphNode(target)}
+                                  connection={convertWeaveNodeToGlyphNode(node).connections.find(c => c.targetId === conn.targetId) as GlyphNodeConnection}
                                 />
-                            ))}
+                              );
+                            })}
                         </React.Fragment>
                     ))}
                     <OrbitControls />
