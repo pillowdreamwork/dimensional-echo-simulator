@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { getEngineModules } from '../lib/engine';
 import type { DimensionalImpact, RealityFeedback, PersonalEffect } from '../types/impact';
@@ -27,6 +28,16 @@ export function useRealityImpact({ pollInterval = 5000, maxHistory = 50 }: UseRe
         iuri: null
       };
     }
+  }, []);
+
+  // Add missing methods for compatibility
+  const realityFeedback = feedback;
+  const stabilizeReality = useCallback(async () => {
+    console.log('Stabilizing reality...');
+  }, []);
+  
+  const processCascadeEffect = useCallback(async (effect: any) => {
+    console.log('Processing cascade effect:', effect);
   }, []);
 
   // Add a new impact
@@ -143,10 +154,13 @@ export function useRealityImpact({ pollInterval = 5000, maxHistory = 50 }: UseRe
   return {
     impacts,
     feedback,
+    realityFeedback, // Added compatibility alias
     personalEffects,
     isLoading,
     error,
     addImpact,
-    verifyImpact
+    verifyImpact,
+    stabilizeReality, // Added missing method
+    processCascadeEffect // Added missing method
   };
 }

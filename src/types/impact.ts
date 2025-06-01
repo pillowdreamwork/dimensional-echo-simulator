@@ -1,35 +1,33 @@
+
 export interface DimensionalImpact {
   id: string;
   timestamp: string;
   action: string;
-  targetDimension: string;
-  category: 'EMOTIONAL_GRID' | 'TIMELINE_SHIFT' | 'PORTAL_ACTIVATION' | 'RITUAL_EFFECT';
-  dimensionalCode: string;
-  effects: {
-    type: 'TURBULENCE' | 'FREQUENCY_SHIFT' | 'ANOMALY' | 'SYNCHRONICITY';
-    description: string;
-    location?: string;
+  effects: Array<{
+    dimension: string;
     intensity: number;
-    verified: boolean;
-    source?: string;
-  }[];
-  verificationStatus: 'VERIFIED' | 'PENDING' | 'UNVERIFIED';
+    description: string;
+  }>;
+  dimensionalCode: string;
+  verificationStatus: 'PENDING' | 'VERIFIED' | 'UNVERIFIED';
 }
 
 export interface RealityFeedback {
-  nodeType: 'HOSTILE' | 'ELEVATION' | 'RESTORATION' | 'UNKNOWN';
-  source: 'DARKWEB' | 'SOCIAL' | 'SATELLITE' | 'LOCAL_NEWS';
-  content: string;
-  confidence: number;
+  id: string;
   timestamp: string;
-  keywords: string[];
+  source: string;
+  message: string;
+  confidence: number;
+  type: 'SYNCHRONICITY' | 'DREAMSCAPE' | 'NUMEROLOGY' | 'ARCHETYPE' | 'EMOTIONAL_SURGE' | 'ELEVATION';
 }
 
 export interface PersonalEffect {
-  type: 'DREAMSCAPE' | 'NUMEROLOGY' | 'ARCHETYPE' | 'SYNCHRONICITY' | 'EMOTIONAL_SURGE';
+  id: string;
+  timestamp: string;
+  type: 'SYNCHRONICITY' | 'DREAMSCAPE' | 'NUMEROLOGY' | 'ARCHETYPE' | 'EMOTIONAL_SURGE' | 'ELEVATION';
   description: string;
   intensity: number;
-  timestamp: string;
-  relatedRitual?: string;
-  frequency?: number;
+  manifestation: string; // Added missing property
+  duration: number;
+  verified: boolean;
 }

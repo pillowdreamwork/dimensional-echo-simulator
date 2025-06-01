@@ -1,146 +1,124 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { getEngineModules } from '../lib/engine';
-import { analyzeSymbolPattern } from '../utils/quantum';
-import { askGPT, streamGPT } from '../lib/ai/gptService';
 
-type Message = {
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { ScrollArea } from "./ui/scroll-area";
+import { Separator } from "./ui/separator";
+import { gptService } from "../lib/ai/gptService";
+
+interface Message {
   id: string;
   text: string;
   sender: 'user' | 'ai';
   timestamp: Date;
-};
+}
 
-const ChatAI = () => {
+const ChatAI: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
-  const [isThinking, setIsThinking] = useState(false);
-  const { siderAI } = getEngineModules();
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const [streamed, setStreamed] = useState('');
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Add initial greeting
-  useEffect(() => {
-    const initialMessage = {
-      id: 'initial',
-      text: "Welcome to SiderAI. I can assist with dimensional navigation, dream interpretation, and quantum field manipulation. How can I help your journey today?",
-      sender: 'ai' as const,
-      timestamp: new Date()
-    };
-    
-    setMessages([initialMessage]);
-  }, []);
-  
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollElement = scrollAreaRef.current;
-      setTimeout(() => {
-        scrollElement.scrollTop = scrollElement.scrollHeight;
-      }, 100);
-    }
-  }, [messages]);
-  
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-    setIsThinking(true);
-    
-    // Add user message
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: `user-${Date.now()}`,
       text: input,
       sender: 'user',
-      timestamp: new Date(),
+      timestamp: new Date()
     };
-    
+
     setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setStreamed('');
-    
-    // Use streaming for real-time feedback
-    let aiResponse = '';
-    for await (const chunk of streamGPT(input)) {
-      aiResponse += chunk;
-      setStreamed(aiResponse);
+    setInput("");
+    setIsLoading(true);
+
+    try {
+      const response = await gptService.sendSecureMessage(input, 
+        "You are a wise spiritual guide helping users explore consciousness and metaphysical topics."
+      );
+
+      if (response.success && response.message) {
+        const aiMessage: Message = {
+          id: `ai-${Date.now()}`,
+          text: response.message,
+          sender: 'ai',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, aiMessage]);
+      } else {
+        const errorMessage: Message = {
+          id: `error-${Date.now()}`,
+          text: response.error || "Sorry, I couldn't process your request.",
+          sender: 'ai',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, errorMessage]);
+      }
+    } catch (error) {
+      console.error('Chat error:', error);
+      const errorMessage: Message = {
+        id: `error-${Date.now()}`,
+        text: "An error occurred while processing your message.",
+        sender: 'ai',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
-    
-    setMessages(msgs => [...msgs, { role: 'assistant', content: aiResponse }]);
-    setIsThinking(false);
   };
-  
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      sendMessage();
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   };
 
   return (
-    <Card className="chat-ai bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70 h-[500px] flex flex-col">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-quantum-blue">SiderAI Assistant</CardTitle>
-          <Badge variant="outline" className="bg-quantum-blue/20 text-quantum-blue">
-            {isThinking ? "Thinking..." : "Online"}
-          </Badge>
-        </div>
+    <Card className="w-full max-w-md mx-auto h-96">
+      <CardHeader>
+        <CardTitle className="text-lg">AI Spiritual Guide</CardTitle>
       </CardHeader>
-      
-      <CardContent className="flex-grow flex flex-col p-0 overflow-hidden">
-        <ScrollArea className="flex-grow p-4" ref={scrollAreaRef}>
+      <CardContent className="p-0 flex flex-col h-80">
+        <ScrollArea className="flex-1 p-4">
           <div className="space-y-4">
-            {messages.map(message => (
-              <div 
-                key={message.id} 
+            {messages.map((message) => (
+              <div
+                key={message.id}
                 className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div 
+                <div
                   className={`max-w-[80%] p-3 rounded-lg ${
-                    message.sender === 'user' 
-                      ? 'bg-quantum-purple/30 text-white' 
-                      : 'bg-quantum-blue/30 text-white'
+                    message.sender === 'user'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted'
                   }`}
                 >
                   <p className="text-sm">{message.text}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  <p className="text-xs opacity-70 mt-1">
+                    {message.timestamp.toLocaleTimeString()}
                   </p>
                 </div>
               </div>
             ))}
-            
-            {isThinking && (
-              <div className="flex justify-start">
-                <div className="bg-quantum-blue/20 rounded-lg p-3 max-w-[80%]">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-quantum-blue rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-2 h-2 bg-quantum-blue rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-2 h-2 bg-quantum-blue rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </ScrollArea>
         
-        <div className="p-4 border-t border-border flex space-x-2">
+        <Separator />
+        
+        <div className="p-4 flex gap-2">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ask SiderAI about dimensions, symbols, or rituals..."
-            disabled={isThinking}
-            className="flex-grow"
+            placeholder="Ask about consciousness, dreams, symbols..."
+            disabled={isLoading}
+            className="flex-1"
           />
-          <Button 
-            onClick={sendMessage} 
-            disabled={isThinking || !input.trim()}
-            className="bg-quantum-blue hover:bg-quantum-blue/80"
-          >
-            Send
+          <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
+            {isLoading ? "..." : "Send"}
           </Button>
         </div>
       </CardContent>

@@ -12,6 +12,19 @@ interface GPTResponse {
   error?: string;
 }
 
+// Legacy compatibility exports
+export const askGPT = async (prompt: string): Promise<string> => {
+  const response = await gptService.sendSecureMessage(prompt);
+  return response.success ? response.message || '' : '';
+};
+
+export const streamGPT = async function* (prompt: string): AsyncGenerator<string> {
+  const response = await gptService.sendSecureMessage(prompt);
+  if (response.success && response.message) {
+    yield response.message;
+  }
+};
+
 // Secure GPT service using Supabase Edge Functions
 export class GPTService {
   private static instance: GPTService;
