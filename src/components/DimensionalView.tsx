@@ -90,7 +90,7 @@ const QuantumNode = ({ position, state, pulseFactor = 1, dimensionalShift = 0 }:
       meshRef.current.position.lerp(newPosition, delta * 3);
       
       // Update material properties based on quantum state
-      const intensity = state.superposition * (0.5 + Math.sin(pulseTime.current * 3) * 0.2);
+      const intensity = (state.superposition / 100) * (0.5 + Math.sin(pulseTime.current * 3) * 0.2);
       materials.core.emissiveIntensity = intensity;
       materials.glow.opacity = intensity * 0.5;
       

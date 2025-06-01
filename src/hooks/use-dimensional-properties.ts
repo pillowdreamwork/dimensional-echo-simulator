@@ -6,6 +6,7 @@ export function useDimensionalProperties() {
     level: 1,
     resonance: 100,
     stability: 100,
+    // Initialize harmonics as an empty array; update later if harmonic signatures are expected
     harmonics: [],
     entanglement: 0,
     phaseAlignment: 100
