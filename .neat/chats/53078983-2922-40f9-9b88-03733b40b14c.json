@@ -40,6 +40,14 @@
         "role": "user",
         "content": "`hi`"
       }
+    },
+    {
+      "user": "user",
+      "ts": "2025-06-01T09:15:53.770Z",
+      "payload": {
+        "role": "user",
+        "content": "working"
+      }
     }
   ]
 }
