@@ -1,152 +1,63 @@
-import { useState, useEffect, useCallback } from 'react';
-import { getEngineModules } from '../lib/engine';
-import type { DimensionalImpact, RealityFeedback, PersonalEffect } from '../types/impact';
+import { useState, useCallback } from 'react';
+import type { 
+  RealityImpact,
+  RealityImpactResult,
+  ImpactProcessOptions
+} from '../types/impact';
+import type { QuantumState } from '../types/quantum';
 
-interface UseRealityImpactOptions {
-  pollInterval?: number;
-  maxHistory?: number;
+interface UseRealityImpactResult extends RealityImpact {
+  isLoading: boolean;
+  error: Error | null;
 }
 
-export function useRealityImpact({ pollInterval = 5000, maxHistory = 50 }: UseRealityImpactOptions = {}) {
-  const [impacts, setImpacts] = useState<DimensionalImpact[]>([]);
-  const [feedback, setFeedback] = useState<RealityFeedback[]>([]);
-  const [personalEffects, setPersonalEffects] = useState<PersonalEffect[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function useRealityImpact(): UseRealityImpactResult {
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  // Get engine modules safely
-  const getEngineModulesSafely = useCallback(() => {
+  const processImpact = useCallback(async (options: ImpactProcessOptions): Promise<RealityImpactResult> => {
+    setIsLoading(true);
     try {
-      return getEngineModules();
-    } catch (error) {
-      console.error('Failed to get engine modules:', error);
-      return {
-        echoSimulator: null,
-        dreamServer: null,
-        mythicAI: null,
-        iuri: null
+      const { quantumState, effects } = options;
+      const stabilityChange = effects.reduce((sum, effect) => 
+        sum + (effect.stabilityChange || 0), 0);
+      
+      // Process dimensional effects
+      const result: RealityImpactResult = {
+        stability: Math.max(0, Math.min(1, quantumState.dimensionalStability + stabilityChange)),
+        coherence: Math.max(0, Math.min(1, quantumState.coherence - 0.1)),
+        entanglement: Math.max(0, Math.min(1, quantumState.entanglementStrength + 0.05))
       };
+
+      // Add dimensional shifts if present
+      const dimensionChange = effects.reduce((sum, effect) => 
+        sum + (effect.dimensionChange || 0), 0);
+      if (dimensionChange !== 0) {
+        result.dimensionalShift = dimensionChange;
+      }
+
+      return result;
+    } catch (e) {
+      const error = e instanceof Error ? e : new Error('Failed to process impact');
+      setError(error);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  // Add a new impact
-  const addImpact = useCallback(async (impact: Omit<DimensionalImpact, 'id' | 'timestamp'>) => {
-    try {
-      const { echoSimulator, iuri } = getEngineModulesSafely();
-
-      // Create ripple effect if echo simulator is available
-      if (echoSimulator?.createRippleEffect) {
-        const rippleEvent = echoSimulator.createRippleEffect({
-          description: impact.action,
-          dimension: impact.effects[0]?.intensity || 1
-        });
-
-        if (rippleEvent) {
-          console.log('Ripple effect created:', rippleEvent);
-        }
-      }
-
-      // Invoke ritual if IURI is available
-      if (iuri?.invokeRitual) {
-        const ritualResult = await iuri.invokeRitual({
-          glyph: impact.dimensionalCode,
-          intensity: Math.max(...impact.effects.map(e => e.intensity)) * 100,
-          intention: impact.action
-        });
-
-        if (ritualResult?.success) {
-          console.log('Ritual successful:', ritualResult);
-        }
-      }
-
-      const newImpact: DimensionalImpact = {
-        ...impact,
-        id: `impact-${Date.now()}`,
-        timestamp: new Date().toISOString(),
-        verificationStatus: 'PENDING'
-      };
-
-      setImpacts(prev => [newImpact, ...prev].slice(0, maxHistory));
-      return newImpact;
-    } catch (error) {
-      console.error('Failed to add impact:', error);
-      throw error;
-    }
-  }, [maxHistory, getEngineModulesSafely]);
-
-  // Verify an impact
-  const verifyImpact = useCallback(async (impactId: string, status: 'VERIFIED' | 'UNVERIFIED') => {
-    try {
-      setImpacts(prev => prev.map(impact =>
-        impact.id === impactId
-          ? { ...impact, verificationStatus: status }
-          : impact
-      ));
-    } catch (error) {
-      console.error('Failed to verify impact:', error);
-      throw error;
-    }
+  const calculateStability = useCallback((state: QuantumState): number => {
+    const baseStability = state.dimensionalStability;
+    const coherenceFactor = state.coherence * 0.3;
+    const entanglementPenalty = state.entanglementStrength * 0.2;
+    
+    return Math.max(0, Math.min(1, baseStability + coherenceFactor - entanglementPenalty));
   }, []);
-
-  // Poll for new events
-  useEffect(() => {
-    let mounted = true;
-    let pollTimer: NodeJS.Timeout;
-
-    const pollForUpdates = async () => {
-      if (!mounted) return;
-
-      try {
-        const { dreamServer, mythicAI } = getEngineModulesSafely();
-
-        // Get feedback from dream server
-        if (dreamServer?.getDreamFeedback) {
-          const dreamFeedback = await dreamServer.getDreamFeedback();
-          if (mounted && dreamFeedback) {
-            setFeedback(prev => [...dreamFeedback, ...prev].slice(0, maxHistory));
-          }
-        }
-
-        // Get personal effects from mythic AI
-        if (mythicAI?.getCurrentEffects) {
-          const effects = await mythicAI.getCurrentEffects();
-          if (mounted && effects) {
-            setPersonalEffects(prev => [...effects, ...prev].slice(0, maxHistory));
-          }
-        }
-
-        setError(null);
-      } catch (err) {
-        console.error('Error polling for updates:', err);
-        if (mounted) {
-          setError(err instanceof Error ? err : new Error('Failed to poll for updates'));
-        }
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    // Initial poll
-    pollForUpdates();
-
-    // Set up polling interval
-    pollTimer = setInterval(pollForUpdates, pollInterval);
-
-    return () => {
-      mounted = false;
-      clearInterval(pollTimer);
-    };
-  }, [pollInterval, maxHistory, getEngineModulesSafely]);
 
   return {
-    impacts,
-    feedback,
-    personalEffects,
+    processImpact,
+    calculateStability,
     isLoading,
-    error,
-    addImpact,
-    verifyImpact
+    error
   };
 }

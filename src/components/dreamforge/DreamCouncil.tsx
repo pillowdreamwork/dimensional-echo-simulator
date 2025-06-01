@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -65,7 +65,7 @@ function createRitualKarmaEvent(
   };
 }
 
-export function DreamCouncil() {
+export const DreamCouncil = memo(function DreamCouncil() {
   const { toast } = useToast();
   const { quantumState, updateQuantumState } = useQuantumState();
   const [rituals, setRituals] = useState<GroupRitual[]>([]);
@@ -419,6 +419,20 @@ export function DreamCouncil() {
     );
   }
 
+  const ritualState = useMemo(() => ({
+    ...quantumState,
+    ritualParticipants: syncState.participants,
+    dimensionalShift: quantumState.dimensionalStability * syncState.participants.length
+  }), [quantumState, syncState.participants]);
+
+  const handleRitualUpdate = useCallback((update: Partial<QuantumState>) => {
+    updateQuantumState({
+      ...update,
+      collapseTimestamp: Date.now(),
+      dimensionalStability: Math.min(1, quantumState.dimensionalStability * 1.1)
+    });
+  }, [quantumState, updateQuantumState]);
+
   return (
     <div className="space-y-6">
       <Card>
@@ -575,4 +589,4 @@ export function DreamCouncil() {
       </Card>
     </div>
   );
-}
+});

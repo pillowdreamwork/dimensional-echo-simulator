@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { memo, useCallback, useMemo, useState } from 'react';
 import { useQuantumState } from '@/hooks/use-quantum-state';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { LayersIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { QuantumState, QuantumMetrics } from '@/types/quantum';
 
 const CustomProgress = ({ value, className, indicatorClassName }: any) => (
   <Progress
@@ -16,20 +17,17 @@ const CustomProgress = ({ value, className, indicatorClassName }: any) => (
   />
 );
 
-const QuantumStateCollapser = () => {
+interface Props {
+  className?: string;
+}
+
+export const QuantumStateCollapser = memo(function QuantumStateCollapser({ className }: Props) {
   const { toast } = useToast();
   const [stabilityFactor, setStabilityFactor] = useState(50);
   const [collapsing, setCollapsing] = useState(false);
   const [collapsedState, setCollapsedState] = useState<string | null>(null);
   const [wasReset, setWasReset] = useState(false);
-  const [quantumStates, setQuantumStates] = useState({
-    alpha: 0.5,
-    beta: 0.5,
-    gamma: 0.5,
-    delta: 0.5
-  });
-
-  const { quantumState, collapseQuantumState, stabilizeQuantumState } = useQuantumState({
+  const { quantumState, collapseQuantumState, stabilizeQuantumState, updateQuantumState } = useQuantumState({
     onStateChange: (newState) => {
       // Update UI when quantum state changes
       toast({
@@ -39,11 +37,17 @@ const QuantumStateCollapser = () => {
     }
   });
 
+  const metrics = useMemo<QuantumMetrics>(() => ({
+    coherence: quantumState.coherence * 100,
+    entanglement: quantumState.entanglementStrength * 100,
+    stability: quantumState.dimensionalStability * 100
+  }), [quantumState]);
+
   // Calculate quantum probabilities
   const calculateProbabilities = () => {
-    const sum = Object.values(quantumStates).reduce((acc, val) => acc + val * val, 0);
+    const sum = Object.values(quantumState).reduce((acc, val) => acc + val * val, 0);
     return Object.fromEntries(
-      Object.entries(quantumStates).map(([key, value]) => [key, (value * value) / sum])
+      Object.entries(quantumState).map(([key, value]) => [key, (value * value) / sum])
     );
   };
 
@@ -57,7 +61,7 @@ const QuantumStateCollapser = () => {
 
   // Handle quantum state change
   const handleStateChange = (state: string, value: number) => {
-    setQuantumStates(prev => ({
+    updateQuantumState(prev => ({
       ...prev,
       [state]: value
     }));
@@ -69,11 +73,11 @@ const QuantumStateCollapser = () => {
     
     setTimeout(() => {
       // Create a superposition of states
-      const allStates = Object.keys(quantumStates);
+      const allStates = Object.keys(quantumState);
       const superpositionState = allStates[Math.floor(Math.random() * allStates.length)];
       
       // Update all quantum states based on superposition
-      const newStates = {...quantumStates};
+      const newStates = {...quantumState};
       
       // Redistribute probabilities while maintaining the chosen state as highest
       Object.keys(newStates).forEach(key => {
@@ -84,7 +88,7 @@ const QuantumStateCollapser = () => {
         }
       });
       
-      setQuantumStates(newStates);
+      updateQuantumState(newStates);
       
       toast({
         title: "Quantum States Superimposed",
@@ -143,7 +147,7 @@ const QuantumStateCollapser = () => {
   
   // Reset all quantum states to equal probability
   const handleReset = () => {
-    setQuantumStates({
+    updateQuantumState({
       alpha: 0.5,
       beta: 0.5,
       gamma: 0.5,
@@ -159,8 +163,10 @@ const QuantumStateCollapser = () => {
     });
   };
 
+  const isCollapseDisabled = quantumState.dimensionalStability < 0.1;
+
   return (
-    <Card className="bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70 w-full">
+    <Card className={cn("bg-quantum-dark dimensional-border backdrop-blur-sm bg-opacity-70 w-full", className)}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg flex items-center">
@@ -180,7 +186,7 @@ const QuantumStateCollapser = () => {
               variant="outline" 
               size="sm"
               onClick={handleCollapseState}
-              disabled={collapsing || !!collapsedState}
+              disabled={collapsing || !!collapsedState || isCollapseDisabled}
             >
               Collapse
             </Button>
@@ -196,7 +202,7 @@ const QuantumStateCollapser = () => {
         </div>
       </CardHeader>
       <CardContent>
-        {Object.entries(quantumStates).map(([state, value]) => (
+        {Object.entries(quantumState).map(([state, value]) => (
           <div key={state} className={cn(
             "mb-4",
             wasReset && "animate-quantum-reset",
@@ -262,9 +268,11 @@ const QuantumStateCollapser = () => {
             />
           </div>
         </div>
+
+        <div className="mt-4 text-sm text-gray-500">
+          Last Collapse: {new Date(quantumState.collapseTimestamp).toLocaleString()}
+        </div>
       </CardContent>
     </Card>
   );
-};
-
-export default QuantumStateCollapser;
+});

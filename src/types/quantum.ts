@@ -17,37 +17,24 @@ export interface BaseQuantumState {
   collapseHistory: string[];
 }
 
-export interface QuantumState extends BaseQuantumState {
-  // Ritual state
-  activeRitualId?: string;
-  lastEvolvedRitualId?: string;
-  dimensionalShift: number;
-  ritualParticipants: {
-    [ritualId: string]: {
-      [participantId: string]: {
-        lastActive: number;
-        connected: boolean;
-      };
-    };
-  };
+export interface QuantumState {
+  isCollapsed: boolean;
+  dimensionalStability: number;
+  collapseTimestamp: number;
+  coherence: number;
+  entanglementStrength: number;
+  stabilityFactor: number;
+  alpha: number;
+  beta: number;
+  phase: number;
+}
 
-  // Reality anchors
-  realityAnchors: {
-    primary: string;
-    secondary: string[];
-    strength: number;
-  };
-  quantumSignature: {
-    hash: string;
-    timestamp: number;
-    validityPeriod: number;
-  };
-  forgeMetadata: {
-    version: string;
-    lastModified: number;
-    stabilityIndex: number;
-    energyConsumption: number;
-  };
+export type QuantumStateUpdate = Partial<QuantumState>;
+
+export interface QuantumMetrics {
+  coherence: number;
+  entanglement: number;
+  stability: number;
 }
 
 export type ExtendedQuantumState = QuantumState & RitualQuantumState;
@@ -83,7 +70,13 @@ export const createInitialQuantumState = (): QuantumState => ({
     lastModified: Date.now(),
     stabilityIndex: 1,
     energyConsumption: 0
-  }
+  },
+  isCollapsed: false,
+  collapseTimestamp: 0,
+  entanglementStrength: 0,
+  stabilityFactor: 1,
+  alpha: 0,
+  beta: 0
 });
 
 export interface DimensionalProperties {

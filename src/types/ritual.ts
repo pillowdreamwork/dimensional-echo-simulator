@@ -44,16 +44,28 @@ export interface RitualKarmaEvent extends KarmaEvent {
   };
 }
 
+export interface RealTimeSyncState {
+  isConnected: boolean;
+  participants: Array<{
+    id: string;
+    name: string;
+    role: string;
+    dimensionalResonance: number;
+  }>;
+  lastSyncTimestamp: number;
+}
+
 export interface RitualQuantumState {
-  activeRitualId?: string;
-  lastEvolvedRitualId?: string;
+  ritualParticipants: RealTimeSyncState['participants'];
   dimensionalShift: number;
-  ritualParticipants: {
-    [ritualId: string]: {
-      [participantId: string]: {
-        lastActive: number;
-        connected: boolean;
-      };
-    };
+  realityAnchors: {
+    primary: string;
+    secondary: string[];
+    strength: number;
+  };
+  quantumSignature: {
+    hash: string;
+    timestamp: number;
+    validityPeriod: number;
   };
 }

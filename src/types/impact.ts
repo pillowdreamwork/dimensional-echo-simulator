@@ -1,3 +1,5 @@
+import type { QuantumState, DimensionalEffect } from './quantum';
+
 export interface DimensionalImpact {
   id: string;
   timestamp: string;
@@ -16,20 +18,37 @@ export interface DimensionalImpact {
   verificationStatus: 'VERIFIED' | 'PENDING' | 'UNVERIFIED';
 }
 
+export interface RealityImpactResult {
+  stability: number;
+  coherence: number;
+  entanglement: number;
+  timelineEffect?: string;
+  dimensionalShift?: number;
+}
+
+export interface ImpactProcessOptions {
+  quantumState: QuantumState;
+  effects: DimensionalEffect[];
+}
+
+export interface RealityImpact {
+  processImpact: (options: ImpactProcessOptions) => Promise<RealityImpactResult>;
+  calculateStability: (state: QuantumState) => number;
+}
+
 export interface RealityFeedback {
-  nodeType: 'HOSTILE' | 'ELEVATION' | 'RESTORATION' | 'UNKNOWN';
-  source: 'DARKWEB' | 'SOCIAL' | 'SATELLITE' | 'LOCAL_NEWS';
-  content: string;
-  confidence: number;
-  timestamp: string;
-  keywords: string[];
+  id: string;
+  description: string;
+  intensity: number;
+  timestamp: number;
+  verified: boolean;
 }
 
 export interface PersonalEffect {
-  type: 'DREAMSCAPE' | 'NUMEROLOGY' | 'ARCHETYPE' | 'SYNCHRONICITY' | 'EMOTIONAL_SURGE';
+  id: string;
+  userId: string;
   description: string;
   intensity: number;
-  timestamp: string;
-  relatedRitual?: string;
-  frequency?: number;
+  duration: number;
+  timestamp: number;
 }
