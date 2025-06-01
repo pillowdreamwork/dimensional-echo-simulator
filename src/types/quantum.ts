@@ -1,4 +1,3 @@
-
 export interface QuantumState {
   stateVector: number[];
   probability: number;
@@ -7,7 +6,7 @@ export interface QuantumState {
   state: string;
   coherence: number;
   entanglement: number;
-  entanglementStrength: number; // Added missing property
+  entanglementStrength: number;
   superposition: number;
   phase: number;
   dimensionalResonance: number;
@@ -16,9 +15,9 @@ export interface QuantumState {
   timelineConvergence: number;
   activeRitualId?: string;
   lastEvolvedRitualId?: string;
-  lastGeneratedArchetype?: string; // Added for ArchetypeCustomizer
-  lastEvolvedArchetype?: string; // Added for ArchetypeCustomizer
-  lastSymbolAnalysis?: string; // Added for DreamSymbolWorkbench
+  lastGeneratedArchetype?: string;
+  lastEvolvedArchetype?: string;
+  lastSymbolAnalysis?: string;
   dimensionalShift: number;
   ritualParticipants: {
     [ritualId: string]: {
@@ -58,14 +57,14 @@ export interface PatternAnalysis {
   pattern: string;
   significance: number;
   interpretation: string;
-  insight: string; // Added missing property
-  effect: string; // Added missing property
+  insight: string;
+  effect: string;
   resonance: number;
   dimensional_links: string[];
 }
 
 export interface PerformanceMetrics {
-  now: number; // Added missing property
+  now: number;
   timestamp: number;
   cpuUsage: number;
   memoryUsage: number;
@@ -111,4 +110,33 @@ export interface TimelineBranchProps {
 
 export interface ErrorMonitorProps {
   errorHandler: any;
+}
+
+// Add missing interface for DreamSymbol
+export interface DreamSymbol {
+  id: string;
+  symbol: string;
+  meaning: string;
+  energy: number;
+  connections: string[];
+}
+
+// Add missing interface for CompilationResult
+export interface CompilationResult {
+  success: boolean;
+  output: string;
+  errors: string[];
+  warnings: string[];
+}
+
+// Add missing interface for ValidationResult
+export interface ValidationResult {
+  valid: boolean;
+  score: number;
+  issues: string[];
+  results: Array<{
+    test: string;
+    passed: boolean;
+    message: string;
+  }>;
 }

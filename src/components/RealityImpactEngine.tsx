@@ -22,6 +22,19 @@ interface ImpactNodeProps {
   onVerify: (impactId: string, status: 'VERIFIED' | 'UNVERIFIED') => Promise<void>;
 }
 
+interface FeedbackNodeProps {
+  feedback: RealityFeedback;
+}
+
+interface PersonalEffectNodeProps {
+  effect: PersonalEffect;
+}
+
+interface RealityImpactEngineProps {
+  initialResonance?: number;
+  className?: string;
+}
+
 const ImpactNode: React.FC<ImpactNodeProps> = ({ impact, onVerify }) => {
   const [verifying, setVerifying] = useState(false);
 
@@ -96,10 +109,6 @@ const ImpactNode: React.FC<ImpactNodeProps> = ({ impact, onVerify }) => {
   );
 };
 
-interface FeedbackNodeProps {
-  feedback: RealityFeedback;
-}
-
 const FeedbackNode: React.FC<FeedbackNodeProps> = ({ feedback }) => {
   return (
     <div className={cn(
@@ -123,10 +132,6 @@ const FeedbackNode: React.FC<FeedbackNodeProps> = ({ feedback }) => {
     </div>
   );
 };
-
-interface PersonalEffectNodeProps {
-  effect: PersonalEffect;
-}
 
 const PersonalEffectNode: React.FC<PersonalEffectNodeProps> = ({ effect }) => {
   return (
@@ -177,7 +182,7 @@ export const RealityImpactEngine: React.FC<RealityImpactEngineProps> = ({
     setStabilizing(true);
     try {
       const result = await processCascadeEffect(effect);
-      setCascadeEffects(prev => [...prev, result]);
+      setCascadeEffects(prev => [...prev, result].filter(Boolean)); // Filter out void results
       
       // Update resonance based on effect
       setResonance(prev => Math.max(0, Math.min(100, 
@@ -232,13 +237,7 @@ export const RealityImpactEngine: React.FC<RealityImpactEngineProps> = ({
           <TabsContent value="feedback">
             <ScrollArea className="h-[400px] pr-4">
               {realityFeedback.map(feedback => (
-                <div key={feedback.id} className={cn(
-                  "border rounded-lg p-4 mb-4",
-                  NODE_COLORS[feedback.type] || NODE_COLORS.UNKNOWN
-                )}>
-                  <h4 className="text-sm font-medium mb-2">{feedback.message}</h4>
-                  <p className="text-xs opacity-70">{feedback.timestamp}</p>
-                </div>
+                <FeedbackNode key={feedback.id} feedback={feedback} />
               ))}
             </ScrollArea>
           </TabsContent>
@@ -247,34 +246,7 @@ export const RealityImpactEngine: React.FC<RealityImpactEngineProps> = ({
             <ScrollArea className="h-[400px] pr-4">
               <div className="space-y-4">
                 {personalEffects.map(effect => (
-                  <div key={effect.id} className="border rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="text-sm font-medium">{effect.description}</h4>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleCascadeEffect(effect)}
-                        disabled={stabilizing}
-                      >
-                        {stabilizing ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Sparkles className="h-4 w-4" />
-                        )}
-                        <span className="ml-2">Process Effect</span>
-                      </Button>
-                    </div>
-                    <p className="text-xs opacity-70">{effect.manifestation}</p>
-                    <Badge 
-                      variant="outline" 
-                      className={cn(
-                        "mt-2",
-                        NODE_COLORS[effect.type] || NODE_COLORS.UNKNOWN
-                      )}
-                    >
-                      Intensity: {effect.intensity}
-                    </Badge>
-                  </div>
+                  <PersonalEffectNode key={effect.id} effect={effect} />
                 ))}
               </div>
             </ScrollArea>

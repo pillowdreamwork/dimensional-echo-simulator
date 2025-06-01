@@ -85,7 +85,7 @@ const SymbolDecoder: React.FC<SymbolDecoderProps> = ({
     // Create symbol pattern string
     const pattern = selectedSymbols.map(s => s.glyph);
     
-    // Use the quantum utility to analyze the pattern
+    // Use the quantum utility to analyze the pattern - fix the parameter type
     const analysis = analyzeSymbolPattern(pattern.join(''), currentDimension);
     
     // Create the interpretation based on selected symbols and analysis

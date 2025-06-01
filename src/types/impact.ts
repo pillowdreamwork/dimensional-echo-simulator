@@ -7,8 +7,10 @@ export interface DimensionalImpact {
     dimension: string;
     intensity: number;
     description: string;
+    type: 'TURBULENCE' | 'FREQUENCY_SHIFT' | 'ANOMALY' | 'STABILIZATION';
   }>;
   dimensionalCode: string;
+  targetDimension: string; // Added missing property
   verificationStatus: 'PENDING' | 'VERIFIED' | 'UNVERIFIED';
 }
 
@@ -19,6 +21,9 @@ export interface RealityFeedback {
   message: string;
   confidence: number;
   type: 'SYNCHRONICITY' | 'DREAMSCAPE' | 'NUMEROLOGY' | 'ARCHETYPE' | 'EMOTIONAL_SURGE' | 'ELEVATION';
+  nodeType: 'HOSTILE' | 'ELEVATION' | 'RESTORATION' | 'UNKNOWN'; // Added missing property
+  content: string; // Added missing property
+  keywords: string[]; // Added missing property
 }
 
 export interface PersonalEffect {
@@ -27,7 +32,8 @@ export interface PersonalEffect {
   type: 'SYNCHRONICITY' | 'DREAMSCAPE' | 'NUMEROLOGY' | 'ARCHETYPE' | 'EMOTIONAL_SURGE' | 'ELEVATION';
   description: string;
   intensity: number;
-  manifestation: string; // Added missing property
+  manifestation: string;
   duration: number;
   verified: boolean;
+  frequency?: number; // Added missing optional property
 }

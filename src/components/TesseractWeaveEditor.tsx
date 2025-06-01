@@ -228,6 +228,7 @@ export function TesseractWeaveEditor({
         probability: 1,
         coherence: 1,
         entanglement: 1,
+        entanglementStrength: 1, // Added missing property
         superposition: 1,
         phase: 0,
         dimensionalResonance: 1,
