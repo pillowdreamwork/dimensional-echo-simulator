@@ -1,260 +1,193 @@
-import { Observable, Subject, BehaviorSubject } from 'rxjs';
-import { filter, map, retryWhen, delay, take } from 'rxjs/operators';
-import { QuantumState, TesseractNode } from './quantum-tesseract';
-import { KarmaEvent } from './karma-reflection';
 
-export interface WebSocketMessage {
-  type: 'quantum_update' | 'karma_event' | 'dimensional_shift' | 'reality_anchor';
-  payload: any;
-  timestamp: number;
-  signature?: string;
-}
+import { Observable, Subject, BehaviorSubject } from 'rxjs';
+import { filter, map, retry, catchError } from 'rxjs/operators';
+import { QuantumState } from './quantum-tesseract';
+import { KarmaEvent } from './karma-reflection';
+import { SecureWebSocketManager, WebSocketMessage } from './secure-websocket';
 
 export interface ConnectionState {
-  status: 'connecting' | 'connected' | 'disconnected' | 'error';
-  lastPing?: number;
-  latency?: number;
+  status: 'disconnected' | 'connecting' | 'connected' | 'error';
+  lastConnected?: number;
   error?: string;
 }
 
 export class RealTimeSync {
-  private ws: WebSocket | null = null;
-  private messageQueue = new Subject<WebSocketMessage>();
-  private connectionState = new BehaviorSubject<ConnectionState>({
-    status: 'disconnected'
-  });
-  private pingInterval: NodeJS.Timer | null = null;
-  private reconnectAttempts = 0;
-  private readonly MAX_RECONNECT_ATTEMPTS = 5;
-  private readonly RECONNECT_DELAY = 1000;
-  private readonly PING_INTERVAL = 30000;
+  private wsManager: SecureWebSocketManager;
+  private connectionState$ = new BehaviorSubject<ConnectionState>({ status: 'disconnected' });
+  private quantumUpdates$ = new Subject<{ state: QuantumState; nodeId: string }>();
+  private karmaEvents$ = new Subject<KarmaEvent>();
+  private dimensionalShifts$ = new Subject<{
+    sourceId: string;
+    targetId: string;
+    magnitude: number;
+  }>();
 
-  constructor(
-    private readonly wsUrl: string,
-    private readonly authToken?: string
-  ) {
+  constructor(url: string, authToken?: string) {
+    this.wsManager = new SecureWebSocketManager({
+      url,
+      authToken,
+      maxRetries: 3,
+      heartbeatInterval: 30000
+    });
+
     this.initializeConnection();
   }
 
   private initializeConnection(): void {
-    this.updateConnectionState({ status: 'connecting' });
-
     try {
-      this.ws = new WebSocket(this.wsUrl);
-      this.setupWebSocketHandlers();
-      this.startPingInterval();
+      this.wsManager.connect().pipe(
+        retry(3),
+        catchError(error => {
+          console.error('Real-time sync connection error:', error);
+          this.connectionState$.next({
+            status: 'error',
+            error: error.message
+          });
+          throw error;
+        })
+      ).subscribe({
+        next: (message) => this.handleMessage(message),
+        error: (error) => {
+          console.error('Real-time sync error:', error);
+          this.connectionState$.next({
+            status: 'error',
+            error: error.message
+          });
+        }
+      });
+
+      // Subscribe to connection state changes
+      this.wsManager.observeConnectionState().subscribe(state => {
+        this.connectionState$.next({
+          status: state as any,
+          lastConnected: state === 'connected' ? Date.now() : undefined
+        });
+      });
     } catch (error) {
-      this.handleConnectionError(error);
+      console.error('Failed to initialize real-time sync:', error);
+      this.connectionState$.next({
+        status: 'error',
+        error: error.message
+      });
     }
   }
 
-  private setupWebSocketHandlers(): void {
-    if (!this.ws) return;
-
-    this.ws.onopen = () => {
-      this.handleConnection();
-      if (this.authToken) {
-        this.authenticate();
-      }
-    };
-
-    this.ws.onmessage = (event) => {
-      this.handleMessage(event);
-    };
-
-    this.ws.onclose = () => {
-      this.handleDisconnection();
-    };
-
-    this.ws.onerror = (error) => {
-      this.handleConnectionError(error);
-    };
-  }
-
-  private handleConnection(): void {
-    this.reconnectAttempts = 0;
-    this.updateConnectionState({
-      status: 'connected',
-      lastPing: Date.now()
-    });
-  }
-
-  private handleDisconnection(): void {
-    this.updateConnectionState({ status: 'disconnected' });
-    this.stopPingInterval();
-
-    if (this.reconnectAttempts < this.MAX_RECONNECT_ATTEMPTS) {
-      setTimeout(() => {
-        this.reconnectAttempts++;
-        this.initializeConnection();
-      }, this.RECONNECT_DELAY * Math.pow(2, this.reconnectAttempts));
-    }
-  }
-
-  private handleConnectionError(error: any): void {
-    this.updateConnectionState({
-      status: 'error',
-      error: error.message || 'Unknown connection error'
-    });
-  }
-
-  private handleMessage(event: MessageEvent): void {
+  private handleMessage(message: WebSocketMessage): void {
     try {
-      const message: WebSocketMessage = JSON.parse(event.data);
-      
-      // Handle ping messages separately
-      if (message.type === 'ping') {
-        this.handlePing(message.timestamp);
-        return;
+      switch (message.type) {
+        case 'QUANTUM_UPDATE':
+          if (this.isValidQuantumUpdate(message.payload)) {
+            this.quantumUpdates$.next(message.payload);
+          }
+          break;
+
+        case 'KARMA_EVENT':
+          if (this.isValidKarmaEvent(message.payload)) {
+            this.karmaEvents$.next(message.payload);
+          }
+          break;
+
+        case 'DIMENSIONAL_SHIFT':
+          if (this.isValidDimensionalShift(message.payload)) {
+            this.dimensionalShifts$.next(message.payload);
+          }
+          break;
+
+        default:
+          console.warn('Unknown message type:', message.type);
       }
-
-      this.messageQueue.next(message);
     } catch (error) {
-      console.error('Failed to parse message:', error);
+      console.error('Error handling real-time message:', error);
     }
   }
 
-  private authenticate(): void {
-    if (!this.ws || !this.authToken) return;
-
-    this.ws.send(JSON.stringify({
-      type: 'auth',
-      payload: { token: this.authToken },
-      timestamp: Date.now()
-    }));
-  }
-
-  private startPingInterval(): void {
-    this.pingInterval = setInterval(() => {
-      this.sendPing();
-    }, this.PING_INTERVAL);
-  }
-
-  private stopPingInterval(): void {
-    if (this.pingInterval) {
-      clearInterval(this.pingInterval);
-      this.pingInterval = null;
-    }
-  }
-
-  private sendPing(): void {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      const pingMessage: WebSocketMessage = {
-        type: 'ping',
-        payload: null,
-        timestamp: Date.now()
-      };
-      this.ws.send(JSON.stringify(pingMessage));
-    }
-  }
-
-  private handlePing(timestamp: number): void {
-    const latency = Date.now() - timestamp;
-    this.updateConnectionState({
-      lastPing: timestamp,
-      latency
-    });
-  }
-
-  private updateConnectionState(partial: Partial<ConnectionState>): void {
-    const current = this.connectionState.value;
-    this.connectionState.next({ ...current, ...partial });
-  }
-
-  // Public methods for sending updates
-  public sendQuantumUpdate(state: QuantumState, nodeId: string): void {
-    this.sendMessage({
-      type: 'quantum_update',
-      payload: { state, nodeId },
-      timestamp: Date.now()
-    });
-  }
-
-  public sendKarmaEvent(event: KarmaEvent): void {
-    this.sendMessage({
-      type: 'karma_event',
-      payload: event,
-      timestamp: Date.now()
-    });
-  }
-
-  public sendDimensionalShift(
-    sourceId: string, 
-    targetId: string, 
-    magnitude: number
-  ): void {
-    this.sendMessage({
-      type: 'dimensional_shift',
-      payload: { sourceId, targetId, magnitude },
-      timestamp: Date.now()
-    });
-  }
-
-  public sendRealityAnchor(
-    nodeId: string, 
-    anchor: TesseractNode['realityAnchor']
-  ): void {
-    this.sendMessage({
-      type: 'reality_anchor',
-      payload: { nodeId, anchor },
-      timestamp: Date.now()
-    });
-  }
-
-  private sendMessage(message: WebSocketMessage): void {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(message));
-    } else {
-      console.warn('WebSocket not connected, message queued');
-    }
-  }
-
-  // Observable streams for different message types
-  public observeQuantumUpdates(): Observable<{ state: QuantumState; nodeId: string }> {
-    return this.messageQueue.pipe(
-      filter(msg => msg.type === 'quantum_update'),
-      map(msg => msg.payload)
+  private isValidQuantumUpdate(payload: any): payload is { state: QuantumState; nodeId: string } {
+    return (
+      payload &&
+      typeof payload.nodeId === 'string' &&
+      payload.state &&
+      typeof payload.state === 'object'
     );
   }
 
-  public observeKarmaEvents(): Observable<KarmaEvent> {
-    return this.messageQueue.pipe(
-      filter(msg => msg.type === 'karma_event'),
-      map(msg => msg.payload)
+  private isValidKarmaEvent(payload: any): payload is KarmaEvent {
+    return (
+      payload &&
+      typeof payload.id === 'string' &&
+      typeof payload.type === 'string' &&
+      typeof payload.magnitude === 'number'
     );
   }
 
-  public observeDimensionalShifts(): Observable<{
+  private isValidDimensionalShift(payload: any): payload is {
+    sourceId: string;
+    targetId: string;
+    magnitude: number;
+  } {
+    return (
+      payload &&
+      typeof payload.sourceId === 'string' &&
+      typeof payload.targetId === 'string' &&
+      typeof payload.magnitude === 'number'
+    );
+  }
+
+  // Public API methods
+  observeConnectionState(): Observable<ConnectionState> {
+    return this.connectionState$.asObservable();
+  }
+
+  observeQuantumUpdates(): Observable<{ state: QuantumState; nodeId: string }> {
+    return this.quantumUpdates$.asObservable();
+  }
+
+  observeKarmaEvents(): Observable<KarmaEvent> {
+    return this.karmaEvents$.asObservable();
+  }
+
+  observeDimensionalShifts(): Observable<{
     sourceId: string;
     targetId: string;
     magnitude: number;
   }> {
-    return this.messageQueue.pipe(
-      filter(msg => msg.type === 'dimensional_shift'),
-      map(msg => msg.payload)
-    );
+    return this.dimensionalShifts$.asObservable();
   }
 
-  public observeRealityAnchors(): Observable<{
-    nodeId: string;
-    anchor: TesseractNode['realityAnchor'];
-  }> {
-    return this.messageQueue.pipe(
-      filter(msg => msg.type === 'reality_anchor'),
-      map(msg => msg.payload)
-    );
-  }
-
-  public observeConnectionState(): Observable<ConnectionState> {
-    return this.connectionState.asObservable();
-  }
-
-  // Cleanup
-  public disconnect(): void {
-    this.stopPingInterval();
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
+  sendQuantumUpdate(state: QuantumState, nodeId: string): void {
+    try {
+      this.wsManager.sendMessage({
+        type: 'QUANTUM_UPDATE',
+        payload: { state, nodeId }
+      });
+    } catch (error) {
+      console.error('Failed to send quantum update:', error);
     }
+  }
+
+  sendKarmaEvent(event: KarmaEvent): void {
+    try {
+      this.wsManager.sendMessage({
+        type: 'KARMA_EVENT',
+        payload: event
+      });
+    } catch (error) {
+      console.error('Failed to send karma event:', error);
+    }
+  }
+
+  sendDimensionalShift(sourceId: string, targetId: string, magnitude: number): void {
+    try {
+      this.wsManager.sendMessage({
+        type: 'DIMENSIONAL_SHIFT',
+        payload: { sourceId, targetId, magnitude }
+      });
+    } catch (error) {
+      console.error('Failed to send dimensional shift:', error);
+    }
+  }
+
+  disconnect(): void {
+    this.wsManager.disconnect();
+    this.connectionState$.next({ status: 'disconnected' });
   }
 }
