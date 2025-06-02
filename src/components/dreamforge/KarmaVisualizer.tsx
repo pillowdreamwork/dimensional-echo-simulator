@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -166,6 +165,17 @@ const KarmaVisualizer: React.FC<KarmaVisualizerProps> = ({ karmaSystem, logId })
                 );
               })}
             </div>
+            <style dangerouslySetInnerHTML={{
+              __html: `
+                @keyframes karmaGlow {
+                  0%, 100% { box-shadow: 0 0 20px rgba(139, 69, 19, 0.3); }
+                  50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.6); }
+                }
+                .karma-glow {
+                  animation: karmaGlow 3s ease-in-out infinite;
+                }
+              `
+            }} />
           </div>
         )}
       </CardContent>

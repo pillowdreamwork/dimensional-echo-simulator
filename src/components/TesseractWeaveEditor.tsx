@@ -1,3 +1,4 @@
+
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, Text, Line } from '@react-three/drei';
@@ -13,7 +14,7 @@ import {
     Plus,
     SaveIcon,
     Wand2Icon,
-    Square // Use Square instead of Cube
+    Square
 } from 'lucide-react';
 import { QuantumTesseractEngine, TesseractNode } from '@/lib/cores/quantum-tesseract';
 import { cn } from '@/lib/utils';
@@ -21,8 +22,7 @@ import { TimelineBranchVisualizer } from './dreamforge/TimelineBranchVisualizer'
 import { InterDimensionalConnection } from './dreamforge/InterDimensionalConnection';
 import { GlyphNodeMesh } from './dreamforge/GlyphNodeMesh';
 import { QuantumState, DimensionalProperties } from '@/types/quantum';
-import { GlyphNode, GlyphNodeConnection } from '@/types/glyph';
-import { ClubIcon } from "lucide-react";
+import { GlyphNode, GlyphConnection, DimensionalLevel } from '@/types/glyph';
 
 interface WeaveNode extends Omit<GlyphNode, 'connections'> {
   position: Vector3;
@@ -34,9 +34,9 @@ interface WeaveNode extends Omit<GlyphNode, 'connections'> {
     strength: number;
     resonance: number;
   }>;
-  dimensionalCode?: string;
-  glyphPattern?: string;
-  aethericResonance?: number;
+  dimensionalCode: string;
+  glyphPattern: string;
+  aethericResonance: number;
 }
 
 interface TimelineBranchState {
@@ -304,12 +304,29 @@ export function TesseractWeaveEditor({
                             {node.connections.map((conn) => {
                               const target = nodes.find(n => n.id === conn.targetId);
                               if (!target) return null;
+                              
+                              const connection: GlyphConnection = {
+                                id: `${node.id}-${conn.targetId}`,
+                                sourceNodeId: node.id,
+                                targetNodeId: conn.targetId,
+                                targetId: conn.targetId,
+                                strength: conn.strength,
+                                type: 'quantum' as const,
+                                phaseAlignment: 90,
+                                dimensionalResonance: conn.resonance,
+                                quantumBridge: {
+                                  entanglementStrength: conn.strength,
+                                  coherenceLevel: 0.8,
+                                  phaseMatch: 0.9
+                                }
+                              };
+                              
                               return (
                                 <InterDimensionalConnection
                                   key={`${node.id}-${conn.targetId}`}
                                   source={convertWeaveNodeToGlyphNode(node)}
                                   target={convertWeaveNodeToGlyphNode(target)}
-                                  connection={convertWeaveNodeToGlyphNode(node).connections.find(c => c.targetId === conn.targetId) as GlyphNodeConnection}
+                                  connection={connection}
                                 />
                               );
                             })}

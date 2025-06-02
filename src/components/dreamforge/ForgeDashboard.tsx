@@ -250,18 +250,18 @@ export function ForgeDashboard() {
           </TabsContent>
 
           <TabsContent value="performance">
-            <QuantumPerformanceMonitor />
+            <QuantumPerformanceMonitor engine={tesseractEngine} />
           </TabsContent>
 
           <TabsContent value="monitoring">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <QuantumErrorMonitor />
+              <QuantumErrorMonitor errorHandler={errorHandler} />
               <QuantumValidationMonitor />
             </div>
           </TabsContent>
 
           <TabsContent value="sync">
-            <RealTimeSyncMonitor />
+            <RealTimeSyncMonitor syncManager={{}} />
           </TabsContent>
         </Tabs>
       </div>

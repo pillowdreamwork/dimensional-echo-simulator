@@ -1,118 +1,109 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
-import { Progress } from '../ui/progress';
 import { Circle } from 'lucide-react';
 
-interface SyncMonitorProps {
-  syncStatus: 'connected' | 'connecting' | 'disconnected' | 'error';
-  lastSyncTime: Date | null;
-  dataPointsSynced: number;
+interface SyncStatus {
+  status: 'online' | 'offline' | 'syncing' | 'error';
+  lastSync: string;
+  dataIntegrity: number;
   errorDetails?: string;
 }
 
-export const SyncMonitor: React.FC<SyncMonitorProps> = ({
-  syncStatus,
-  lastSyncTime,
-  dataPointsSynced,
-  errorDetails
-}) => {
-  const [progress, setProgress] = useState(0);
+export const SyncMonitor: React.FC = () => {
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>({
+    status: 'offline',
+    lastSync: 'Never',
+    dataIntegrity: 100,
+    errorDetails: undefined
+  });
 
   useEffect(() => {
-    // Simulate sync progress
-    let intervalId: NodeJS.Timeout;
-    if (syncStatus === 'connecting') {
-      setProgress(0);
-      intervalId = setInterval(() => {
-        setProgress(prevProgress => {
-          const newProgress = prevProgress + 10;
-          return newProgress > 95 ? 95 : newProgress;
+    // Simulate real-time sync status updates
+    const intervalId = setInterval(() => {
+      const randomStatus = Math.random();
+      if (randomStatus < 0.7) {
+        setSyncStatus({
+          status: 'online',
+          lastSync: new Date().toLocaleTimeString(),
+          dataIntegrity: Math.random() * 30 + 70,
+          errorDetails: undefined
         });
-      }, 300);
-    } else if (syncStatus === 'connected') {
-      setProgress(100);
-    } else {
-      setProgress(0);
-    }
+      } else if (randomStatus < 0.9) {
+        setSyncStatus({
+          status: 'syncing',
+          lastSync: new Date().toLocaleTimeString(),
+          dataIntegrity: Math.random() * 50 + 50,
+          errorDetails: undefined
+        });
+      } else {
+        setSyncStatus({
+          status: 'error',
+          lastSync: new Date().toLocaleTimeString(),
+          dataIntegrity: Math.random() * 20 + 10,
+          errorDetails: 'Connection timed out'
+        });
+      }
+    }, 3000);
 
     return () => clearInterval(intervalId);
-  }, [syncStatus]);
+  }, []);
 
   const getStatusColor = () => {
-    switch (syncStatus) {
-      case 'connected':
+    switch (syncStatus.status) {
+      case 'online':
         return 'text-green-500';
-      case 'connecting':
-        return 'text-yellow-500 animate-pulse';
-      case 'disconnected':
-        return 'text-red-500';
+      case 'syncing':
+        return 'text-blue-500 pulse-animation';
       case 'error':
-        return 'text-purple-500';
+        return 'text-red-500';
       default:
         return 'text-gray-500';
     }
   };
 
-  const formatLastSyncTime = () => {
-    if (!lastSyncTime) return 'Never';
-    return lastSyncTime.toLocaleTimeString();
-  };
-
   return (
-    <Card className="sync-monitor">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Synchronization Monitor</span>
-          <div className="flex items-center space-x-2">
-            <Circle className={`h-4 w-4 sync-indicator ${getStatusColor()}`} />
-            <Badge variant="secondary">{syncStatus.toUpperCase()}</Badge>
-          </div>
+          <span>Real-Time Sync Status</span>
+          <Badge variant={syncStatus.status === 'online' ? 'default' : 'secondary'}>
+            {syncStatus.status.toUpperCase()}
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Status</p>
-          <p className={`text-lg ${getStatusColor()}`}>
-            {syncStatus.toUpperCase()}
-          </p>
+        <div className="flex items-center space-x-2">
+          <Circle className={`h-4 w-4 ${getStatusColor()}`} />
+          <span>Status:</span>
+          <span className="font-medium">{syncStatus.status}</span>
         </div>
-
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Last Sync</p>
-          <p className="text-muted-foreground">{formatLastSyncTime()}</p>
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Data Synced</p>
-          <p className="text-muted-foreground">{dataPointsSynced} points</p>
-        </div>
-
         <div>
-          <p className="text-sm font-medium">Progress</p>
-          <Progress value={progress} />
+          <span>Last Sync:</span>
+          <span className="font-medium">{syncStatus.lastSync}</span>
         </div>
-
-        {errorDetails && (
-          <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm">
-            <p className="font-medium">Error Details:</p>
-            <p>{errorDetails}</p>
+        <div>
+          <span>Data Integrity:</span>
+          <span className="font-medium">{syncStatus.dataIntegrity.toFixed(1)}%</span>
+        </div>
+        {syncStatus.status === 'error' && syncStatus.errorDetails && (
+          <div className="text-red-500">
+            Error: {syncStatus.errorDetails}
           </div>
         )}
-      </CardContent>
-      <style>{`
-        .sync-monitor {
-          transition: all 0.3s ease;
-        }
-        .sync-indicator {
-          animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-          0% { opacity: 1; }
-          50% { opacity: 0.5; }
-          100% { opacity: 1; }
-        }
-      `}</style>
+
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes pulse {
+              0%, 100% { opacity: 0.5; }
+              50% { opacity: 1; }
+            }
+            .pulse-animation {
+              animation: pulse 2s ease-in-out infinite;
+            }
+          `
+        }} />
+      </div>
     </Card>
   );
 };

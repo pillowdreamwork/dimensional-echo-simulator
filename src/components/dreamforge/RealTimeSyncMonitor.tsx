@@ -23,11 +23,20 @@ interface MessageStats {
   total: number;
 }
 
+interface ConnectionState {
+  status: 'connected' | 'connecting' | 'disconnected' | 'error';
+  lastSync: number;
+  latency: number;
+  error?: string;
+}
+
 export const RealTimeSyncMonitor: React.FC<RealTimeSyncMonitorProps> = ({
   syncManager
 }) => {
   const [connectionState, setConnectionState] = useState<ConnectionState>({
-    status: 'disconnected'
+    status: 'disconnected',
+    lastSync: 0,
+    latency: 0
   });
   const [messageStats, setMessageStats] = useState<MessageStats>({
     quantum: 0,
@@ -172,26 +181,27 @@ export const RealTimeSyncMonitor: React.FC<RealTimeSyncMonitorProps> = ({
         </div>
       </div>
 
-      {connectionState.error && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            {connectionState.error}
-          </AlertDescription>
-        </Alert>
+      {connectionState.status === 'error' && connectionState.error && (
+        <div className="text-red-500 text-sm">
+          Error: {connectionState.error}
+        </div>
       )}
 
       <div className="text-sm text-gray-500 mt-4">
         Last Update: {formatTimestamp(lastUpdate)}
       </div>
 
-      <style>{`
-        .status-indicator {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          transition: background-color 0.3s ease;
-        }
-      `}</style>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes syncPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+          }
+          .sync-pulse {
+            animation: syncPulse 2s ease-in-out infinite;
+          }
+        `
+      }} />
     </Card>
   );
 };

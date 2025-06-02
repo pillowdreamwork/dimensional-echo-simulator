@@ -152,9 +152,17 @@ const PATTERN_DESCRIPTIONS = {
 };
 
 export function analyzeSymbolPattern(
-  symbols: Symbol[],
-  connections: Connection[]
+  symbols: any[],
+  connections: any[]
 ): PatternAnalysis {
+  if (!symbols || symbols.length === 0) {
+    return {
+      resonance: 0,
+      stability: 0,
+      description: "No symbols connected"
+    };
+  }
+
   // Calculate pattern type based on symbol positions and connections
   const patternType = detectPatternType(symbols, connections);
   
@@ -190,13 +198,16 @@ function calculateResonance(symbols: Symbol[], connections: Connection[]): numbe
   if (connections.length === 0) return 0;
   
   // Calculate average connection power
-  const avgPower = connections.reduce((sum, conn) => sum + conn.power, 0) / connections.length;
+  const connectionStrength = connections.reduce((sum, conn) => {
+    const power = conn.power || conn.strength || 0.5; // Handle both legacy and new types
+    return sum + power;
+  }, 0) / Math.max(connections.length, 1);
   
   // Factor in the number of connected symbols
   const connectedSymbols = symbols.filter(s => s.connected).length;
-  const symbolFactor = Math.min(connectedSymbols / 5, 1); // Max benefit from 5 symbols
+  const symbolEnergy = Math.min(connectedSymbols / 5, 1); // Max benefit from 5 symbols
   
-  return avgPower * symbolFactor * (0.7 + Math.random() * 0.3); // Add some randomness
+  return connectionStrength * 0.8 + symbolEnergy * 0.2;
 }
 
 function calculateStability(symbols: Symbol[], connections: Connection[]): number {
@@ -480,4 +491,21 @@ export const createTimelineRipple = (origin: string, intensity: number): {
     secondaryEffects,
     branchFactor
   };
+};
+
+const generatePatternDescription = (symbols: any[], connections: any[]): string => {
+  // Calculate connection types
+  const connectionTypes = connections.map(conn => {
+    const sourceSymbol = symbols.find(s => s.id === (conn.source || conn.sourceNodeId));
+    const targetSymbol = symbols.find(s => s.id === (conn.target || conn.targetNodeId));
+    
+    if (!sourceSymbol || !targetSymbol) return 'disconnected';
+    
+    return `${sourceSymbol.glyph || sourceSymbol.symbol}-${targetSymbol.glyph || targetSymbol.symbol}`;
+  });
+
+  // Generate description based on connection types
+  const description = connectionTypes.join(', ');
+  
+  return description;
 };

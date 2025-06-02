@@ -1,191 +1,160 @@
-import { Observable, Subject } from 'rxjs';
-import { QuantumState } from './quantum-tesseract';
-import { KarmaEvent } from './karma-reflection';
+import { io, Socket } from 'socket.io-client';
+import { BehaviorSubject, Observable } from 'rxjs';
 
-export interface WebSocketMessage {
-  type: 'quantum_update' | 'karma_event' | 'dimensional_shift' | 'reality_anchor';
-  payload: any;
-  timestamp: number;
-  id: string;
+interface SyncEvent<T> {
+  type: string;
+  payload: T;
 }
 
-export interface ConnectionState {
-  status: 'connected' | 'connecting' | 'disconnected' | 'error';
-  lastConnected?: Date;
-  reconnectAttempts?: number;
-  latency?: number;
-  error?: string;
+interface SyncOptions {
+  url: string;
+  autoConnect?: boolean;
+  reconnectionAttempts?: number;
 }
 
-interface DimensionalShift {
-  sourceId: string;
-  targetId: string;
-  magnitude: number;
-}
+export class RealTimeSyncManager {
+  private socket: Socket | null = null;
+  private connectionStatus = new BehaviorSubject<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
+  private syncEvents = new BehaviorSubject<SyncEvent<any> | null>(null);
+  private options: SyncOptions;
+  private reconnectionAttempt = 0;
 
-export class RealTimeSync {
-  private ws: WebSocket | null = null;
-  private url: string;
-  private authToken?: string;
-  private connectionStateSubject = new Subject<ConnectionState>();
-  private quantumUpdateSubject = new Subject<{ state: QuantumState; nodeId: string }>();
-  private karmaEventSubject = new Subject<KarmaEvent>();
-  private dimensionalShiftSubject = new Subject<DimensionalShift>();
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 10;
-  private reconnectInterval = 3000;
-  private reconnectTimeoutId: NodeJS.Timeout | null = null;
+  constructor(options: SyncOptions) {
+    this.options = { autoConnect: true, reconnectionAttempts: 3, ...options };
 
-  constructor(url: string, authToken?: string) {
-    this.url = url;
-    this.authToken = authToken;
-    this.connect();
+    if (this.options.autoConnect) {
+      this.connect();
+    }
   }
 
-  private connect() {
-    if (this.ws && this.ws.readyState !== WebSocket.CLOSED) {
-      console.log('Already connected or connecting.');
+  public connect(): void {
+    if (this.socket?.connected || this.connectionStatus.value === 'connecting') {
       return;
     }
 
-    this.connectionStateSubject.next({ status: 'connecting' });
-    this.ws = new WebSocket(this.url, this.authToken ? ['Authorization', `Bearer ${this.authToken}`] : []);
+    this.connectionStatus.next('connecting');
+    this.socket = io(this.options.url, {
+      reconnectionAttempts: this.options.reconnectionAttempts,
+      transports: ['websocket', 'polling']
+    });
 
-    this.ws.onopen = () => {
-      console.log('Connected to WebSocket server.');
-      this.reconnectAttempts = 0;
-      this.connectionStateSubject.next({ status: 'connected', lastConnected: new Date() });
-    };
+    this.socket.on('connect', () => {
+      this.connectionStatus.next('connected');
+      this.reconnectionAttempt = 0;
+      console.log('Connected to sync server');
+    });
 
-    this.ws.onmessage = (event) => {
-      try {
-        const message: WebSocketMessage = JSON.parse(event.data);
-        switch (message.type) {
-          case 'quantum_update':
-            this.quantumUpdateSubject.next(message.payload);
-            break;
-          case 'karma_event':
-            this.karmaEventSubject.next(message.payload);
-            break;
-          case 'dimensional_shift':
-            this.dimensionalShiftSubject.next(message.payload);
-            break;
-          default:
-            console.warn('Unknown message type:', message.type);
-        }
-      } catch (error) {
-        console.error('Error parsing message:', error);
-      }
-    };
+    this.socket.on('disconnect', () => {
+      this.connectionStatus.next('disconnected');
+      console.log('Disconnected from sync server');
+    });
 
-    this.ws.onclose = (event) => {
-      console.log('Disconnected from WebSocket server:', event.reason);
-      this.connectionStateSubject.next({ status: 'disconnected' });
-      this.reconnect();
-    };
+    this.socket.on('syncEvent', (event: SyncEvent<any>) => {
+      this.syncEvents.next(event);
+    });
 
-    this.ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      this.connectionStateSubject.next({ status: 'error', error: error.message });
-    };
+    this.socket.on('connect_error', (error: Error) => {
+      console.error('Connection error:', error);
+      this.handleConnectionError(error);
+    });
+
+    this.socket.on('reconnect_attempt', (attempt: number) => {
+      console.log(`Attempting to reconnect: ${attempt}`);
+      this.reconnectionAttempt = attempt;
+    });
+
+    this.socket.on('reconnect_error', (error: Error) => {
+      console.error('Reconnection error:', error);
+    });
+
+    this.socket.on('reconnect_failed', () => {
+      console.error('Failed to reconnect');
+      this.connectionStatus.next('error');
+    });
   }
 
-  private reconnect() {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-      console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
-      this.reconnectTimeoutId = setTimeout(() => this.connect(), this.reconnectInterval);
+  private handleConnectionError(error: Error): void {
+    if (this.reconnectionAttempt >= (this.options.reconnectionAttempts || 3)) {
+      this.connectionStatus.next('error');
+      console.error('Max reconnection attempts reached. Connection failed.');
+      this.socket?.disconnect();
     } else {
-      console.error('Max reconnect attempts reached. Giving up.');
-      this.connectionStateSubject.next({ status: 'error' });
+      console.error('Connection error:', error);
     }
   }
 
-  disconnect() {
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
-      if (this.reconnectTimeoutId) {
-        clearTimeout(this.reconnectTimeoutId);
-      }
-      this.connectionStateSubject.next({ status: 'disconnected' });
-    }
+  public disconnect(): void {
+    this.socket?.disconnect();
+    this.connectionStatus.next('disconnected');
   }
 
-  sendMessage(message: WebSocketMessage) {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(message));
+  public emit<T>(event: SyncEvent<T>): void {
+    if (this.socket?.connected) {
+      this.socket.emit('syncEvent', event);
     } else {
-      console.warn('WebSocket is not connected. Message dropped.');
+      console.warn('Socket not connected, event not emitted:', event);
     }
   }
 
-  sendQuantumUpdate(state: QuantumState, nodeId: string) {
-    this.sendMessage({
-      type: 'quantum_update',
-      payload: { state, nodeId },
-      timestamp: Date.now(),
-      id: 'quantum-' + Date.now()
-    });
-  }
-
-  sendKarmaEvent(event: KarmaEvent) {
-    this.sendMessage({
-      type: 'karma_event',
-      payload: event,
-      timestamp: Date.now(),
-      id: 'karma-' + Date.now()
-    });
-  }
-
-  sendDimensionalShift(sourceId: string, targetId: string, magnitude: number) {
-    this.sendMessage({
-      type: 'dimensional_shift',
-      payload: { sourceId, targetId, magnitude },
-      timestamp: Date.now(),
-      id: 'shift-' + Date.now()
-    });
-  }
-
-  observeConnectionState(): Observable<ConnectionState> {
-    return this.connectionStateSubject.asObservable();
-  }
-
-  observeQuantumUpdates(): Observable<{ state: QuantumState; nodeId: string }> {
-    return this.quantumUpdateSubject.asObservable();
-  }
-
-  observeKarmaEvents(): Observable<KarmaEvent> {
-    return this.karmaEventSubject.asObservable();
-  }
-
-  observeDimensionalShifts(): Observable<DimensionalShift> {
-    return this.dimensionalShiftSubject.asObservable();
-  }
-
-  observeRealityAnchors() {
-    return new Observable(subscriber => {
-      const handleMessage = (event: MessageEvent) => {
-        try {
-          const message: WebSocketMessage = JSON.parse(event.data);
-          if (message.type === 'reality_anchor') {
-            subscriber.next(message.payload);
-          }
-        } catch (error) {
-          console.error('Error parsing reality anchor message:', error);
+  public onSyncEvent(): Observable<SyncEvent<any>> {
+    return this.syncEvents.asObservable().pipe(
+      (event) => {
+        if (event) {
+          return new BehaviorSubject(event).asObservable();
         }
-      };
-
-      if (this.ws) {
-        this.ws.addEventListener('message', handleMessage);
-        return () => {
-          if (this.ws) {
-            this.ws.removeEventListener('message', handleMessage);
-          }
-        };
+        return new BehaviorSubject(null).asObservable();
       }
+    );
+  }
 
-      return () => {};
+  public getConnectionStatus(): Observable<'disconnected' | 'connecting' | 'connected' | 'error'> {
+    return this.connectionStatus.asObservable();
+  }
+
+  public getSocketId(): string | undefined {
+    return this.socket?.id;
+  }
+  
+  public getLatency(): Promise<number> {
+    return new Promise((resolve, reject) => {
+      if (!this.socket?.connected) {
+        reject(new Error('Socket not connected'));
+        return;
+      }
+  
+      const start = Date.now();
+      this.socket.emit('ping', () => {
+        const latency = Date.now() - start;
+        resolve(latency);
+      });
     });
+  }
+
+  private handleWebSocketMessage(event: MessageEvent): void {
+    try {
+      const message = JSON.parse(event.data);
+      // Handle different message types
+      switch (message.type) {
+        case 'stateUpdate':
+          // Process state update
+          console.log('Received state update:', message.payload);
+          break;
+        case 'nodeUpdate':
+          // Process node update
+          console.log('Received node update:', message.payload);
+          break;
+        // Add more cases as needed
+        default:
+          console.log('Received unknown message:', message);
+      }
+    } catch (error) {
+      console.error('Failed to parse WebSocket message:', error);
+    }
+  }
+
+  public close(): void {
+    this.socket?.close();
+    this.connectionStatus.next('disconnected');
+    console.log('WebSocket connection closed.');
   }
 }

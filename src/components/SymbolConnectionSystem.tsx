@@ -45,7 +45,7 @@ const SymbolConnectionSystem: React.FC = () => {
     const analysis = analyzeSymbolPattern(connectedSymbols, connections);
     
     // Calculate pattern metrics
-    const power = connections.reduce((sum, conn) => sum + conn.power, 0) / connections.length;
+    const power = connections.reduce((sum, conn) => sum + (conn.power || 0), 0) / Math.max(connections.length, 1);
     
     return {
       power,
@@ -71,11 +71,11 @@ const SymbolConnectionSystem: React.FC = () => {
     }
     
     // Otherwise, create a connection between the two symbols
-    const newConnection = {
+    const newConnection: Connection = {
       id: `${selectedSymbol}-${id}`,
       source: selectedSymbol,
       target: id,
-      power: Math.random() * 0.5 + 0.5 // Random power between 0.5 and 1
+      power: Math.random() * 0.5 + 0.5
     };
     
     // Check if connection already exists
@@ -194,7 +194,7 @@ const SymbolConnectionSystem: React.FC = () => {
                     y2={`${target.y}%`}
                     stroke="currentColor"
                     strokeWidth="2"
-                    strokeOpacity={conn.power}
+                    strokeOpacity={conn.power || 0.5}
                     className="text-blue-500"
                   />
                 );

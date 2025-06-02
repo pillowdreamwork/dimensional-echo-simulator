@@ -1,103 +1,90 @@
 
-import React, { useMemo, useRef } from 'react';
-import { Vector3 } from 'three';
+import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
+import { Vector3 } from 'three';
 import { GlyphNode, GlyphConnection } from '../../types/glyph';
-import { DIMENSIONAL_PROPERTIES } from '../../types/glyph';
 
-const BATCH_SIZE = 1000;
-const UPDATE_INTERVAL = 16;
-
-interface ConnectionProps {
+interface InterDimensionalConnectionProps {
   source: GlyphNode;
   target: GlyphNode;
   connection: GlyphConnection;
-  batchIndex?: number;
+  isActive?: boolean;
 }
 
-export const InterDimensionalConnection: React.FC<ConnectionProps> = React.memo(({
+export const InterDimensionalConnection: React.FC<InterDimensionalConnectionProps> = ({
   source,
   target,
   connection,
-  batchIndex = 0
+  isActive = true
 }) => {
-  const lineRef = useRef<any>();
-  const lastUpdateRef = useRef(0);
+  const lineRef = useRef<any>(null);
+  
+  // Calculate connection properties
+  const connectionProps = useMemo(() => {
+    const phaseAlignment = connection.phaseAlignment || 90;
+    const dimensionalResonance = connection.dimensionalResonance || 50;
+    const strength = connection.strength || 0.5;
+    
+    return {
+      phaseAlignment,
+      dimensionalResonance,
+      strength,
+      opacity: isActive ? strength * 0.8 : 0.3,
+      color: `hsl(${phaseAlignment * 2}, ${strength * 100}%, ${dimensionalResonance}%)`
+    };
+  }, [connection, isActive]);
 
+  // Generate curve points between nodes
   const points = useMemo(() => {
-    const start = new Vector3(source.position.x, source.position.y, source.position.z);
-    const end = new Vector3(target.position.x, target.position.y, target.position.z);
-    const midPoint = new Vector3().lerpVectors(start, end, 0.5);
+    const start = source.position;
+    const end = target.position;
+    const distance = start.distanceTo(end);
     
-    // Add curve control point for better visual effect
-    const control = midPoint.clone().add(
-      new Vector3(
-        Math.sin((connection.phaseAlignment || 0) * Math.PI) * 0.5,
-        Math.cos((connection.dimensionalResonance || 0) * Math.PI) * 0.5,
-        Math.sin(connection.strength * Math.PI) * 0.5
-      )
-    );
-
-    // Create smooth curve points for efficient rendering
-    const curvePoints = [];
-    const segments = Math.max(2, Math.floor(connection.strength / 20));
+    // Create a curved path with quantum fluctuation
+    const midPoint = new Vector3()
+      .addVectors(start, end)
+      .multiplyScalar(0.5);
     
-    for (let i = 0; i <= segments; i++) {
-      const t = i / segments;
-      const point = new Vector3().lerpVectors(
-        start.clone().lerp(control, t),
-        control.clone().lerp(end, t),
-        t
-      );
-      curvePoints.push(point);
-    }
+    // Add dimensional curvature based on resonance
+    const curvature = connectionProps.dimensionalResonance / 100;
+    midPoint.y += distance * curvature * 0.3;
     
-    return curvePoints;
-  }, [source.position, target.position, connection.strength, connection.phaseAlignment, connection.dimensionalResonance]);
+    return [start, midPoint, end];
+  }, [source.position, target.position, connectionProps.dimensionalResonance]);
 
-  const color = useMemo(() => {
-    const dimensionColor = DIMENSIONAL_PROPERTIES[source.dimensionalProperties.level].color;
-    const alpha = (connection.dimensionalResonance || 50) / 100;
-    return dimensionColor + Math.floor(alpha * 255).toString(16).padStart(2, '0');
-  }, [source.dimensionalProperties.level, connection.dimensionalResonance]);
-
-  const materialProps = useMemo(() => ({
-    color,
-    transparent: true,
-    opacity: connection.strength / 100,
-    linewidth: Math.max(0.5, (connection.phaseAlignment || 25) / 25),
-    toneMapped: false,
-    dashed: false,
-    depthWrite: false,
-    vertexColors: true,
-    blending: 2 as const,
-  }), [color, connection.strength, connection.phaseAlignment]);
-
+  // Animate the connection
   useFrame((state) => {
-    if (!lineRef.current) return;
-    
-    const now = state.clock.getElapsedTime() * 1000;
-    if (now - lastUpdateRef.current < UPDATE_INTERVAL) return;
-    
-    if (state.camera.position.distanceTo(points[0]) < 50) {
-      const batchDelay = (batchIndex % BATCH_SIZE) * 0.1;
-      setTimeout(() => {
-        if (lineRef.current) {
-          lineRef.current.geometry.verticesNeedUpdate = true;
-          lineRef.current.material.needsUpdate = true;
-        }
-      }, batchDelay);
+    if (lineRef.current && lineRef.current.material) {
+      const time = state.clock.getElapsedTime();
+      const pulseFreq = 2 + (connectionProps.strength * 3);
+      
+      // Pulsing opacity effect
+      const basePulse = Math.sin(time * pulseFreq) * 0.2 + 0.8;
+      lineRef.current.material.opacity = connectionProps.opacity * basePulse;
+      
+      // Phase-aligned color shifting
+      const hueShift = Math.sin(time + connectionProps.phaseAlignment / 180 * Math.PI) * 20;
+      lineRef.current.material.color.setHSL(
+        (connectionProps.phaseAlignment * 2 + hueShift) / 360,
+        connectionProps.strength,
+        connectionProps.dimensionalResonance / 100
+      );
     }
-    
-    lastUpdateRef.current = now;
   });
 
   return (
     <Line
       ref={lineRef}
       points={points}
-      {...materialProps}
+      color={connectionProps.color}
+      transparent
+      opacity={connectionProps.opacity}
+      linewidth={2}
+      toneMapped={false}
+      dashed={false}
+      depthWrite={false}
+      blending={2}
     />
   );
-});
+};
