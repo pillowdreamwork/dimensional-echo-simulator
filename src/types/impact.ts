@@ -1,21 +1,16 @@
-import type { QuantumState, DimensionalEffect } from './quantum';
-
 export interface DimensionalImpact {
   id: string;
   timestamp: string;
   action: string;
-  targetDimension: string;
-  category: 'EMOTIONAL_GRID' | 'TIMELINE_SHIFT' | 'PORTAL_ACTIVATION' | 'RITUAL_EFFECT';
-  dimensionalCode: string;
-  effects: {
-    type: 'TURBULENCE' | 'FREQUENCY_SHIFT' | 'ANOMALY' | 'SYNCHRONICITY';
-    description: string;
-    location?: string;
+  effects: Array<{
+    dimension: string;
     intensity: number;
-    verified: boolean;
-    source?: string;
-  }[];
-  verificationStatus: 'VERIFIED' | 'PENDING' | 'UNVERIFIED';
+    description: string;
+    type: 'TURBULENCE' | 'FREQUENCY_SHIFT' | 'ANOMALY' | 'STABILIZATION';
+  }>;
+  dimensionalCode: string;
+  targetDimension: string; // Added missing property
+  verificationStatus: 'PENDING' | 'VERIFIED' | 'UNVERIFIED';
 }
 
 export interface RealityImpactResult {
@@ -37,18 +32,19 @@ export interface RealityImpact {
 }
 
 export interface RealityFeedback {
-  id: string;
-  description: string;
-  intensity: number;
-  timestamp: number;
-  verified: boolean;
+  nodeType: 'HOSTILE' | 'ELEVATION' | 'RESTORATION' | 'UNKNOWN';
+  source: 'DARKWEB' | 'SOCIAL' | 'SATELLITE' | 'LOCAL_NEWS';
+  content: string;
+  confidence: number;
+  timestamp: string;
+  keywords: string[];
 }
 
 export interface PersonalEffect {
-  id: string;
-  userId: string;
+  type: 'DREAMSCAPE' | 'NUMEROLOGY' | 'ARCHETYPE' | 'SYNCHRONICITY' | 'EMOTIONAL_SURGE';
   description: string;
   intensity: number;
-  duration: number;
-  timestamp: number;
+  timestamp: string;
+  relatedRitual?: string;
+  frequency?: number;
 }

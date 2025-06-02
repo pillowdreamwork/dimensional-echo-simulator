@@ -1,260 +1,190 @@
-import { Observable, Subject, BehaviorSubject } from 'rxjs';
-import { filter, map, retryWhen, delay, take } from 'rxjs/operators';
-import { QuantumState, TesseractNode } from './quantum-tesseract';
+import { Observable, Subject } from 'rxjs';
+import { QuantumState } from './quantum-tesseract';
 import { KarmaEvent } from './karma-reflection';
 
 export interface WebSocketMessage {
   type: 'quantum_update' | 'karma_event' | 'dimensional_shift' | 'reality_anchor';
   payload: any;
   timestamp: number;
-  signature?: string;
+  id: string;
 }
 
 export interface ConnectionState {
-  status: 'connecting' | 'connected' | 'disconnected' | 'error';
-  lastPing?: number;
+  status: 'connected' | 'connecting' | 'disconnected' | 'error';
+  lastConnected?: Date;
+  reconnectAttempts?: number;
   latency?: number;
-  error?: string;
+}
+
+interface DimensionalShift {
+  sourceId: string;
+  targetId: string;
+  magnitude: number;
 }
 
 export class RealTimeSync {
   private ws: WebSocket | null = null;
-  private messageQueue = new Subject<WebSocketMessage>();
-  private connectionState = new BehaviorSubject<ConnectionState>({
-    status: 'disconnected'
-  });
-  private pingInterval: NodeJS.Timer | null = null;
+  private url: string;
+  private authToken?: string;
+  private connectionStateSubject = new Subject<ConnectionState>();
+  private quantumUpdateSubject = new Subject<{ state: QuantumState; nodeId: string }>();
+  private karmaEventSubject = new Subject<KarmaEvent>();
+  private dimensionalShiftSubject = new Subject<DimensionalShift>();
   private reconnectAttempts = 0;
-  private readonly MAX_RECONNECT_ATTEMPTS = 5;
-  private readonly RECONNECT_DELAY = 1000;
-  private readonly PING_INTERVAL = 30000;
+  private maxReconnectAttempts = 10;
+  private reconnectInterval = 3000;
+  private reconnectTimeoutId: NodeJS.Timeout | null = null;
 
-  constructor(
-    private readonly wsUrl: string,
-    private readonly authToken?: string
-  ) {
-    this.initializeConnection();
+  constructor(url: string, authToken?: string) {
+    this.url = url;
+    this.authToken = authToken;
+    this.connect();
   }
 
-  private initializeConnection(): void {
-    this.updateConnectionState({ status: 'connecting' });
-
-    try {
-      this.ws = new WebSocket(this.wsUrl);
-      this.setupWebSocketHandlers();
-      this.startPingInterval();
-    } catch (error) {
-      this.handleConnectionError(error);
+  private connect() {
+    if (this.ws && this.ws.readyState !== WebSocket.CLOSED) {
+      console.log('Already connected or connecting.');
+      return;
     }
-  }
 
-  private setupWebSocketHandlers(): void {
-    if (!this.ws) return;
+    this.connectionStateSubject.next({ status: 'connecting' });
+    this.ws = new WebSocket(this.url, this.authToken ? ['Authorization', `Bearer ${this.authToken}`] : []);
 
     this.ws.onopen = () => {
-      this.handleConnection();
-      if (this.authToken) {
-        this.authenticate();
-      }
+      console.log('Connected to WebSocket server.');
+      this.reconnectAttempts = 0;
+      this.connectionStateSubject.next({ status: 'connected', lastConnected: new Date() });
     };
 
     this.ws.onmessage = (event) => {
-      this.handleMessage(event);
+      try {
+        const message: WebSocketMessage = JSON.parse(event.data);
+        switch (message.type) {
+          case 'quantum_update':
+            this.quantumUpdateSubject.next(message.payload);
+            break;
+          case 'karma_event':
+            this.karmaEventSubject.next(message.payload);
+            break;
+          case 'dimensional_shift':
+            this.dimensionalShiftSubject.next(message.payload);
+            break;
+          default:
+            console.warn('Unknown message type:', message.type);
+        }
+      } catch (error) {
+        console.error('Error parsing message:', error);
+      }
     };
 
-    this.ws.onclose = () => {
-      this.handleDisconnection();
+    this.ws.onclose = (event) => {
+      console.log('Disconnected from WebSocket server:', event.reason);
+      this.connectionStateSubject.next({ status: 'disconnected' });
+      this.reconnect();
     };
 
     this.ws.onerror = (error) => {
-      this.handleConnectionError(error);
+      console.error('WebSocket error:', error);
+      this.connectionStateSubject.next({ status: 'error' });
     };
   }
 
-  private handleConnection(): void {
-    this.reconnectAttempts = 0;
-    this.updateConnectionState({
-      status: 'connected',
-      lastPing: Date.now()
-    });
-  }
-
-  private handleDisconnection(): void {
-    this.updateConnectionState({ status: 'disconnected' });
-    this.stopPingInterval();
-
-    if (this.reconnectAttempts < this.MAX_RECONNECT_ATTEMPTS) {
-      setTimeout(() => {
-        this.reconnectAttempts++;
-        this.initializeConnection();
-      }, this.RECONNECT_DELAY * Math.pow(2, this.reconnectAttempts));
-    }
-  }
-
-  private handleConnectionError(error: any): void {
-    this.updateConnectionState({
-      status: 'error',
-      error: error.message || 'Unknown connection error'
-    });
-  }
-
-  private handleMessage(event: MessageEvent): void {
-    try {
-      const message: WebSocketMessage = JSON.parse(event.data);
-      
-      // Handle ping messages separately
-      if (message.type === 'ping') {
-        this.handlePing(message.timestamp);
-        return;
-      }
-
-      this.messageQueue.next(message);
-    } catch (error) {
-      console.error('Failed to parse message:', error);
-    }
-  }
-
-  private authenticate(): void {
-    if (!this.ws || !this.authToken) return;
-
-    this.ws.send(JSON.stringify({
-      type: 'auth',
-      payload: { token: this.authToken },
-      timestamp: Date.now()
-    }));
-  }
-
-  private startPingInterval(): void {
-    this.pingInterval = setInterval(() => {
-      this.sendPing();
-    }, this.PING_INTERVAL);
-  }
-
-  private stopPingInterval(): void {
-    if (this.pingInterval) {
-      clearInterval(this.pingInterval);
-      this.pingInterval = null;
-    }
-  }
-
-  private sendPing(): void {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      const pingMessage: WebSocketMessage = {
-        type: 'ping',
-        payload: null,
-        timestamp: Date.now()
-      };
-      this.ws.send(JSON.stringify(pingMessage));
-    }
-  }
-
-  private handlePing(timestamp: number): void {
-    const latency = Date.now() - timestamp;
-    this.updateConnectionState({
-      lastPing: timestamp,
-      latency
-    });
-  }
-
-  private updateConnectionState(partial: Partial<ConnectionState>): void {
-    const current = this.connectionState.value;
-    this.connectionState.next({ ...current, ...partial });
-  }
-
-  // Public methods for sending updates
-  public sendQuantumUpdate(state: QuantumState, nodeId: string): void {
-    this.sendMessage({
-      type: 'quantum_update',
-      payload: { state, nodeId },
-      timestamp: Date.now()
-    });
-  }
-
-  public sendKarmaEvent(event: KarmaEvent): void {
-    this.sendMessage({
-      type: 'karma_event',
-      payload: event,
-      timestamp: Date.now()
-    });
-  }
-
-  public sendDimensionalShift(
-    sourceId: string, 
-    targetId: string, 
-    magnitude: number
-  ): void {
-    this.sendMessage({
-      type: 'dimensional_shift',
-      payload: { sourceId, targetId, magnitude },
-      timestamp: Date.now()
-    });
-  }
-
-  public sendRealityAnchor(
-    nodeId: string, 
-    anchor: TesseractNode['realityAnchor']
-  ): void {
-    this.sendMessage({
-      type: 'reality_anchor',
-      payload: { nodeId, anchor },
-      timestamp: Date.now()
-    });
-  }
-
-  private sendMessage(message: WebSocketMessage): void {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(message));
+  private reconnect() {
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.reconnectAttempts++;
+      console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
+      this.reconnectTimeoutId = setTimeout(() => this.connect(), this.reconnectInterval);
     } else {
-      console.warn('WebSocket not connected, message queued');
+      console.error('Max reconnect attempts reached. Giving up.');
+      this.connectionStateSubject.next({ status: 'error' });
     }
   }
 
-  // Observable streams for different message types
-  public observeQuantumUpdates(): Observable<{ state: QuantumState; nodeId: string }> {
-    return this.messageQueue.pipe(
-      filter(msg => msg.type === 'quantum_update'),
-      map(msg => msg.payload)
-    );
-  }
-
-  public observeKarmaEvents(): Observable<KarmaEvent> {
-    return this.messageQueue.pipe(
-      filter(msg => msg.type === 'karma_event'),
-      map(msg => msg.payload)
-    );
-  }
-
-  public observeDimensionalShifts(): Observable<{
-    sourceId: string;
-    targetId: string;
-    magnitude: number;
-  }> {
-    return this.messageQueue.pipe(
-      filter(msg => msg.type === 'dimensional_shift'),
-      map(msg => msg.payload)
-    );
-  }
-
-  public observeRealityAnchors(): Observable<{
-    nodeId: string;
-    anchor: TesseractNode['realityAnchor'];
-  }> {
-    return this.messageQueue.pipe(
-      filter(msg => msg.type === 'reality_anchor'),
-      map(msg => msg.payload)
-    );
-  }
-
-  public observeConnectionState(): Observable<ConnectionState> {
-    return this.connectionState.asObservable();
-  }
-
-  // Cleanup
-  public disconnect(): void {
-    this.stopPingInterval();
+  disconnect() {
     if (this.ws) {
       this.ws.close();
       this.ws = null;
+      if (this.reconnectTimeoutId) {
+        clearTimeout(this.reconnectTimeoutId);
+      }
+      this.connectionStateSubject.next({ status: 'disconnected' });
     }
+  }
+
+  sendMessage(message: WebSocketMessage) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(message));
+    } else {
+      console.warn('WebSocket is not connected. Message dropped.');
+    }
+  }
+
+  sendQuantumUpdate(state: QuantumState, nodeId: string) {
+    this.sendMessage({
+      type: 'quantum_update',
+      payload: { state, nodeId },
+      timestamp: Date.now(),
+      id: 'quantum-' + Date.now()
+    });
+  }
+
+  sendKarmaEvent(event: KarmaEvent) {
+    this.sendMessage({
+      type: 'karma_event',
+      payload: event,
+      timestamp: Date.now(),
+      id: 'karma-' + Date.now()
+    });
+  }
+
+  sendDimensionalShift(sourceId: string, targetId: string, magnitude: number) {
+    this.sendMessage({
+      type: 'dimensional_shift',
+      payload: { sourceId, targetId, magnitude },
+      timestamp: Date.now(),
+      id: 'shift-' + Date.now()
+    });
+  }
+
+  observeConnectionState(): Observable<ConnectionState> {
+    return this.connectionStateSubject.asObservable();
+  }
+
+  observeQuantumUpdates(): Observable<{ state: QuantumState; nodeId: string }> {
+    return this.quantumUpdateSubject.asObservable();
+  }
+
+  observeKarmaEvents(): Observable<KarmaEvent> {
+    return this.karmaEventSubject.asObservable();
+  }
+
+  observeDimensionalShifts(): Observable<DimensionalShift> {
+    return this.dimensionalShiftSubject.asObservable();
+  }
+
+  observeRealityAnchors() {
+    return new Observable(subscriber => {
+      const handleMessage = (event: MessageEvent) => {
+        try {
+          const message: WebSocketMessage = JSON.parse(event.data);
+          if (message.type === 'reality_anchor') {
+            subscriber.next(message.payload);
+          }
+        } catch (error) {
+          console.error('Error parsing reality anchor message:', error);
+        }
+      };
+
+      if (this.ws) {
+        this.ws.addEventListener('message', handleMessage);
+        return () => {
+          if (this.ws) {
+            this.ws.removeEventListener('message', handleMessage);
+          }
+        };
+      }
+
+      return () => {};
+    });
   }
 }

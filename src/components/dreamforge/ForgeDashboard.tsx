@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
@@ -8,6 +9,18 @@ import { TimelineBranchVisualizer } from './TimelineBranchVisualizer';
 import { QuantumErrorMonitor } from './QuantumErrorMonitor';
 
 export const ForgeDashboard: React.FC = () => {
+    // Create mock engines for components that require them
+    const mockEngine = {
+        getMetrics: () => ({ timestamp: Date.now(), cpuUsage: 0.5, memoryUsage: 0.3 }),
+        getPerformance: () => ({ stability: 0.9, quantum: 0.8 })
+    };
+
+    const mockErrorHandler = {
+        getErrors: () => [],
+        clearErrors: () => {},
+        observeErrors: () => ({ subscribe: () => ({}) })
+    };
+
     return (
         <Card className="w-full h-full">
             <CardHeader>
@@ -32,15 +45,15 @@ export const ForgeDashboard: React.FC = () => {
                     </TabsContent>
                     
                     <TabsContent value="performance" className="mt-4">
-                        <QuantumPerformanceMonitor />
+                        <QuantumPerformanceMonitor engine={mockEngine} />
                     </TabsContent>
                     
                     <TabsContent value="timeline" className="mt-4">
-                        <TimelineBranchVisualizer />
+                        <TimelineBranchVisualizer engine={mockEngine} />
                     </TabsContent>
                     
                     <TabsContent value="errors" className="mt-4">
-                        <QuantumErrorMonitor />
+                        <QuantumErrorMonitor errorHandler={mockErrorHandler} />
                     </TabsContent>
                 </Tabs>
             </CardContent>

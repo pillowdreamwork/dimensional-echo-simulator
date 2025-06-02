@@ -1,10 +1,6 @@
-import { useState, useCallback } from 'react';
-import type { 
-  RealityImpact,
-  RealityImpactResult,
-  ImpactProcessOptions
-} from '../types/impact';
-import type { QuantumState } from '../types/quantum';
+import { useState, useEffect, useCallback } from 'react';
+import { getEngineModules } from '../lib/engine';
+import type { DimensionalImpact, RealityFeedback, PersonalEffect } from '../types/impact';
 
 interface UseRealityImpactResult extends RealityImpact {
   isLoading: boolean;
@@ -15,8 +11,23 @@ export function useRealityImpact(): UseRealityImpactResult {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const processImpact = useCallback(async (options: ImpactProcessOptions): Promise<RealityImpactResult> => {
-    setIsLoading(true);
+  // Get engine modules safely
+  const getEngineModulesSafely = useCallback(() => {
+    try {
+      return getEngineModules();
+    } catch (error) {
+      console.error('Failed to get engine modules:', error);
+      return {
+        echoSimulator: null,
+        dreamServer: null,
+        mythicAI: null,
+        iuri: null
+      };
+    }
+  }, []);
+
+  // Add a new impact
+  const addImpact = useCallback(async (impact: Omit<DimensionalImpact, 'id' | 'timestamp'>) => {
     try {
       const { quantumState, effects } = options;
       const stabilityChange = effects.reduce((sum, effect) => 
@@ -55,9 +66,12 @@ export function useRealityImpact(): UseRealityImpactResult {
   }, []);
 
   return {
-    processImpact,
-    calculateStability,
+    impacts,
+    feedback,
+    personalEffects,
     isLoading,
-    error
+    error,
+    addImpact,
+    verifyImpact
   };
 }

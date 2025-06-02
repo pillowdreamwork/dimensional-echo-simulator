@@ -35,71 +35,20 @@ const App = () => {
     console.log(`System Status: ${systemStatus.status} (${systemStatus.functionalityScore}% functional)`);
   }, []);
 
-  const { quantumState, updateQuantumState } = useQuantumState();
-  const { dimensionalProperties, updateDimensionalProperties } = useDimensionalProperties();
-
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <ErrorBoundary>
-          <Suspense fallback={<LoadingFallback />}>
-            <div className="min-h-screen bg-background text-foreground">
-              <div className="container mx-auto px-4 py-8">
-                <h1 className="text-3xl font-bold mb-8">
-                  Dimensional Echo Simulator
-                </h1>
-                
-                <div className="grid gap-6 md:grid-cols-2">
-                  <ErrorBoundary>
-                    <Suspense fallback={<LoadingFallback />}>
-                      <DimensionalView 
-                        quantumState={quantumState}
-                        isTransitioning={quantumState.isCollapsed}
-                      />
-                    </Suspense>
-                  </ErrorBoundary>
-
-                  <ErrorBoundary>
-                    <Suspense fallback={<LoadingFallback />}>
-                      <RealityMonitor 
-                        currentDimension={dimensionalProperties.level} 
-                        stabilityFactor={quantumState.dimensionalStability}
-                        timelineConvergence={quantumState.timelineConvergence}
-                      />
-                    </Suspense>
-                  </ErrorBoundary>
-
-                  <ErrorBoundary>
-                    <Suspense fallback={<LoadingFallback />}>
-                      <QuantumStateCollapser 
-                        className="w-full"
-                        quantumState={quantumState}
-                        onStateChange={updateQuantumState}
-                      />
-                    </Suspense>
-                  </ErrorBoundary>
-                </div>
-              </div>
-
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/forge" element={<ForgeDashboard />} />
-                <Route 
-                  path="/weaver" 
-                  element={
-                    <TesseractWeaveEditor 
-                      quantumState={quantumState}
-                      dimensionalProperties={dimensionalProperties}
-                      onStateChange={updateQuantumState}
-                      onDimensionalShift={updateDimensionalProperties}
-                    />
-                  } 
-                />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </div>
-          </Suspense>
-        </ErrorBoundary>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/forge" element={<ForgeDashboard />} />
+            <Route path="/weaver" element={<TesseractWeaveEditor />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </TooltipProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );
