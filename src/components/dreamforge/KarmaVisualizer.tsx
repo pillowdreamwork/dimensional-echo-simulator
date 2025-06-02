@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Vector3 } from 'three';
 
 interface KarmaEvent {
@@ -167,3 +169,8 @@ const KarmaVisualizer: React.FC<KarmaVisualizerProps> = ({ karmaSystem, logId })
           </div>
         )}
       </CardContent>
+    </Card>
+  );
+};
+
+export default KarmaVisualizer;
