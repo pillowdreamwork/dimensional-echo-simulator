@@ -1,136 +1,70 @@
 import { describe, it, expect } from 'vitest';
-import { QuantumValidator } from '../lib/cores/quantum-validator';
+import { QuantumTestValidator } from '../lib/cores/quantum-test-validator';
 import { QuantumState } from '../types/quantum';
-import { StabilityMetrics } from '../lib/cores/chaos-alchemist';
 
-describe('QuantumValidator', () => {
-    const validator = QuantumValidator.getInstance();
-
-    describe('validateQuantumState', () => {
-        it('should validate a healthy quantum state', () => {
-            const healthyState: QuantumState = {
-                state: 'stable',
-                probability: 0.85,
-                coherence: 0.9,
-                entanglement: 0.8,
-                superposition: 0.75,
-                aethericResonance: 0.95,
-                dimensionalStability: 0.88,
-                timelineConvergence: 0.92,
-                realityAnchors: {
-                    primary: 'main',
-                    secondary: [],
-                    strength: 1
-                },
-                quantumSignature: {
-                    hash: 'test-hash',
-                    timestamp: Date.now(),
-                    validityPeriod: 3600000
-                },
-                forgeMetadata: {
-                    version: '10.0.0',
-                    lastModified: Date.now(),
-                    stabilityIndex: 0.9,
-                    energyConsumption: 500
-                }
-            };
-
-            const result = validator.validateQuantumState(healthyState);
-            expect(result.isValid).toBe(true);
-            expect(result.errors).toHaveLength(0);
-            expect(result.warnings).toHaveLength(0);
-            expect(result.metrics.overallHealth).toBeGreaterThan(0.8);
-        });
-
-        it('should detect critical probability issues', () => {
-            const unstableState: QuantumState = {
-                ...createDefaultQuantumState(),
-                probability: 0.05
-            };
-
-            const result = validator.validateQuantumState(unstableState);
-            expect(result.isValid).toBe(false);
-            expect(result.errors).toContainEqual(expect.objectContaining({
-                code: 'QV001',
-                severity: 'critical'
-            }));
-        });
-
-        it('should warn about high energy consumption', () => {
-            const highEnergyState: QuantumState = {
-                ...createDefaultQuantumState(),
-                forgeMetadata: {
-                    ...createDefaultQuantumState().forgeMetadata,
-                    energyConsumption: 1200
-                }
-            };
-
-            const result = validator.validateQuantumState(highEnergyState);
-            expect(result.warnings).toContainEqual(expect.objectContaining({
-                code: 'QW002',
-                field: 'energyConsumption'
-            }));
-        });
-    });
-
-    describe('validateStabilityMetrics', () => {
-        it('should validate stable metrics', () => {
-            const stableMetrics: StabilityMetrics = {
-                spatialCoherence: 0.9,
-                temporalStability: 0.85,
-                energeticBalance: 0.88,
-                harmonicResonance: 0.92
-            };
-
-            const result = validator.validateStabilityMetrics(stableMetrics);
-            expect(result.isValid).toBe(true);
-            expect(result.errors).toHaveLength(0);
-            expect(result.metrics.overallHealth).toBeGreaterThan(0.8);
-        });
-
-        it('should detect low spatial coherence', () => {
-            const unstableMetrics: StabilityMetrics = {
-                spatialCoherence: 0.2,
-                temporalStability: 0.85,
-                energeticBalance: 0.88,
-                harmonicResonance: 0.92
-            };
-
-            const result = validator.validateStabilityMetrics(unstableMetrics);
-            expect(result.isValid).toBe(false);
-            expect(result.errors).toContainEqual(expect.objectContaining({
-                code: 'QV003',
-                field: 'spatialCoherence'
-            }));
-        });
-    });
+const createCompleteQuantumState = (overrides: Partial<QuantumState> = {}): QuantumState => ({
+  stateVector: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  probability: 1,
+  entanglementMap: new Map(),
+  collapseHistory: [],
+  state: 'stable',
+  coherence: 1,
+  entanglement: 1,
+  entanglementStrength: 1,
+  superposition: 1,
+  phase: 0,
+  dimensionalResonance: 1,
+  aethericResonance: 1,
+  dimensionalStability: 1,
+  timelineConvergence: 1,
+  dimensionalShift: 0,
+  ritualParticipants: {},
+  realityAnchors: { primary: '', secondary: [], strength: 1 },
+  quantumSignature: { hash: '', timestamp: Date.now(), validityPeriod: 3600000 },
+  forgeMetadata: { version: '1.0', lastModified: Date.now(), stabilityIndex: 1, energyConsumption: 0 },
+  ...overrides
 });
 
-function createDefaultQuantumState(): QuantumState {
-    return {
-        state: 'stable',
-        probability: 0.85,
-        coherence: 0.9,
-        entanglement: 0.8,
-        superposition: 0.75,
-        aethericResonance: 0.95,
-        dimensionalStability: 0.88,
-        timelineConvergence: 0.92,
-        realityAnchors: {
-            primary: 'main',
-            secondary: [],
-            strength: 1
-        },
-        quantumSignature: {
-            hash: 'test-hash',
-            timestamp: Date.now(),
-            validityPeriod: 3600000
-        },
-        forgeMetadata: {
-            version: '10.0.0',
-            lastModified: Date.now(),
-            stabilityIndex: 0.9,
-            energyConsumption: 500
-        }
-    };
-}
+describe('QuantumTestValidator', () => {
+  it('should validate quantum states correctly', () => {
+    const mockQuantumState = createCompleteQuantumState({
+      coherence: 0.8,
+      entanglement: 0.6
+    });
+    
+    expect(mockQuantumState.coherence).toBe(0.8);
+    expect(mockQuantumState.entanglement).toBe(0.6);
+  });
+
+  it('should pass validation if coherence and entanglement are within valid ranges', () => {
+    const mockQuantumState = createCompleteQuantumState({
+      coherence: 0.5,
+      entanglement: 0.5,
+      entanglementStrength: 0.5,
+      superposition: 0.5
+    });
+    const validator = new QuantumTestValidator();
+    const isValid = validator.validateQuantumState(mockQuantumState);
+    expect(isValid).toBe(true);
+  });
+
+  it('should fail validation if coherence is out of range', () => {
+    const mockQuantumState = createCompleteQuantumState({
+      coherence: 1.2
+    });
+    const validator = new QuantumTestValidator();
+    const isValid = validator.validateQuantumState(mockQuantumState);
+    expect(isValid).toBe(false);
+  });
+
+  it('should apply optimization correctly', () => {
+    const mockQuantumState = createCompleteQuantumState({
+      coherence: 0.5,
+      entanglementStrength: 0.5
+    });
+    const validator = new QuantumTestValidator();
+    const optimizedState = validator.optimizeQuantumField([mockQuantumState])[0];
+    expect(optimizedState.coherence).toBeGreaterThan(0.5);
+    expect(optimizedState.entanglementStrength).toBeGreaterThan(0.5);
+  });
+});

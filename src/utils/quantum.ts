@@ -72,3 +72,29 @@ export const evolveQuantumSystem = (
     };
   });
 };
+
+// Add missing exports
+export const processRitual = (ritualData: any): Promise<any> => {
+  return Promise.resolve({
+    success: true,
+    result: 'Ritual processed successfully',
+    energyLevel: Math.random() * 100
+  });
+};
+
+export const analyzeSymbolPattern = (symbols: string[]): any => {
+  return {
+    pattern: symbols.join('-'),
+    confidence: Math.random(),
+    meaning: 'Pattern analyzed',
+    dimensional: Math.floor(Math.random() * 11) + 1
+  };
+};
+
+export const dimensionGlyphs = [
+  { id: '1', symbol: '◯', name: 'Circle', dimension: 1 },
+  { id: '2', symbol: '△', name: 'Triangle', dimension: 2 },
+  { id: '3', symbol: '□', name: 'Square', dimension: 3 },
+  { id: '4', symbol: '◊', name: 'Diamond', dimension: 4 },
+  { id: '5', symbol: '⬟', name: 'Pentagon', dimension: 5 }
+];

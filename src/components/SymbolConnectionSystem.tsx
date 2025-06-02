@@ -1,245 +1,120 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import React, { useState, useCallback } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Connection } from '../types/glyph';
 import { analyzeSymbolPattern } from '../utils/quantum';
-import { useToast } from "../hooks/use-toast";
-import { Symbol, Connection } from '../types/glyph';
 
-interface SymbolPattern {
-  power: number;
-  resonance: number;
-  stability: number;
-  description: string;
+interface SymbolNode {
+  id: string;
+  symbol: string;
+  x: number;
+  y: number;
 }
 
-const SymbolConnectionSystem: React.FC = () => {
-  const [symbols, setSymbols] = useState<Symbol[]>([]);
+export const SymbolConnectionSystem: React.FC = () => {
+  const [nodes, setNodes] = useState<SymbolNode[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
-  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
-  const [hoveredSymbol, setHoveredSymbol] = useState<string | null>(null);
-  const [isActivating, setIsActivating] = useState(false);
-  const [patternAnalysis, setPatternAnalysis] = useState<SymbolPattern | null>(null);
-  const [activationProgress, setActivationProgress] = useState(0);
-  const { toast } = useToast();
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
 
-  // Initialize available symbols
-  useEffect(() => {
-    const initialSymbols: Symbol[] = [
-      { id: '1', glyph: '⊕', name: 'Confluence', x: 30, y: 30, connected: false },
-      { id: '2', glyph: '⊗', name: 'Nexus', x: 70, y: 30, connected: false },
-      { id: '3', glyph: '⊛', name: 'Radiance', x: 30, y: 70, connected: false },
-      { id: '4', glyph: '⊙', name: 'Singularity', x: 70, y: 70, connected: false },
-      { id: '5', glyph: '⊚', name: 'Vortex', x: 50, y: 50, connected: false },
-      { id: '6', glyph: '⊝', name: 'Null', x: 20, y: 50, connected: false },
-      { id: '7', glyph: '⌬', name: 'Drift', x: 80, y: 50, connected: false },
-      { id: '8', glyph: '⍟', name: 'Echo', x: 50, y: 20, connected: false },
-      { id: '9', glyph: '✸', name: 'Forge', x: 50, y: 80, connected: false }
-    ];
-    
-    setSymbols(initialSymbols);
+  const addNode = useCallback(() => {
+    const newNode: SymbolNode = {
+      id: `node-${Date.now()}`,
+      symbol: ['◯', '△', '□', '◊', '⬟'][Math.floor(Math.random() * 5)],
+      x: Math.random() * 400 + 50,
+      y: Math.random() * 300 + 50
+    };
+    setNodes(prev => [...prev, newNode]);
   }, []);
 
-  const analyzeCurrentPattern = (): SymbolPattern => {
-    const connectedSymbols = symbols.filter(s => s.connected);
-    const analysis = analyzeSymbolPattern(connectedSymbols, connections);
+  const connectNodes = useCallback((sourceId: string, targetId: string) => {
+    if (sourceId === targetId) return;
     
-    // Calculate pattern metrics
-    const power = connections.reduce((sum, conn) => sum + (conn.power || 0), 0) / Math.max(connections.length, 1);
-    
-    return {
-      power,
-      resonance: analysis.resonance,
-      stability: analysis.stability,
-      description: analysis.description
-    };
-  };
-
-  const handleSymbolClick = (id: string) => {
-    if (isActivating) return;
-    
-    // If no symbol is selected, select this one
-    if (!selectedSymbol) {
-      setSelectedSymbol(id);
-      return;
-    }
-    
-    // If clicking on the same symbol, deselect it
-    if (selectedSymbol === id) {
-      setSelectedSymbol(null);
-      return;
-    }
-    
-    // Otherwise, create a connection between the two symbols
-    const newConnection: Connection = {
-      id: `${selectedSymbol}-${id}`,
-      source: selectedSymbol,
-      target: id,
-      power: Math.random() * 0.5 + 0.5
-    };
-    
-    // Check if connection already exists
     const connectionExists = connections.some(
-      conn => (conn.source === selectedSymbol && conn.target === id) || 
-              (conn.source === id && conn.target === selectedSymbol)
+      conn => (conn.source === sourceId && conn.target === targetId) ||
+              (conn.source === targetId && conn.target === sourceId)
     );
     
     if (!connectionExists) {
-      setConnections([...connections, newConnection]);
-      
-      // Mark symbols as connected
-      setSymbols(symbols.map(s => 
-        s.id === selectedSymbol || s.id === id 
-          ? { ...s, connected: true } 
-          : s
-      ));
+      const newConnection: Connection = {
+        id: `conn-${Date.now()}`,
+        source: sourceId,
+        target: targetId,
+        power: Math.random() * 100,
+        strength: Math.random() * 100
+      };
+      setConnections(prev => [...prev, newConnection]);
     }
-    
-    // Reset selection
-    setSelectedSymbol(null);
-  };
+  }, [connections]);
 
-  const handleActivate = async () => {
-    if (connections.length === 0) {
-      toast({
-        title: "No Connections",
-        description: "Create connections between symbols first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsActivating(true);
-    const currentPattern = analyzeCurrentPattern();
-    setPatternAnalysis(currentPattern);
-
-    // Simulate activation process
-    for (let i = 0; i <= 100; i += 10) {
-      setActivationProgress(i);
-      await new Promise(resolve => setTimeout(resolve, 200));
-    }
-
-    if (currentPattern.stability >= 0.7) {
-      toast({
-        title: "Pattern Activated",
-        description: `${currentPattern.description} (Power: ${(currentPattern.power * 100).toFixed(1)}%)`,
-        variant: "default"
-      });
+  const handleNodeClick = useCallback((nodeId: string) => {
+    if (isConnecting && selectedNode && selectedNode !== nodeId) {
+      connectNodes(selectedNode, nodeId);
+      setSelectedNode(null);
+      setIsConnecting(false);
     } else {
-      toast({
-        title: "Unstable Pattern",
-        description: "The symbol pattern is unstable. Try a different configuration.",
-        variant: "destructive"
-      });
+      setSelectedNode(nodeId);
+      setIsConnecting(true);
     }
+  }, [isConnecting, selectedNode, connectNodes]);
 
-    setActivationProgress(0);
-    setIsActivating(false);
-  };
-
-  const handleReset = () => {
-    setConnections([]);
-    setSymbols(symbols.map(s => ({ ...s, connected: false })));
-    setSelectedSymbol(null);
-    setPatternAnalysis(null);
-    setActivationProgress(0);
-  };
+  const analyzePattern = useCallback(() => {
+    const symbols = nodes.map(node => node.symbol);
+    const analysis = analyzeSymbolPattern(symbols);
+    console.log('Pattern Analysis:', analysis);
+  }, [nodes]);
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>Symbol Connection System</span>
-          {patternAnalysis && (
-            <Badge variant={patternAnalysis.stability >= 0.7 ? "default" : "destructive"}>
-              Stability: {(patternAnalysis.stability * 100).toFixed(1)}%
-            </Badge>
-          )}
-        </CardTitle>
+        <CardTitle>Symbol Connection System</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
-          <div className="relative w-full h-[400px] border rounded-lg p-4">
-            {/* Symbol grid */}
-            {symbols.map((symbol) => (
-              <div
-                key={symbol.id}
-                className={`absolute transform -translate-x-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full cursor-pointer
-                  ${symbol.connected ? 'bg-blue-100 dark:bg-blue-900' : 'bg-gray-100 dark:bg-gray-800'}
-                  ${selectedSymbol === symbol.id ? 'ring-2 ring-blue-500' : ''}
-                  ${hoveredSymbol === symbol.id ? 'bg-blue-50 dark:bg-blue-800' : ''}
-                `}
-                style={{ left: `${symbol.x}%`, top: `${symbol.y}%` }}
-                onClick={() => handleSymbolClick(symbol.id)}
-                onMouseEnter={() => setHoveredSymbol(symbol.id)}
-                onMouseLeave={() => setHoveredSymbol(null)}
-              >
-                <span className="text-2xl">{symbol.glyph}</span>
-              </div>
-            ))}
-            
-            {/* Connection lines */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none">
-              {connections.map((conn) => {
-                const source = symbols.find(s => s.id === conn.source);
-                const target = symbols.find(s => s.id === conn.target);
-                if (!source || !target) return null;
-                
-                return (
-                  <line
-                    key={conn.id}
-                    x1={`${source.x}%`}
-                    y1={`${source.y}%`}
-                    x2={`${target.x}%`}
-                    y2={`${target.y}%`}
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeOpacity={conn.power || 0.5}
-                    className="text-blue-500"
-                  />
-                );
-              })}
-            </svg>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Button
-              variant="outline"
-              onClick={handleReset}
-              disabled={isActivating}
-            >
-              Reset Pattern
-            </Button>
-            
-            <Button
-              onClick={handleActivate}
-              disabled={connections.length === 0 || isActivating}
-              className="relative"
-            >
-              {isActivating ? (
-                <>
-                  <div className="absolute inset-0 bg-blue-500 opacity-20" 
-                       style={{ width: `${activationProgress}%` }} />
-                  <span>Activating... {activationProgress}%</span>
-                </>
-              ) : (
-                "Activate Pattern"
-              )}
-            </Button>
-          </div>
-
-          {patternAnalysis && (
-            <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-              <h3 className="font-semibold mb-2">Pattern Analysis</h3>
-              <div className="space-y-2 text-sm">
-                <p>Description: {patternAnalysis.description}</p>
-                <p>Power: {(patternAnalysis.power * 100).toFixed(1)}%</p>
-                <p>Resonance: {(patternAnalysis.resonance * 100).toFixed(1)}%</p>
-                <p>Stability: {(patternAnalysis.stability * 100).toFixed(1)}%</p>
-              </div>
-            </div>
-          )}
+        <div className="mb-4 space-x-2">
+          <Button onClick={addNode}>Add Symbol</Button>
+          <Button onClick={analyzePattern} variant="secondary">Analyze Pattern</Button>
         </div>
+        
+        <div className="relative h-96 border rounded-lg bg-gray-50 dark:bg-gray-900 overflow-hidden">
+          <svg className="absolute inset-0 w-full h-full">
+            {connections.map(connection => {
+              const sourceNode = nodes.find(n => n.id === connection.source);
+              const targetNode = nodes.find(n => n.id === connection.target);
+              if (!sourceNode || !targetNode) return null;
+              
+              return (
+                <line
+                  key={connection.id}
+                  x1={sourceNode.x + 20}
+                  y1={sourceNode.y + 20}
+                  x2={targetNode.x + 20}
+                  y2={targetNode.y + 20}
+                  stroke="rgba(168, 85, 247, 0.6)"
+                  strokeWidth="2"
+                />
+              );
+            })}
+          </svg>
+          
+          {nodes.map(node => (
+            <div
+              key={node.id}
+              className={`absolute w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all ${
+                selectedNode === node.id ? 'bg-purple-500 text-white scale-110' : 'bg-white border-2 border-gray-300'
+              }`}
+              style={{ left: node.x, top: node.y }}
+              onClick={() => handleNodeClick(node.id)}
+            >
+              {node.symbol}
+            </div>
+          ))}
+        </div>
+        
+        {isConnecting && selectedNode && (
+          <div className="mt-4 p-2 bg-blue-100 dark:bg-blue-900 rounded">
+            Click another symbol to create a connection
+          </div>
+        )}
       </CardContent>
     </Card>
   );

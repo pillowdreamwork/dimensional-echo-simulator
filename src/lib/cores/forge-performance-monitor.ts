@@ -62,10 +62,10 @@ export class ForgePerformanceMonitor {
     }
 
     private getMemoryUsage(): number {
-        if (typeof performance.memory !== 'undefined') {
-            return (performance as any).memory.usedJSHeapSize / (1024 * 1024);
+        if ('memory' in performance && (performance as any).memory) {
+            return (performance as any).memory.usedJSHeapSize / 1024 / 1024;
         }
-        return 0;
+        return 0; // Fallback for browsers that don't support memory API
     }
 
     public trackOperation(type: 'quantumState' | 'stability' | 'forge', duration: number): void {

@@ -319,6 +319,30 @@ export class QuantumTestValidator {
     ) / validResults.length;
   }
 
+  private reportValidationError(message: string): void {
+    console.error('Validation Error:', message);
+    // Use a valid error type
+    this.errorHandler.reportError({
+      id: crypto.randomUUID(),
+      type: 'QUANTUM_DECOHERENCE',
+      message,
+      severity: 'HIGH' as const,
+      timestamp: Date.now()
+    });
+  }
+
+  private getAllQuantumStates(): any[] {
+    return [];
+  }
+
+  private getAllNodes(): any[] {
+    return [];
+  }
+
+  private getNode(nodeId: string): any {
+    return null;
+  }
+
   public observeTestResults(): Observable<Map<string, TestResult>> {
     return this.testResults.asObservable();
   }

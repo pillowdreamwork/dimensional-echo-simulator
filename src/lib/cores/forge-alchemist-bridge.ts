@@ -55,37 +55,27 @@ export class ForgeAlchemistBridge {
         return this.chaosAlchemist.observeParadoxEvents();
     }
 
-    private createQuantumState(metrics: StabilityMetrics): QuantumState {
+    private createQuantumState(data: any): QuantumState {
         return {
-            state: 'synthesizing',
-            probability: metrics.spatialCoherence,
-            coherence: metrics.temporalStability,
-            entanglement: metrics.energeticBalance,
-            superposition: metrics.harmonicResonance,
-            aethericResonance: 0,
-            dimensionalStability: 0,
-            timelineConvergence: 0,
-            realityAnchors: {
-                primary: 'chaos-field',
-                secondary: [],
-                strength: metrics.spatialCoherence
-            },
-            quantumSignature: {
-                hash: crypto.randomUUID(),
-                timestamp: Date.now(),
-                validityPeriod: 3600000
-            },
-            forgeMetadata: {
-                version: '10.0.0',
-                lastModified: Date.now(),
-                stabilityIndex: (
-                    metrics.spatialCoherence +
-                    metrics.temporalStability +
-                    metrics.energeticBalance +
-                    metrics.harmonicResonance
-                ) / 4,
-                energyConsumption: 0
-            }
+          stateVector: data.stateVector || [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          probability: data.probability || 1,
+          entanglementMap: data.entanglementMap || new Map(),
+          collapseHistory: data.collapseHistory || [],
+          state: data.state || 'stable',
+          coherence: data.coherence || 1,
+          entanglement: data.entanglement || 1,
+          entanglementStrength: data.entanglementStrength || 1,
+          superposition: data.superposition || 1,
+          phase: data.phase || 0,
+          dimensionalResonance: data.dimensionalResonance || 1,
+          aethericResonance: data.aethericResonance || 1,
+          dimensionalStability: data.dimensionalStability || 1,
+          timelineConvergence: data.timelineConvergence || 1,
+          dimensionalShift: data.dimensionalShift || 0,
+          ritualParticipants: data.ritualParticipants || {},
+          realityAnchors: data.realityAnchors || { primary: '', secondary: [], strength: 1 },
+          quantumSignature: data.quantumSignature || { hash: '', timestamp: Date.now(), validityPeriod: 3600000 },
+          forgeMetadata: data.forgeMetadata || { version: '1.0', lastModified: Date.now(), stabilityIndex: 1, energyConsumption: 0 }
         };
     }
 
