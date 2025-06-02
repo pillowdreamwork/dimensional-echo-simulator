@@ -46,39 +46,47 @@ export interface GlyphNode {
 
 export interface DimensionalProperties {
   level: number;              // 1-12: Current dimension level
-  resonance: number;         // 0-100: Resonance with target dimension
-  stability: number;         // 0-100: Stability of dimensional state
+  resonance: number;         // 0-1: Resonance with target dimension
+  stability: number;         // 0-1: Stability of dimensional state
   harmonics: string[];       // Active dimensional harmonics
-  entanglement: number;      // 0-100: Quantum entanglement degree
-  phaseAlignment: number;    // 0-100: Phase alignment with dimension
+  entanglement: number;      // 0-1: Cross-dimensional entanglement
+  phaseAlignment: number;    // 0-1: Phase alignment with dimension
+  timelineFactor: number;    // 0-1: Timeline coherence factor
+  energy: number;           // Current energy level
+  anchors: {                // Dimensional anchors
+    points: string[];      // Anchor point identifiers
+    strength: number;      // 0-1: Combined anchor strength
+  };
 }
 
 export interface DimensionalPlane {
   id: string;
   name: string;
   description: string;
-  level: number;
-  rules: string[];
-  consciousness: number;     // Consciousness level required
+  level: DimensionalLevel;
+  rules: string[];           // Governing principles
+  consciousness: number;     // Required consciousness level (0-1)
   harmonicSeries: number[]; // Resonant frequencies
   color: string;           // Visual representation
-  stabilityThreshold: number;
+  stabilityThreshold: number; // Minimum stability required (0-1)
 }
 
 export interface DimensionalShift {
-  from: number;
-  to: number;
-  resonanceChange: number;
-  stabilityImpact: number;
+  from: DimensionalLevel;
+  to: DimensionalLevel;
+  resonanceChange: number;  // Change in dimensional resonance
+  stabilityImpact: number; // Impact on system stability
+  energyCost: number;     // Energy required for shift
+  timelineEffect: string; // Description of timeline impact
 }
 
 export interface DimensionalEffect {
   description: string;
-  intensity: number;
-  dimensionChange?: number;
-  timelineImpact?: number;
-  resonanceShift?: number;
-  stabilityChange?: number;
+  intensity: number;       // 0-1: Effect intensity
+  dimensionChange?: number; // Change in dimensional level
+  timelineImpact?: number; // Impact on timeline (0-1)
+  resonanceShift?: number; // Change in resonance
+  stabilityChange?: number; // Change in stability
 }
 
 export type DimensionalLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
@@ -96,6 +104,17 @@ export const DIMENSIONAL_PLANES: DimensionalPlane[] = [
     stabilityThreshold: 0.95
   },
   {
+    id: "2",
+    name: "Etheric",
+    description: "Vital energy patterns",
+    level: 2,
+    rules: ["Energy Flow", "Vitality"],
+    consciousness: 0.2,
+    harmonicSeries: [252, 504, 756],
+    color: "#FF3D00",
+    stabilityThreshold: 0.9
+  },
+  {
     id: "3",
     name: "Temporal",
     description: "Time-based phenomena",
@@ -105,6 +124,28 @@ export const DIMENSIONAL_PLANES: DimensionalPlane[] = [
     harmonicSeries: [378, 756, 1134],
     color: "#FF7F00",
     stabilityThreshold: 0.85
+  },
+  {
+    id: "4",
+    name: "Astral",
+    description: "Emotional and dream realms",
+    level: 4,
+    rules: ["Emotional Resonance", "Dream Logic"],
+    consciousness: 0.4,
+    harmonicSeries: [504, 1008, 1512],
+    color: "#FFEB3B",
+    stabilityThreshold: 0.8
+  },
+  {
+    id: "5",
+    name: "Mental",
+    description: "Thought patterns and mental constructs",
+    level: 5,
+    rules: ["Thought Forms", "Mental Coherence"],
+    consciousness: 0.45,
+    harmonicSeries: [630, 1260, 1890],
+    color: "#76FF03",
+    stabilityThreshold: 0.75
   },
   {
     id: "6",
@@ -118,6 +159,61 @@ export const DIMENSIONAL_PLANES: DimensionalPlane[] = [
     stabilityThreshold: 0.65
   },
   {
+    id: "7",
+    name: "Causal",
+    description: "Cause and effect patterns",
+    level: 7,
+    rules: ["Causality Webs", "Karmic Patterns"],
+    consciousness: 0.6,
+    harmonicSeries: [882, 1764, 2646],
+    color: "#1E88E5",
+    stabilityThreshold: 0.6
+  },
+  {
+    id: "8",
+    name: "Archetypal",
+    description: "Universal symbols and patterns",
+    level: 8,
+    rules: ["Symbol Resonance", "Pattern Recognition"],
+    consciousness: 0.7,
+    harmonicSeries: [1008, 2016, 3024],
+    color: "#3949AB",
+    stabilityThreshold: 0.55
+  },
+  {
+    id: "9",
+    name: "Universal",
+    description: "Cosmic laws and principles",
+    level: 9,
+    rules: ["Universal Law", "Cosmic Order"],
+    consciousness: 0.75,
+    harmonicSeries: [1134, 2268, 3402],
+    color: "#6A1B9A",
+    stabilityThreshold: 0.5
+  },
+  {
+    id: "10",
+    name: "Divine",
+    description: "Divine patterns and frequencies",
+    level: 10,
+    rules: ["Divine Order", "Sacred Geometry"],
+    consciousness: 0.8,
+    harmonicSeries: [1260, 2520, 3780],
+    color: "#880E4F",
+    stabilityThreshold: 0.45
+  },
+  {
+    id: "11",
+    name: "Infinite",
+    description: "Infinite possibilities and potentials",
+    level: 11,
+    rules: ["Infinite Potential", "Quantum Probability"],
+    consciousness: 0.85,
+    harmonicSeries: [1386, 2772, 4158],
+    color: "#B71C1C",
+    stabilityThreshold: 0.4
+  },
+  {
     id: "12",
     name: "Transcendent",
     description: "Pure consciousness realm",
@@ -126,19 +222,22 @@ export const DIMENSIONAL_PLANES: DimensionalPlane[] = [
     consciousness: 0.9,
     harmonicSeries: [1512, 3024, 4536],
     color: "#8F00FF",
-    stabilityThreshold: 0.45
+    stabilityThreshold: 0.35
   }
 ];
-
 
 // Function to calculate harmonic resonance between dimensions
 export function calculateHarmonicResonance(
   source: DimensionalLevel,
   target: DimensionalLevel
 ): number {
-  const sourcePlane = DIMENSIONAL_PROPERTIES[source];
-  const targetPlane = DIMENSIONAL_PROPERTIES[target];
+  const sourcePlane = DIMENSIONAL_PLANES.find(p => p.level === source);
+  const targetPlane = DIMENSIONAL_PLANES.find(p => p.level === target);
   
+  if (!sourcePlane || !targetPlane) {
+    return 0;
+  }
+
   // Calculate resonance based on harmonic series overlap
   const harmonicOverlap = sourcePlane.harmonicSeries.filter(h => 
     targetPlane.harmonicSeries.some(th => Math.abs(h - th) < 1)
@@ -150,5 +249,9 @@ export function calculateHarmonicResonance(
   // Apply consciousness factor
   const consciousnessFactor = (sourcePlane.consciousness + targetPlane.consciousness) / 2;
   
-  return Math.min(100, baseResonance * consciousnessFactor * 1.5);
+  // Apply dimensional distance penalty
+  const dimensionalDistance = Math.abs(source - target);
+  const distancePenalty = Math.max(0, 1 - (dimensionalDistance * 0.1));
+  
+  return Math.min(100, baseResonance * consciousnessFactor * distancePenalty * 1.5);
 }

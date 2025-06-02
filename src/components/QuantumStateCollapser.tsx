@@ -23,9 +23,15 @@ interface Props {
   onStateChange: (state: Partial<QuantumState>) => void;
 }
 
+// QuantumStateCollapser: Quantum state manipulation UI and logic
+// <<Component>>
+// Fields: className, quantumState, onStateChange, stabilityFactor, collapsing, collapsedState
+// Methods: handleCollapseState, handleSuperimpose, handleReset
+// Uses: useToast
+
 // Helper functions for quantum state manipulation
 const collapseQuantumState = (state: QuantumState, targetState: string, stabilityFactor: number): Partial<QuantumState> => {
-  const baseStates = ['alpha', 'beta', 'gamma', 'delta'];
+  const baseStates = ['alpha', 'beta', 'gamma', 'delta'] as const;
   const updates: Partial<QuantumState> = {
     superposition: 0,
     coherence: Math.max(0.1, state.coherence * stabilityFactor),
@@ -33,12 +39,9 @@ const collapseQuantumState = (state: QuantumState, targetState: string, stabilit
     dimensionalStability: Math.min(1, state.dimensionalStability + 0.2),
     collapseTimestamp: Date.now()
   };
-
-  // Set probabilities for collapsed state
   baseStates.forEach(stateKey => {
-    updates[stateKey as keyof QuantumState] = stateKey === targetState ? 1 : 0;
+    (updates as any)[stateKey] = stateKey === targetState ? 1 : 0;
   });
-
   return updates;
 };
 
@@ -63,14 +66,18 @@ export const QuantumStateCollapser = memo(function QuantumStateCollapser({ class
 
   // Calculate quantum probabilities for the base states only
   const calculateProbabilities = () => {
-    const baseStates = ['alpha', 'beta', 'gamma', 'delta'];
-    const sum = baseStates.reduce((acc, state) => 
-      acc + quantumState[state as keyof QuantumState]! * quantumState[state as keyof QuantumState]!, 0);
-    
-    return baseStates.reduce((acc, state) => ({
-      ...acc,
-      [state]: (quantumState[state as keyof QuantumState]! * quantumState[state as keyof QuantumState]!) / sum
-    }), {} as Record<string, number>);
+    const baseStates = ['alpha', 'beta', 'gamma', 'delta'] as const;
+    let sum = 0;
+    baseStates.forEach(state => {
+      sum += Number(quantumState[state]) * Number(quantumState[state]);
+    });
+    const result: Record<typeof baseStates[number], number> = {
+      alpha: 0, beta: 0, gamma: 0, delta: 0
+    };
+    baseStates.forEach(state => {
+      result[state] = sum > 0 ? (Number(quantumState[state]) * Number(quantumState[state])) / sum : 0;
+    });
+    return result;
   };
 
   // Quantum state names
@@ -94,7 +101,7 @@ export const QuantumStateCollapser = memo(function QuantumStateCollapser({ class
     
     setTimeout(() => {
       // Create a superposition of states
-      const allStates = ['alpha', 'beta', 'gamma', 'delta'];
+      const allStates = ['alpha', 'beta', 'gamma', 'delta'] as const;
       const superpositionState = allStates[Math.floor(Math.random() * allStates.length)];
       
       // Create new state updates
@@ -106,12 +113,11 @@ export const QuantumStateCollapser = memo(function QuantumStateCollapser({ class
       
       // Add probability updates
       allStates.forEach(key => {
-        stateUpdates[key as keyof QuantumState] = key === superpositionState ? 
-          0.7 + Math.random() * 0.3 : 
-          0.2 + Math.random() * 0.3;
+        (stateUpdates as any)[key] = key === superpositionState ? 0.7 + Math.random() * 0.3 : 0.2 + Math.random() * 0.3;
       });
       
-      onStateChange(stateUpdates);        toast({
+      onStateChange(stateUpdates);
+      toast({
         title: "Quantum States Superimposed",
         description: `Created superposition centered on ${stateNames[superpositionState]} state`,
       });
@@ -131,7 +137,7 @@ export const QuantumStateCollapser = memo(function QuantumStateCollapser({ class
       // Determine collapse target state using quantum probability distribution
       const random = Math.random();
       let cumulativeProb = 0;
-      const targetState = Object.entries(probs).find(([_, prob]) => {
+      const targetState = (Object.entries(probs) as [string, number][]).find(([_, prob]) => {
         cumulativeProb += prob;
         return random < cumulativeProb;
       })?.[0] || 'alpha';
@@ -150,7 +156,6 @@ export const QuantumStateCollapser = memo(function QuantumStateCollapser({ class
       toast({
         title: "Quantum State Collapsed",
         description: `Wavefunction collapsed to ${stateNames[effectiveState]} state`,
-        duration: 3000,
       });
       
       // Reset after delay
@@ -181,8 +186,7 @@ export const QuantumStateCollapser = memo(function QuantumStateCollapser({ class
     
     toast({
       title: "Quantum States Reset",
-      description: "All states returned to equal probability",
-      duration: 2000,
+      description: "All states returned to equal probability"
     });
   };
 

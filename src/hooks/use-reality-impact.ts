@@ -1,57 +1,74 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { getEngineModules } from '../lib/engine';
 import type { DimensionalImpact, RealityFeedback, PersonalEffect } from '../types/impact';
 
-interface UseRealityImpactResult extends RealityImpact {
+interface QuantumState {
+  dimensionalStability: number;
+  coherence: number;
+  entanglementStrength: number;
+}
+
+interface ImpactResult {
+  success: boolean;
+  stability: number;
+  coherence: number;
+  entanglement: number;
+  dimensionalShift?: number;
+}
+
+interface UseRealityImpactResult {
   isLoading: boolean;
   error: Error | null;
+  processImpact: (impact: DimensionalImpact) => Promise<ImpactResult>;
+  calculateStability: (state: QuantumState) => number;
+  clearError: () => void;
 }
 
 export function useRealityImpact(): UseRealityImpactResult {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  // Get engine modules safely
-  const getEngineModulesSafely = useCallback(() => {
-    try {
-      return getEngineModules();
-    } catch (error) {
-      console.error('Failed to get engine modules:', error);
-      return {
-        echoSimulator: null,
-        dreamServer: null,
-        mythicAI: null,
-        iuri: null
-      };
-    }
-  }, []);
+  const clearError = useCallback(() => setError(null), []);
 
-  // Add a new impact
-  const addImpact = useCallback(async (impact: Omit<DimensionalImpact, 'id' | 'timestamp'>) => {
+  const processImpact = useCallback(async (impact: DimensionalImpact): Promise<ImpactResult> => {
+    setIsLoading(true);
+    setError(null);
+
     try {
-      const { quantumState, effects } = options;
-      const stabilityChange = effects.reduce((sum, effect) => 
-        sum + (effect.stabilityChange || 0), 0);
+      const modules = await getEngineModules();
       
-      // Process dimensional effects
-      const result: RealityImpactResult = {
-        stability: Math.max(0, Math.min(1, quantumState.dimensionalStability + stabilityChange)),
-        coherence: Math.max(0, Math.min(1, quantumState.coherence - 0.1)),
-        entanglement: Math.max(0, Math.min(1, quantumState.entanglementStrength + 0.05))
-      };
-
-      // Add dimensional shifts if present
-      const dimensionChange = effects.reduce((sum, effect) => 
-        sum + (effect.dimensionChange || 0), 0);
-      if (dimensionChange !== 0) {
-        result.dimensionalShift = dimensionChange;
+      if (!modules.echoSimulator || !modules.dreamServer) {
+        throw new Error('Required engine modules are not available');
       }
 
-      return result;
+      const result = await modules.echoSimulator.processQuantumEffect({
+        impact,
+        timestamp: Date.now(),
+        containment: modules.dreamServer.getContainmentLevel()
+      });
+
+      // Validate and normalize results
+      const stability = Math.max(0, Math.min(1, result.stability));
+      const coherence = Math.max(0, Math.min(1, result.coherence));
+      const entanglement = Math.max(0, Math.min(1, result.entanglement));
+
+      return {
+        success: true,
+        stability,
+        coherence,
+        entanglement,
+        ...(result.dimensionalShift && { dimensionalShift: result.dimensionalShift })
+      };
+
     } catch (e) {
-      const error = e instanceof Error ? e : new Error('Failed to process impact');
-      setError(error);
-      throw error;
+      const thrownError = e instanceof Error ? e : new Error('Failed to process impact');
+      setError(thrownError);
+      return {
+        success: false,
+        stability: 0,
+        coherence: 0,
+        entanglement: 0
+      };
     } finally {
       setIsLoading(false);
     }
@@ -66,12 +83,10 @@ export function useRealityImpact(): UseRealityImpactResult {
   }, []);
 
   return {
-    impacts,
-    feedback,
-    personalEffects,
     isLoading,
     error,
-    addImpact,
-    verifyImpact
+    processImpact,
+    calculateStability,
+    clearError
   };
 }

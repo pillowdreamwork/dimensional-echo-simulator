@@ -1,41 +1,24 @@
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import type { FC } from 'react';
 import { useQuantumState } from '../hooks/use-quantum-state';
 import { useRealityImpact } from '../hooks/use-reality-impact';
 import type { DimensionalEffect } from '../types/quantum';
+import type { DimensionalImpact, RealityFeedback, PersonalEffect } from '../types/impact';
 import { Card } from './ui/card';
-import { Progress } from './ui/progress';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { EffectItem } from './ui/effect-item';
+import { ResonanceBar } from './ui/resonance-bar';
 import { useToast } from '../hooks/use-toast';
 import { cn } from '../lib/utils';
-
-interface Props {
-  className?: string;
-}
-
-interface FeedbackNodeProps {
-  feedback: RealityFeedback;
-}
-
-interface PersonalEffectNodeProps {
-  effect: PersonalEffect;
-}
+import { CheckCircle2, XCircle, Loader2, AlertTriangle } from 'lucide-react';
 
 interface RealityImpactEngineProps {
   initialResonance?: number;
   className?: string;
+  onImpactVerified?: (impactId: string, status: 'VERIFIED' | 'UNVERIFIED') => Promise<void>;
+  onStabilize?: () => Promise<void>;
 }
-
-const ImpactNode: React.FC<ImpactNodeProps> = ({ impact, onVerify }) => {
-  const [verifying, setVerifying] = useState(false);
-
-  const handleVerify = async (status: 'VERIFIED' | 'UNVERIFIED') => {
-    setVerifying(true);
-    try {
-      await onVerify(impact.id, status);
-    } finally {
-      setVerifying(false);
-    }
-  };
 
   return (
     <div className="border border-quantum-dark/20 rounded-lg p-4 mb-4 backdrop-blur-sm hover:bg-quantum-dark/10 transition-colors">
@@ -104,207 +87,290 @@ interface FeedbackNodeProps {
 }
 
 const FeedbackNode: React.FC<FeedbackNodeProps> = ({ feedback }) => {
-  return (
-    <div className={cn(
-      "border rounded-lg p-3 mb-3",
-      NODE_COLORS[feedback.nodeType]
-    )}>
-      <div className="flex justify-between items-start mb-1">
-        <Badge variant="outline" className="text-xs">
-          {feedback.source}
-        </Badge>
-        <span className="text-xs opacity-70">{feedback.confidence}% match</span>
-      </div>
-      <p className="text-sm mt-2">{feedback.content}</p>
-      <div className="flex gap-1 mt-2 flex-wrap">
-        {feedback.keywords.map((keyword, i) => (
-          <span key={i} className="text-xs px-1.5 py-0.5 rounded-full bg-quantum-dark/20">
-            #{keyword}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-interface PersonalEffectNodeProps {
-  effect: PersonalEffect;
-}
-
-const PersonalEffectNode: React.FC<PersonalEffectNodeProps> = ({ effect }) => {
-  return (
-    <div className="border border-quantum-dark/20 rounded-lg p-3 mb-3 backdrop-blur-sm">
-      <div className="flex justify-between items-start mb-2">
-        <Badge variant="outline" className="text-xs">
-          {effect.type}
-        </Badge>
-        <div className="flex space-x-1">
-          {Array.from({ length: Math.min(5, Math.ceil(effect.intensity * 5)) }).map((_, i) => (
-            <span key={i} className="w-1 h-4 bg-quantum-purple/40 rounded-full" />
-          ))}
-        </div>
-      </div>
-      <p className="text-sm">{effect.description}</p>
-      {effect.frequency && (
-        <div className="mt-2 text-xs text-muted-foreground">
-          Frequency: {effect.frequency}Hz
-        </div>
-      )}
-    </div>
-  );
-};
+const RealityImpactEngine = memo<RealityImpactEngineProps>(({
+  initialResonance = 100,
+  className,
+  onImpactVerified,
+  onStabilize
+}) => {
 
 interface RealityImpactEngineProps {
   initialResonance?: number;
   className?: string;
 }
 
-export const RealityImpactEngine: React.FC<RealityImpactEngineProps> = ({
+const RealityImpactEngine = memo<RealityImpactEngineProps>(({
   initialResonance = 100,
-  className
+  className,
+  onImpactVerified,
+  onStabilize
 }) => {
+  const { toast } = useToast();
   const [resonance, setResonance] = useState(initialResonance);
   const [stabilizing, setStabilizing] = useState(false);
-  const [cascadeEffects, setCascadeEffects] = useState<PersonalEffect[]>([]);
+  const [selectedImpact, setSelectedImpact] = useState<string | null>(null);
   
   const {
     impacts,
     realityFeedback,
     personalEffects,
+    isLoading,
+    error,
     verifyImpact,
     stabilizeReality,
     processCascadeEffect
   } = useRealityImpact();
 
-  const handleCascadeEffect = async (effect: PersonalEffect) => {
+  const { state: quantumState } = useQuantumState();
+
+  const handleVerifyImpact = useCallback(async (impactId: string, status: 'VERIFIED' | 'UNVERIFIED') => {
+    try {
+      await verifyImpact(impactId, status);
+      onImpactVerified?.(impactId, status);
+      toast({
+        title: 'Impact Verified',
+        description: `Reality impact has been marked as ${status.toLowerCase()}`,
+        variant: 'default'
+      });
+    } catch (err) {
+      toast({
+        title: 'Verification Failed',
+        description: err instanceof Error ? err.message : 'Failed to verify impact',
+        variant: 'destructive'
+      });
+    }
+  }, [verifyImpact, onImpactVerified, toast]);
+
+  const handleStabilize = useCallback(async () => {
     setStabilizing(true);
     try {
-      const result = await processCascadeEffect(effect);
-      setCascadeEffects(prev => [...prev, result]);
-      
-      // Update resonance based on effect
-      setResonance(prev => Math.max(0, Math.min(100, 
-        prev + (effect.intensity * (effect.type === 'ELEVATION' ? 1 : -1))
-      )));
-      
-      if (resonance < 30) {
-        await stabilizeReality();
-      }
+      await stabilizeReality();
+      await onStabilize?.();
+      toast({
+        title: 'Reality Stabilized',
+        description: 'Reality matrix has been successfully rebalanced',
+        variant: 'default'
+      });
+    } catch (err) {
+      toast({
+        title: 'Stabilization Failed',
+        description: err instanceof Error ? err.message : 'Failed to stabilize reality',
+        variant: 'destructive'
+      });
     } finally {
       setStabilizing(false);
     }
-  };
+  }, [stabilizeReality, onStabilize, toast]);
+
+  const handleProcessEffect = useCallback(async (effect: PersonalEffect) => {
+    setStabilizing(true);
+    try {
+      const result = await processCascadeEffect(effect);
+      
+      // Update resonance based on effect type and intensity
+      setResonance(prev => Math.max(0, Math.min(100, 
+        prev + (effect.intensity * (
+          effect.type === 'DREAMSCAPE' || 
+          effect.type === 'SYNCHRONICITY' ? 1 : 
+          effect.type === 'EMOTIONAL_SURGE' ? 0.5 : -0.5
+        ))
+      )));
+      
+      toast({
+        title: 'Effect Processed',
+        description: `${effect.type} cascade effect has been processed`,
+        variant: 'default'
+      });
+      
+      // Auto-stabilize when resonance gets too low
+      if (resonance < 30) {
+        await handleStabilize();
+      }
+      
+      return result;
+    } finally {
+      setStabilizing(false);
+    }
+  }, [processCascadeEffect, resonance, handleStabilize, toast]);
 
   return (
-    <Card className={cn("w-full", className)}>
-      <div className="p-6 space-y-4">
-        <h2 className="text-xl font-semibold">Reality Impact Engine</h2>
+    <Card className={cn("w-full overflow-hidden", className)}>
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Reality Impact Engine</h2>
+          <div className="flex items-center space-x-2">
+            {isLoading && (
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Processing...</span>
+              </div>
+            )}
+            {error && (
+              <div className="flex items-center space-x-2 text-sm text-red-500">
+                <AlertTriangle className="h-4 w-4" />
+                <span>Error: {error.message}</span>
+              </div>
+            )}
+          </div>
+        </div>
 
         <div className="space-y-4">
-          <div>
-            <div className="flex justify-between text-sm mb-1">
-              <span>Impact Score</span>
-              <span>{impactScore.toFixed(1)}%</span>
-            </div>
-            <Progress value={impactScore} className="h-2" />
-          </div>
+          <ResonanceBar
+            value={resonance}
+            label="Reality Resonance"
+            variant={
+              resonance >= 70 ? 'success' :
+              resonance >= 40 ? 'warning' : 'danger'
+            }
+          />
 
-          <div className="space-y-2">
-            {currentEffects.map((effect, index) => (
-              <EffectItem key={index} effect={effect} />
-            ))}
-            {currentEffects.length === 0 && (
-              <div className="text-sm text-gray-500">
-                No active reality effects
-              </div>
-            )}
-          </div>
-
-          <button
-            onClick={handleImpactProcess}
-            disabled={isLoading || currentEffects.length === 0}
-            className={cn(
-              resonance > 70 ? "bg-green-500/20 text-green-500" :
-              resonance > 30 ? "bg-yellow-500/20 text-yellow-500" :
-              "bg-red-500/20 text-red-500"
-            )}
-          >
-            Resonance: {resonance.toFixed(1)}%
-          </Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="impacts">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="impacts">Dimensional Impacts</TabsTrigger>
-            <TabsTrigger value="feedback">Reality Feedback</TabsTrigger>
-            <TabsTrigger value="effects">Personal Effects</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="impacts" className="space-y-4">
-            <ScrollArea className="h-[400px] pr-4">
-              {impacts.map(impact => (
-                <ImpactNode 
-                  key={impact.id} 
-                  impact={impact}
-                  onVerify={verifyImpact}
-                />
-              ))}
-            </ScrollArea>
-          </TabsContent>
-
-          <TabsContent value="feedback">
-            <ScrollArea className="h-[400px] pr-4">
-              {realityFeedback.map(feedback => (
-                <div key={feedback.id} className={cn(
-                  "border rounded-lg p-4 mb-4",
-                  NODE_COLORS[feedback.type] || NODE_COLORS.UNKNOWN
-                )}>
-                  <h4 className="text-sm font-medium mb-2">{feedback.message}</h4>
-                  <p className="text-xs opacity-70">{feedback.timestamp}</p>
-                </div>
-              ))}
-            </ScrollArea>
-          </TabsContent>
-
-          <TabsContent value="effects">
-            <ScrollArea className="h-[400px] pr-4">
-              <div className="space-y-4">
-                {personalEffects.map(effect => (
-                  <div key={effect.id} className="border rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="text-sm font-medium">{effect.description}</h4>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleCascadeEffect(effect)}
-                        disabled={stabilizing}
-                      >
-                        {stabilizing ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Sparkles className="h-4 w-4" />
-                        )}
-                        <span className="ml-2">Process Effect</span>
-                      </Button>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Active Impacts</h3>
+              {impacts.map((impact) => (
+                <div
+                  key={impact.id}
+                  className={cn(
+                    "border rounded-lg p-4 transition-colors",
+                    selectedImpact === impact.id && "border-quantum-purple bg-quantum-dark/5"
+                  )}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="space-y-1">
+                      <h4 className="font-medium">{impact.action}</h4>
+                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                        <code className="text-xs">{impact.dimensionalCode}</code>
+                        <span>•</span>
+                        <span>Target: {impact.targetDimension}</span>
+                      </div>
                     </div>
-                    <p className="text-xs opacity-70">{effect.manifestation}</p>
+                    
                     <Badge 
-                      variant="outline" 
-                      className={cn(
-                        "mt-2",
-                        NODE_COLORS[effect.type] || NODE_COLORS.UNKNOWN
-                      )}
+                      variant={
+                        impact.verificationStatus === 'VERIFIED' ? 'success' :
+                        impact.verificationStatus === 'UNVERIFIED' ? 'destructive' :
+                        'secondary'
+                      }
                     >
-                      Intensity: {effect.intensity}
+                      {impact.verificationStatus}
                     </Badge>
                   </div>
-                ))}
+
+                  <div className="space-y-2">
+                    {impact.effects.map((effect, index) => (
+                      <EffectItem
+                        key={index}
+                        type={effect.type}
+                        description={effect.description}
+                        intensity={effect.intensity}
+                      />
+                    ))}
+                  </div>
+
+                  {impact.verificationStatus === 'PENDING' && (
+                    <div className="flex justify-end space-x-2 mt-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleVerifyImpact(impact.id, 'VERIFIED')}
+                      >
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        Verify
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleVerifyImpact(impact.id, 'UNVERIFIED')}
+                      >
+                        <XCircle className="h-4 w-4 mr-2" />
+                        Reject
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-medium mb-4">Reality Feedback</h3>
+                <div className="space-y-3">
+                  {realityFeedback.map((feedback, index) => (
+                    <div
+                      key={index}
+                      className="border rounded-lg p-3 space-y-2"
+                    >
+                      <div className="flex justify-between items-start">
+                        <Badge variant="outline" className="text-xs">
+                          {feedback.source}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {feedback.confidence}% match
+                        </span>
+                      </div>
+                      <p className="text-sm">{feedback.content}</p>
+                      <div className="flex flex-wrap gap-1">
+                        {feedback.keywords.map((keyword, i) => (
+                          <span
+                            key={i}
+                            className="text-xs px-1.5 py-0.5 rounded-full bg-muted"
+                          >
+                            #{keyword}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
+
+              <div>
+                <h3 className="text-lg font-medium mb-4">Personal Effects</h3>
+                <div className="space-y-3">
+                  {personalEffects.map((effect, index) => (
+                    <div
+                      key={index}
+                      className="border rounded-lg p-3"
+                    >
+                      <EffectItem
+                        type={effect.type}
+                        description={effect.description}
+                        intensity={effect.intensity}
+                        frequency={effect.frequency}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-center">
+          <Button
+            variant="outline"
+            size="lg"
+            disabled={stabilizing || isLoading}
+            onClick={handleStabilize}
+            className="w-full max-w-sm"
+          >
+            {stabilizing ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Stabilizing Reality...
+              </>
+            ) : (
+              <>
+                <span className="relative flex h-4 w-4 mr-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-quantum-purple opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-4 w-4 bg-quantum-purple"></span>
+                </span>
+                Stabilize Reality Matrix
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
     </Card>
   );
 });

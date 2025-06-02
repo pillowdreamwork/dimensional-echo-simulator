@@ -1,0 +1,7 @@
+{
+  dimensionalProperties,     // The current properties
+  updateDimensionalProperties, // Function to update properties
+  shiftDimension,           // Enhanced dimension shifting
+  transitionEffects,        // Current transition effects
+  stabilityStatus           // Current stability status
+}

@@ -1,21 +1,10 @@
-export interface QuantumState {
-  stateVector: number[];
 import { RitualQuantumState } from './ritual';
 
 // Core quantum mechanics types
 export interface QuantumState {
   // Base state properties
-  state: string;
+  state: 'coherent' | 'decoherent' | 'entangled' | 'stable' | 'unstable';
   probability: number;
-  entanglementMap: Map<string, number>;
-  collapseHistory: string[];
-  state: string;
-  coherence: number;
-  entanglement: number;
-  entanglementStrength: number;
-  superposition: number;
-  phase: number;
-  dimensionalResonance: number;
   coherence: number;       // 0-1: Quantum state coherence level
   entanglement: number;    // 0-1: Degree of quantum entanglement
   superposition: number;   // 0-1: Superposition state magnitude
@@ -25,8 +14,10 @@ export interface QuantumState {
   dimensionalResonance: number;  // 0-1: Resonance with current dimension
   dimensionalStability: number;  // 0-1: Overall stability
   dimensionalShift: number;      // Current shift amount
+  aethericResonance: number;     // 0-1: Resonance with aetheric plane
+  timelineConvergence: number;   // 0-1: Timeline stability factor
   
-  // State probabilities
+  // State probabilities (must sum to 1)
   alpha: number;   // Reality Prime probability
   beta: number;    // Dreamfield probability
   gamma: number;   // Symbolic Realm probability
@@ -37,39 +28,31 @@ export interface QuantumState {
   collapseTimestamp: number;
   
   // Stability metrics
-  stabilityFactor: number;
-  entanglementStrength: number;
-  aethericResonance: number;
-  timelineConvergence: number;
-  activeRitualId?: string;
-  lastEvolvedRitualId?: string;
-  lastGeneratedArchetype?: string;
-  lastEvolvedArchetype?: string;
-  lastSymbolAnalysis?: string;
-  dimensionalShift: number;
-  ritualParticipants: {
-    [ritualId: string]: {
-      [participantId: string]: {
-        lastActive: number;
-        connected: boolean;
-      };
-    };
-  };
+  stabilityFactor: number;       // Overall stability factor
+  entanglementStrength: number;  // Strength of quantum connections
+  lastEvolvedRitualId?: string;  // ID of last evolved ritual
+  activeRitualId?: string;       // Currently active ritual ID
+  
+  // Reality anchors
   realityAnchors: {
     primary: string;
     secondary: string[];
-    strength: number;
+    strength: number;           // 0-1: Anchor strength
   };
+
+  // Quantum signature for validation
   quantumSignature: {
     hash: string;
     timestamp: number;
-    validityPeriod: number;
+    validityPeriod: number;    // Duration in milliseconds
   };
+
+  // Forge metadata
   forgeMetadata: {
     version: string;
     lastModified: number;
-    stabilityIndex: number;
-    energyConsumption: number;
+    stabilityIndex: number;    // 0-1: Forge stability
+    energyConsumption: number; // Energy used in operations
   };
 }
 
@@ -106,7 +89,6 @@ export interface StabilityMetrics {
   spatial: number;
   energetic: number;
   coherence: number;
-}
 }
 
 export type QuantumStateUpdate = Partial<QuantumState>;
@@ -200,6 +182,8 @@ export const createInitialQuantumState = (): QuantumState => ({
   dimensionalResonance: 1,
   dimensionalStability: 1,
   dimensionalShift: 0,
+  aethericResonance: 1,
+  timelineConvergence: 1,
   
   // State probabilities
   alpha: 0.25,
@@ -214,6 +198,26 @@ export const createInitialQuantumState = (): QuantumState => ({
   // Stability metrics
   stabilityFactor: 1,
   entanglementStrength: 0,
-  aethericResonance: 1,
-  timelineConvergence: 1
+  
+  // Reality anchors
+  realityAnchors: {
+    primary: '',
+    secondary: [],
+    strength: 1
+  },
+  
+  // Quantum signature
+  quantumSignature: {
+    hash: '',
+    timestamp: Date.now(),
+    validityPeriod: 3600000 // 1 hour
+  },
+  
+  // Forge metadata
+  forgeMetadata: {
+    version: '1.0',
+    lastModified: Date.now(),
+    stabilityIndex: 1,
+    energyConsumption: 0
+  }
 });

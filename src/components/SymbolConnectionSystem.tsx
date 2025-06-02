@@ -25,10 +25,8 @@ interface SymbolPattern {
 }
 
 // Placeholder for toast notifications
-import { toast } from 'react-toastify';
-
 const useToast = () => ({
-  toast: (msg: string) => toast(msg),
+  toast: (msg: string) => alert(msg),
 });
 
 // Fetch pattern analysis from backend AI
@@ -123,6 +121,8 @@ const SymbolConnectionSystem: React.FC = () => {
     }
   }, [connections, symbols]);
 
+  // Render the symbols and connections (basic SVG example)
+  return (
     <div>
       <h2 className="text-lg font-bold mb-2">Symbol Connection System</h2>
       <button
@@ -135,8 +135,6 @@ const SymbolConnectionSystem: React.FC = () => {
       >
         Reset Connections
       </button>
-    <div>
-      <h2 className="text-lg font-bold mb-2">Symbol Connection System</h2>
       {loading && (
         <div className="mb-2">
           <span>Analyzing pattern with AI...</span>

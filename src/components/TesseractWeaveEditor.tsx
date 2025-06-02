@@ -1,10 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { OrbitControls, Text, Line } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
 import { Vector3, Quaternion } from 'three';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { Slider } from './ui/slider';
 import { Badge } from './ui/badge';
 import {
     InfinityIcon,
@@ -13,22 +12,26 @@ import {
     Plus,
     SaveIcon,
     Wand2Icon,
-    Square // Use Square instead of Cube
+    Square
 } from 'lucide-react';
-import { QuantumTesseractEngine, TesseractNode } from '@/lib/cores/quantum-tesseract';
+import { QuantumTesseractEngine } from '@/lib/cores/quantum-tesseract';
+import { GlyphNode, GlyphNodeConnection } from '@/types/glyph';
+import { QuantumState } from '@/types/quantum';
+import { DimensionalProperties } from '@/types/dimensional';
 import { cn } from '@/lib/utils';
 import { TimelineBranchVisualizer } from './dreamforge/TimelineBranchVisualizer';
 import { InterDimensionalConnection } from './dreamforge/InterDimensionalConnection';
 import { GlyphNodeMesh } from './dreamforge/GlyphNodeMesh';
-import { QuantumState, DimensionalProperties } from '@/types/quantum';
-import { GlyphNode, GlyphNodeConnection } from '@/types/glyph';
-import { ClubIcon } from "lucide-react";
 
-interface WeaveNode extends Omit<GlyphNode, 'connections'> {
+interface WeaveNode {
+  id: string;
   position: Vector3;
   rotation: Quaternion;
+  dimensionalCode: string;
+  glyphPattern: string;
   energyLevel: number;
   timelineStability: number;
+  aethericResonance: number;
   connections: Array<{
     targetId: string;
     strength: number;
@@ -36,10 +39,9 @@ interface WeaveNode extends Omit<GlyphNode, 'connections'> {
   }>;
 }
 
-interface TimelineBranchState {
-  id: string;
-  probability: number;
-  stability: number;
+import { TimelineBranch, TimelineState, TimelineMergeResult } from '@/types/timeline';
+
+interface TimelineBranchState extends TimelineBranch {
   nodes: WeaveNode[];
   active: boolean;
 }
@@ -71,10 +73,14 @@ export function TesseractWeaveEditor({
     if (timelineBranches.length === 0) {
       setTimelineBranches([{
         id: 'main',
+        parentBranchId: null,
+        activeBranches: ['main'],
         probability: 1,
         stability: 1,
         nodes: nodes,
-        active: true
+        active: true,
+        createdAt: Date.now(),
+        mergePoints: []
       }]);
       setActiveTimeline('main');
     }
@@ -191,6 +197,7 @@ export function TesseractWeaveEditor({
 
   // Conversion function for WeaveNode to GlyphNode
   function convertWeaveNodeToGlyphNode(node: WeaveNode): GlyphNode {
+    const currentTime = Date.now();
     return {
       id: node.id,
       position: node.position,
@@ -221,42 +228,54 @@ export function TesseractWeaveEditor({
         phaseAlignment: 100,
         frequency: 432,
         vibration: 432,
-        consciousness: 0.1,
+        consciousness: 0.1
       },
       quantumState: {
-        state: 'stable',
+        state: 'coherent',
         probability: 1,
         coherence: 1,
-        entanglement: 1,
-        entanglementStrength: 1, // Added missing property
-        superposition: 1,
+        entanglement: 0,
+        superposition: 0,
         phase: 0,
         dimensionalResonance: 1,
-        aethericResonance: 1,
         dimensionalStability: 1,
-        timelineConvergence: 1,
-        stateVector: [],
-        entanglementMap: new Map(),
-        collapseHistory: [],
         dimensionalShift: 0,
-        ritualParticipants: {},
-        realityAnchors: { primary: '', secondary: [], strength: 1 },
-        quantumSignature: { hash: '', timestamp: Date.now(), validityPeriod: 3600000 },
-        forgeMetadata: { version: '1.0', lastModified: Date.now(), stabilityIndex: 1, energyConsumption: 0 },
+        aethericResonance: 1,
+        timelineConvergence: 1,
+        alpha: 0.25,
+        beta: 0.25,
+        gamma: 0.25,
+        delta: 0.25,
+        isCollapsed: false,
+        collapseTimestamp: currentTime,
+        stabilityFactor: 1,
+        entanglementStrength: 0,
+        realityAnchors: {
+          primary: '',
+          secondary: [],
+          strength: 1
+        },
+        quantumSignature: {
+          hash: '',
+          timestamp: currentTime,
+          validityPeriod: 3600000
+        },
+        forgeMetadata: { version: '1.0', lastModified: currentTime, stabilityIndex: 1, energyConsumption: 0 }
       },
       timelineState: {
-        probability: 1,
+        activeBranches: [],
+        currentBranch: '',
+        branchHistory: [],
+        mergePoints: [],
         stability: 1,
-        convergence: 1,
-        branchingFactor: 1,
-        currentTimestamp: Date.now(),
+        probability: 1
       },
       metadata: {
-        createdAt: Date.now(),
-        lastModified: Date.now(),
+        createdAt: currentTime,
+        lastModified: currentTime,
         energySignature: '',
         dimensionalOrigin: 1,
-        stabilityHistory: [],
+        stabilityHistory: []
       },
       visualProperties: {
         scale: 1,
