@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { QuantumState } from '../types/quantum';
 
@@ -17,6 +18,7 @@ const defaultQuantumState: QuantumState = {
   dimensionalStability: 100,
   timelineConvergence: 0,
   dimensionalShift: 0,
+  lastSymbolAnalysis: '',
   ritualParticipants: {},
   realityAnchors: {
     primary: '',
@@ -36,31 +38,64 @@ const defaultQuantumState: QuantumState = {
   }
 };
 
-export const useQuantumState = () => {
-  const [quantumState, setQuantumState] = useState<QuantumState>(defaultQuantumState);
+interface UseQuantumStateProps {
+  initialState?: QuantumState;
+  onStateChange?: (state: QuantumState) => void;
+}
+
+export const useQuantumState = (props: UseQuantumStateProps = {}) => {
+  const [quantumState, setQuantumState] = useState<QuantumState>(
+    props.initialState || defaultQuantumState
+  );
 
   useEffect(() => {
-    // Simulate quantum fluctuations
     const intervalId = setInterval(() => {
       setQuantumState(prevState => {
         const newState = { ...prevState };
         
-        // Apply small random changes to state vector
         newState.stateVector = prevState.stateVector.map(val => val + (Math.random() - 0.5) * 0.1);
-        
-        // Ensure probability stays within valid range
         newState.probability = Math.max(0, Math.min(1, prevState.probability + (Math.random() - 0.5) * 0.02));
-        
-        // Modify other properties as needed
         newState.coherence = Math.max(0, Math.min(100, prevState.coherence + (Math.random() - 0.5) * 2));
         newState.entanglementStrength = Math.max(0, Math.min(100, prevState.entanglementStrength + (Math.random() - 0.5) * 1));
         
+        props.onStateChange?.(newState);
         return newState;
       });
     }, 2000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [props.onStateChange]);
 
-  return { quantumState, setQuantumState };
+  const updateQuantumState = (updates: Partial<QuantumState>) => {
+    setQuantumState(prev => {
+      const newState = { ...prev, ...updates };
+      props.onStateChange?.(newState);
+      return newState;
+    });
+  };
+
+  const collapseQuantumState = (stabilityFactor: number) => {
+    setQuantumState(prev => ({
+      ...prev,
+      coherence: Math.max(0, prev.coherence * stabilityFactor),
+      superposition: Math.max(0, prev.superposition * 0.1),
+      probability: stabilityFactor
+    }));
+  };
+
+  const stabilizeQuantumState = (stabilityLevel: number) => {
+    setQuantumState(prev => ({
+      ...prev,
+      dimensionalStability: stabilityLevel * 100,
+      coherence: stabilityLevel * 100
+    }));
+  };
+
+  return { 
+    quantumState, 
+    setQuantumState, 
+    updateQuantumState,
+    collapseQuantumState,
+    stabilizeQuantumState
+  };
 };

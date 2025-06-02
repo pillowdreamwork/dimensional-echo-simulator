@@ -23,6 +23,7 @@ export interface QuantumState {
   dimensionalStability: number;
   timelineConvergence: number;
   dimensionalShift: number;
+  lastSymbolAnalysis?: string;
   ritualParticipants: {
     [ritualId: string]: {
       [participantId: string]: {
@@ -64,4 +65,47 @@ export interface QuantumError {
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   timestamp: number;
   context?: any;
+}
+
+export interface DreamSymbol {
+  id: string;
+  symbol: string;
+  meaning: string;
+  energy: number;
+  connections: string[];
+  resonance: number;
+  metadata: {
+    origin: string;
+    timestamp: number;
+    quantumSignature: string;
+  };
+}
+
+export interface CompilationResult {
+  success: boolean;
+  output: string;
+  errors?: string[];
+}
+
+export interface Symbol {
+  id: string;
+  glyph: string;
+  name: string;
+  x: number;
+  y: number;
+  connected: boolean;
+}
+
+export interface PatternAnalysis {
+  pattern: string[];
+  confidence: number;
+  meaning: string;
+  dimensional: number;
+}
+
+export interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  score: number;
 }

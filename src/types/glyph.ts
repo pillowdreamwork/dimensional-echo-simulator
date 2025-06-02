@@ -31,10 +31,10 @@ export interface GlyphConnection {
   id: string;
   sourceNodeId: string;
   targetNodeId: string;
-  targetId: string; // Legacy compatibility
-  source?: string; // Legacy compatibility
-  target?: string; // Legacy compatibility
-  power?: number; // Legacy compatibility
+  targetId: string;
+  source?: string;
+  target?: string;
+  power?: number;
   strength: number;
   type: 'quantum' | 'dimensional' | 'temporal' | 'aetheric';
   phaseAlignment: number;
@@ -76,7 +76,6 @@ export interface GlyphNode {
   };
 }
 
-// Legacy compatibility types
 export interface Symbol {
   id: string;
   glyph: string;
@@ -91,6 +90,7 @@ export interface Connection {
   source: string;
   target: string;
   power: number;
+  strength: number;
 }
 
 export const DIMENSIONAL_PROPERTIES: Record<DimensionalLevel, {

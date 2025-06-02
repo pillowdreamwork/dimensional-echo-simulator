@@ -33,13 +33,18 @@ export function useDimensionalProperties({
   initialLevel = 3,
   onPropertyChange
 }: UseDimensionalPropertiesProps = {}) {
+  const dimProps = DIMENSIONAL_PROPERTIES[initialLevel];
+  
   const [properties, setProperties] = useState<DimensionalNodeProperties>({
     level: initialLevel,
-    resonance: 100,
-    stability: 100,
-    harmonics: calculateHarmonics(initialLevel),
-    entanglement: 100,
-    phaseAlignment: 100
+    resonance: dimProps.resonance,
+    stability: dimProps.stability,
+    harmonics: dimProps.harmonics,
+    entanglement: dimProps.entanglement,
+    phaseAlignment: dimProps.phaseAlignment,
+    frequency: dimProps.frequency,
+    vibration: dimProps.vibration,
+    consciousness: dimProps.consciousness
   });
 
   const updateProperties = useCallback((updates: Partial<DimensionalNodeProperties>) => {
@@ -61,14 +66,18 @@ export function useDimensionalProperties({
     const resonanceLoss = distance * 10;
     const phaseLoss = distance * 8;
     const entanglementLoss = distance * 3;
+    const targetProps = DIMENSIONAL_PROPERTIES[targetLevel];
 
     updateProperties({
       level: targetLevel,
       stability: Math.max(0, properties.stability - stabilityLoss),
       resonance: Math.max(0, properties.resonance - resonanceLoss),
-      harmonics: calculateHarmonics(targetLevel),
+      harmonics: targetProps.harmonics,
       phaseAlignment: Math.max(0, properties.phaseAlignment - phaseLoss),
-      entanglement: Math.max(0, properties.entanglement - entanglementLoss)
+      entanglement: Math.max(0, properties.entanglement - entanglementLoss),
+      frequency: targetProps.frequency,
+      vibration: targetProps.vibration,
+      consciousness: targetProps.consciousness
     });
   }, [properties, updateProperties]);
 
