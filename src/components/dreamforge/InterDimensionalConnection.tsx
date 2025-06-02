@@ -1,17 +1,18 @@
+
 import React, { useMemo, useRef } from 'react';
 import { Vector3 } from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
-import { GlyphNode } from '../../types/glyph';
-import { DIMENSIONAL_PROPERTIES } from '../../types/dimensional';
+import { GlyphNode, GlyphConnection } from '../../types/glyph';
+import { DIMENSIONAL_PROPERTIES } from '../../types/glyph';
 
-const BATCH_SIZE = 1000; // Process connections in batches
-const UPDATE_INTERVAL = 16; // ~60fps update rate
+const BATCH_SIZE = 1000;
+const UPDATE_INTERVAL = 16;
 
 interface ConnectionProps {
   source: GlyphNode;
   target: GlyphNode;
-  connection: GlyphNode['connections'][0];
+  connection: GlyphConnection;
   batchIndex?: number;
 }
 
@@ -32,8 +33,8 @@ export const InterDimensionalConnection: React.FC<ConnectionProps> = React.memo(
     // Add curve control point for better visual effect
     const control = midPoint.clone().add(
       new Vector3(
-        Math.sin(connection.phaseAlignment * Math.PI) * 0.5,
-        Math.cos(connection.dimensionalResonance * Math.PI) * 0.5,
+        Math.sin((connection.phaseAlignment || 0) * Math.PI) * 0.5,
+        Math.cos((connection.dimensionalResonance || 0) * Math.PI) * 0.5,
         Math.sin(connection.strength * Math.PI) * 0.5
       )
     );
@@ -57,7 +58,7 @@ export const InterDimensionalConnection: React.FC<ConnectionProps> = React.memo(
 
   const color = useMemo(() => {
     const dimensionColor = DIMENSIONAL_PROPERTIES[source.dimensionalProperties.level].color;
-    const alpha = connection.dimensionalResonance / 100;
+    const alpha = (connection.dimensionalResonance || 50) / 100;
     return dimensionColor + Math.floor(alpha * 255).toString(16).padStart(2, '0');
   }, [source.dimensionalProperties.level, connection.dimensionalResonance]);
 
@@ -65,12 +66,12 @@ export const InterDimensionalConnection: React.FC<ConnectionProps> = React.memo(
     color,
     transparent: true,
     opacity: connection.strength / 100,
-    linewidth: Math.max(0.5, connection.phaseAlignment / 25),
+    linewidth: Math.max(0.5, (connection.phaseAlignment || 25) / 25),
     toneMapped: false,
     dashed: false,
     depthWrite: false,
     vertexColors: true,
-    blending: 2,
+    blending: 2 as const,
   }), [color, connection.strength, connection.phaseAlignment]);
 
   useFrame((state) => {

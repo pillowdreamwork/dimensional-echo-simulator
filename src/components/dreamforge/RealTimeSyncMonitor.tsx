@@ -184,7 +184,7 @@ export const RealTimeSyncMonitor: React.FC<RealTimeSyncMonitorProps> = ({
         Last Update: {formatTimestamp(lastUpdate)}
       </div>
 
-      <style jsx>{`
+      <style>{`
         .status-indicator {
           width: 12px;
           height: 12px;

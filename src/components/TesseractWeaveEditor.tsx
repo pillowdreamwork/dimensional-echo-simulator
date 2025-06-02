@@ -34,6 +34,9 @@ interface WeaveNode extends Omit<GlyphNode, 'connections'> {
     strength: number;
     resonance: number;
   }>;
+  dimensionalCode?: string;
+  glyphPattern?: string;
+  aethericResonance?: number;
 }
 
 interface TimelineBranchState {
@@ -195,25 +198,12 @@ export function TesseractWeaveEditor({
       id: node.id,
       position: node.position,
       rotation: node.rotation,
-      dimensionalCode: node.dimensionalCode || '',
-      glyphPattern: node.glyphPattern || '',
-      selected: false,
-      aethericResonance: node.aethericResonance || 1,
-      dimensionalStability: node.timelineStability || 1,
-      timelineConvergence: 1,
-      connections: node.connections.map((conn) => ({
-        targetId: conn.targetId,
-        strength: conn.strength,
-        phaseAlignment: 0,
-        dimensionalResonance: 0,
-        quantumBridge: {
-          entanglementStrength: 0,
-          coherenceLevel: 0,
-          phaseMatch: 0,
-        },
-      })),
+      scale: node.scale || new Vector3(1, 1, 1),
+      symbol: node.symbol || '',
+      energy: node.energyLevel || 0,
+      connections: node.connections.map(conn => conn.targetId),
       dimensionalProperties: {
-        level: 1,
+        level: 3 as DimensionalLevel,
         resonance: 100,
         stability: 100,
         harmonics: [],
@@ -223,12 +213,30 @@ export function TesseractWeaveEditor({
         vibration: 432,
         consciousness: 0.1,
       },
+      timestamp: Date.now(),
+      isActive: true,
+      metadata: {
+        creator: 'system',
+        purpose: 'weave-node',
+        tags: ['quantum', 'tesseract'],
+        createdAt: Date.now(),
+        lastModified: Date.now(),
+        energySignature: '',
+        dimensionalOrigin: 3 as DimensionalLevel,
+        stabilityHistory: [],
+      },
+      dimensionalCode: node.dimensionalCode || '',
+      glyphPattern: node.glyphPattern || '',
+      selected: false,
+      aethericResonance: node.aethericResonance || 1,
+      dimensionalStability: node.timelineStability || 1,
+      timelineConvergence: 1,
       quantumState: {
         state: 'stable',
         probability: 1,
         coherence: 1,
         entanglement: 1,
-        entanglementStrength: 1, // Added missing property
+        entanglementStrength: 1,
         superposition: 1,
         phase: 0,
         dimensionalResonance: 1,
@@ -250,13 +258,6 @@ export function TesseractWeaveEditor({
         convergence: 1,
         branchingFactor: 1,
         currentTimestamp: Date.now(),
-      },
-      metadata: {
-        createdAt: Date.now(),
-        lastModified: Date.now(),
-        energySignature: '',
-        dimensionalOrigin: 1,
-        stabilityHistory: [],
       },
       visualProperties: {
         scale: 1,

@@ -1,8 +1,9 @@
+
 import React, { useMemo, useRef } from 'react';
 import { Vector3, MeshStandardMaterial } from 'three';
 import { Text } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { DIMENSIONAL_PROPERTIES } from '../../types/dimensional';
+import { DIMENSIONAL_PROPERTIES } from '../../types/glyph';
 import { GlyphNode } from '../../types/glyph';
 
 interface GlyphNodeMeshProps {
@@ -26,9 +27,10 @@ export const GlyphNodeMesh: React.FC<GlyphNodeMeshProps> = ({
   // Calculate node appearance based on quantum state
   const nodeProperties = useMemo(() => {
     const dimProps = DIMENSIONAL_PROPERTIES[node.dimensionalProperties.level];
-    const superpositionScale = 1 + (node.quantumState.superposition / 200);
-    const coherenceEmission = node.quantumState.coherence / 100;
-    const entanglementPulse = node.quantumState.entanglementStrength / 100;
+    const quantumState = node.quantumState;
+    const superpositionScale = 1 + ((quantumState?.superposition || 50) / 200);
+    const coherenceEmission = (quantumState?.coherence || 50) / 100;
+    const entanglementPulse = (quantumState?.entanglementStrength || 50) / 100;
     
     return {
       scale: superpositionScale * quantumIntensity,
@@ -92,7 +94,7 @@ export const GlyphNodeMesh: React.FC<GlyphNodeMeshProps> = ({
         anchorX="center"
         anchorY="middle"
       >
-        {node.glyphPattern}
+        {node.glyphPattern || node.symbol}
       </Text>
     </group>
   );

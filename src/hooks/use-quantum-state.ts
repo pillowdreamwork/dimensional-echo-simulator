@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { QuantumState as CoreQuantumState } from '../types/quantum';
 
@@ -8,12 +9,18 @@ const DEFAULT_QUANTUM_STATE: QuantumState = {
   probability: 1,
   coherence: 1,
   entanglement: 1,
+  entanglementStrength: 1,
   superposition: 1,
   phase: 0,
   dimensionalResonance: 1,
   aethericResonance: 1,
   dimensionalStability: 1,
   timelineConvergence: 1,
+  stateVector: [1, 0, 0, 0],
+  entanglementMap: new Map(),
+  collapseHistory: [],
+  dimensionalShift: 0,
+  ritualParticipants: {},
   realityAnchors: {
     primary: '',
     secondary: [],

@@ -35,14 +35,15 @@ const QuantumNode = ({ position, state, pulseFactor = 1, dimensionalShift = 0 }:
 
   // Cache light for performance
   const light = useMemo(() => {
-    return new THREE.PointLight(new THREE.Color(0.5, 0.2, 1), 1, 4);
+    const pointLight = new THREE.PointLight(0x8020ff, 1, 4);
+    return pointLight;
   }, []);
 
   // Create materials with shared geometries for better performance
   const { materials, geometries } = useMemo(() => {
     const core = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0.5, 0.2, 1),
-      emissive: new THREE.Color(0.2, 0, 0.5),
+      color: 0x8020ff,
+      emissive: 0x200080,
       roughness: 0.4,
       metalness: 0.8,
       transmission: 0.5,
@@ -50,8 +51,8 @@ const QuantumNode = ({ position, state, pulseFactor = 1, dimensionalShift = 0 }:
     });
 
     const glow = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0.3, 0.1, 0.8),
-      emissive: new THREE.Color(0.4, 0.2, 1),
+      color: 0x5010cc,
+      emissive: 0x6620ff,
       transparent: true,
       opacity: 0.5,
       transmission: 0.9,

@@ -1,135 +1,116 @@
-import React, { useEffect, useState } from 'react';
-import { AethericAPICore, SyncState } from '../../lib/cores/aetheric-api';
-import { Card } from '../ui/card';
-import { Button } from '../ui/button';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '../ui/hover-card';
+import { Circle } from 'lucide-react';
 
 interface SyncMonitorProps {
-  apiCore: AethericAPICore;
+  syncStatus: 'connected' | 'connecting' | 'disconnected' | 'error';
+  lastSyncTime: Date | null;
+  dataPointsSynced: number;
+  errorDetails?: string;
 }
 
-export const SyncMonitor: React.FC<SyncMonitorProps> = ({ apiCore }) => {
-  const [syncState, setSyncState] = useState<SyncState>({
-    lastSync: Date.now(),
-    pendingOperations: 0,
-    syncStatus: 'idle'
-  });
+export const SyncMonitor: React.FC<SyncMonitorProps> = ({
+  syncStatus,
+  lastSyncTime,
+  dataPointsSynced,
+  errorDetails
+}) => {
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const subscription = apiCore.observeSyncState().subscribe(
-      state => setSyncState(state)
-    );
-    return () => subscription.unsubscribe();
-  }, [apiCore]);
+    // Simulate sync progress
+    let intervalId: NodeJS.Timeout;
+    if (syncStatus === 'connecting') {
+      setProgress(0);
+      intervalId = setInterval(() => {
+        setProgress(prevProgress => {
+          const newProgress = prevProgress + 10;
+          return newProgress > 95 ? 95 : newProgress;
+        });
+      }, 300);
+    } else if (syncStatus === 'connected') {
+      setProgress(100);
+    } else {
+      setProgress(0);
+    }
 
-  const getStatusColor = (status: SyncState['syncStatus']) => {
-    switch (status) {
-      case 'syncing': return 'text-blue-500';
-      case 'error': return 'text-red-500';
-      default: return 'text-green-500';
+    return () => clearInterval(intervalId);
+  }, [syncStatus]);
+
+  const getStatusColor = () => {
+    switch (syncStatus) {
+      case 'connected':
+        return 'text-green-500';
+      case 'connecting':
+        return 'text-yellow-500 animate-pulse';
+      case 'disconnected':
+        return 'text-red-500';
+      case 'error':
+        return 'text-purple-500';
+      default:
+        return 'text-gray-500';
     }
   };
 
-  const formatTimestamp = (timestamp: number) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString();
-  };
-
-  const handleForceSync = async () => {
-    try {
-      await apiCore.forceSync();
-    } catch (error) {
-      console.error('Force sync failed:', error);
-    }
+  const formatLastSyncTime = () => {
+    if (!lastSyncTime) return 'Never';
+    return lastSyncTime.toLocaleTimeString();
   };
 
   return (
-    <Card className="p-6 space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Reality Sync Status</h2>
-        <HoverCard>
-          <HoverCardTrigger>
-            <div 
-              className={`px-3 py-1 rounded-full ${getStatusColor(syncState.syncStatus)}`}
-            >
-              {syncState.syncStatus.toUpperCase()}
-            </div>
-          </HoverCardTrigger>
-          <HoverCardContent>
-            <div className="text-sm">
-              Last sync: {formatTimestamp(syncState.lastSync)}
-              <br />
-              Pending operations: {syncState.pendingOperations}
-            </div>
-          </HoverCardContent>
-        </HoverCard>
-      </div>
-
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm text-gray-500">
-          <span>Sync Progress</span>
-          <span>{syncState.pendingOperations} pending</span>
-        </div>
-        <Progress 
-          value={100 - (syncState.pendingOperations * 10)} 
-          className="w-full"
-        />
-      </div>
-
-      {syncState.syncStatus === 'error' && (
-        <Alert variant="destructive">
-          <AlertTitle>Sync Error</AlertTitle>
-          <AlertDescription>
-            {syncState.errorMessage || 'An unknown error occurred'}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      <div className="flex space-x-4">
-        <Button 
-          onClick={handleForceSync}
-          disabled={syncState.syncStatus === 'syncing'}
-        >
-          Force Sync
-        </Button>
-        <Button 
-          variant="outline"
-          onClick={() => window.location.reload()}
-        >
-          Reset Connection
-        </Button>
-      </div>
-
-      <div className="mt-4 text-sm text-gray-500">
-        <div className="grid grid-cols-2 gap-2">
-          <div>Last Successful Sync:</div>
-          <div>{formatTimestamp(syncState.lastSync)}</div>
-          
-          <div>Connection Status:</div>
-          <div className={getStatusColor(syncState.syncStatus)}>
-            {syncState.syncStatus === 'idle' ? 'Connected' : syncState.syncStatus}
+    <Card className="sync-monitor">
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <span>Synchronization Monitor</span>
+          <div className="flex items-center space-x-2">
+            <Circle className={`h-4 w-4 sync-indicator ${getStatusColor()}`} />
+            <Badge variant="secondary">{syncStatus.toUpperCase()}</Badge>
           </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <p className="text-sm font-medium">Status</p>
+          <p className={`text-lg ${getStatusColor()}`}>
+            {syncStatus.toUpperCase()}
+          </p>
         </div>
-      </div>
 
-      <style jsx>{`
-        .progress-indicator {
-          height: 4px;
-          background: #e2e8f0;
-          border-radius: 2px;
-          overflow: hidden;
+        <div className="space-y-2">
+          <p className="text-sm font-medium">Last Sync</p>
+          <p className="text-muted-foreground">{formatLastSyncTime()}</p>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-sm font-medium">Data Synced</p>
+          <p className="text-muted-foreground">{dataPointsSynced} points</p>
+        </div>
+
+        <div>
+          <p className="text-sm font-medium">Progress</p>
+          <Progress value={progress} />
+        </div>
+
+        {errorDetails && (
+          <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm">
+            <p className="font-medium">Error Details:</p>
+            <p>{errorDetails}</p>
+          </div>
+        )}
+      </CardContent>
+      <style>{`
+        .sync-monitor {
+          transition: all 0.3s ease;
         }
-        
-        .progress-bar {
-          height: 100%;
-          background: #4299e1;
-          transition: width 0.3s ease-in-out;
+        .sync-indicator {
+          animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+          0% { opacity: 1; }
+          50% { opacity: 0.5; }
+          100% { opacity: 1; }
         }
       `}</style>
     </Card>

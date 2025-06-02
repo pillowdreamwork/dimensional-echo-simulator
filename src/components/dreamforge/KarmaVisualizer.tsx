@@ -1,167 +1,169 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Text } from '@react-three/drei';
+import React, { useState, useEffect, useRef } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Vector3 } from 'three';
-import { KarmaReflectionSystem, KarmaEvent, ReflectionLog } from '../../lib/cores/karma-reflection';
-import { QuantumTesseractEngine } from '../../lib/cores/quantum-tesseract';
+
+interface KarmaEvent {
+  id: string;
+  timestamp: number;
+  type: 'positive' | 'negative' | 'neutral';
+  description: string;
+  source: string;
+  target: string;
+  intensity: number;
+  dimensionalAlignment: number;
+  quantumEntanglement: number;
+  realityDistortion: number;
+  stabilityIndex: number;
+  participants: string[];
+}
 
 interface KarmaVisualizerProps {
-  karmaSystem: KarmaReflectionSystem;
+  karmaSystem: any;
   logId: string;
 }
 
-const KarmaMatrix: React.FC<{
-  matrix: number[][];
-  position: Vector3;
-}> = ({ matrix, position }) => {
-  const cellSize = 0.5;
-  const gap = 0.1;
-
-  return (
-    <group position={position}>
-      {matrix.map((row, i) =>
-        row.map((value, j) => {
-          const color = value > 0 ? 
-            `hsl(${120 + value * 60}, 70%, 50%)` :
-            `hsl(${360 + value * 60}, 70%, 50%)`;
-          
-          return (
-            <mesh
-              key={`${i}-${j}`}
-              position={[
-                i * (cellSize + gap),
-                j * (cellSize + gap),
-                0
-              ]}
-            >
-              <boxGeometry args={[cellSize, cellSize, 0.1]} />
-              <meshStandardMaterial 
-                color={color}
-                opacity={Math.abs(value)}
-                transparent
-                metalness={0.5}
-                roughness={0.2}
-              />
-            </mesh>
-          );
-        })
-      )}
-    </group>
-  );
-};
-
-const ResonanceDisplay: React.FC<{
-  patterns: string[];
-  position: Vector3;
-}> = ({ patterns, position }) => {
-  return (
-    <group position={position}>
-      {patterns.map((pattern, i) => (
-        <Text
-          key={i}
-          position={[i * 1.5, 0, 0]}
-          fontSize={0.5}
-          color="#ffffff"
-        >
-          {pattern}
-        </Text>
-      ))}
-    </group>
-  );
-};
-
-const StabilityIndicator: React.FC<{
-  indicators: {
-    temporal: number;
-    spatial: number;
-    harmonic: number;
-  };
-  position: Vector3;
-}> = ({ indicators, position }) => {
-  const barWidth = 2;
-  const barHeight = 0.2;
-  const gap = 0.4;
-
-  return (
-    <group position={position}>
-      {Object.entries(indicators).map(([key, value], i) => (
-        <group key={key} position={[0, i * (barHeight + gap), 0]}>
-          <mesh position={[barWidth * value / 2, 0, 0]}>
-            <boxGeometry args={[barWidth * value, barHeight, 0.1]} />
-            <meshStandardMaterial 
-              color={`hsl(${value * 120}, 70%, 50%)`}
-              metalness={0.3}
-              roughness={0.4}
-            />
-          </mesh>
-          <Text
-            position={[-1.5, 0, 0]}
-            fontSize={0.2}
-            color="#ffffff"
-            anchorX="right"
-          >
-            {key}:
-          </Text>
-        </group>
-      ))}
-    </group>
-  );
-};
-
-export const KarmaVisualizer: React.FC<KarmaVisualizerProps> = ({
-  karmaSystem,
-  logId
-}) => {
-  const [visualData, setVisualData] = useState<ReturnType<
-    typeof KarmaReflectionSystem.prototype.getHarmonyVisualizationData
-  > | null>(null);
+const KarmaVisualizer: React.FC<KarmaVisualizerProps> = ({ karmaSystem, logId }) => {
+  const [karmaEvents, setKarmaEvents] = useState<KarmaEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    try {
-      const data = karmaSystem.getHarmonyVisualizationData(logId);
-      setVisualData(data);
-    } catch (error) {
-      console.error('Failed to get karma visualization data:', error);
-    }
-  }, [karmaSystem, logId]);
+    const fetchKarmaEvents = async () => {
+      setLoading(true);
+      try {
+        // Mock data loading
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const mockEvents: KarmaEvent[] = [
+          {
+            id: '1',
+            timestamp: Date.now() - 1000,
+            type: 'positive',
+            description: 'Aligned dimensional matrices',
+            source: 'User A',
+            target: 'System',
+            intensity: 0.8,
+            dimensionalAlignment: 0.9,
+            quantumEntanglement: 0.7,
+            realityDistortion: 0.1,
+            stabilityIndex: 0.95,
+            participants: ['User A', 'System']
+          },
+          {
+            id: '2',
+            timestamp: Date.now() - 500,
+            type: 'negative',
+            description: 'Temporal anomaly detected',
+            source: 'System',
+            target: 'Anomaly',
+            intensity: 0.6,
+            dimensionalAlignment: 0.2,
+            quantumEntanglement: 0.5,
+            realityDistortion: 0.6,
+            stabilityIndex: 0.6,
+            participants: ['System', 'Anomaly']
+          },
+          {
+            id: '3',
+            timestamp: Date.now(),
+            type: 'neutral',
+            description: 'Calibrated aetheric resonance',
+            source: 'User B',
+            target: 'System',
+            intensity: 0.4,
+            dimensionalAlignment: 0.7,
+            quantumEntanglement: 0.3,
+            realityDistortion: 0.2,
+            stabilityIndex: 0.8,
+            participants: ['User B', 'System']
+          }
+        ];
+        setKarmaEvents(mockEvents);
+      } catch (error) {
+        console.error("Failed to load karma events:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (!visualData) return null;
+    fetchKarmaEvents();
+  }, [logId, karmaSystem]);
+
+  const getColorByType = (type: KarmaEvent['type']) => {
+    switch (type) {
+      case 'positive':
+        return 'text-green-500';
+      case 'negative':
+        return 'text-red-500';
+      default:
+        return 'text-gray-500';
+    }
+  };
+
+  const calculateNodePosition = (index: number, total: number): Vector3 => {
+    const radius = 5;
+    const angle = (index / total) * 2 * Math.PI;
+    const x = radius * Math.cos(angle);
+    const y = radius * Math.sin(angle);
+    return new Vector3(x, y, 0);
+  };
 
   return (
-    <div className="karma-visualizer">
-      <Canvas
-        camera={{ position: [5, 5, 5], fov: 75 }}
-        style={{ width: '100%', height: '600px' }}
-      >
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} />
-        <OrbitControls />
-
-        <KarmaMatrix
-          matrix={visualData.matrix}
-          position={new Vector3(-2, -2, 0)}
-        />
-        
-        <ResonanceDisplay
-          patterns={visualData.resonancePatterns}
-          position={new Vector3(-2, 2, 0)}
-        />
-        
-        <StabilityIndicator
-          indicators={visualData.stabilityIndicators}
-          position={new Vector3(2, 0, 0)}
-        />
-      </Canvas>
-
-      <style jsx>{`
-        .karma-visualizer {
-          width: 100%;
-          height: 100%;
-          background: rgba(0, 0, 0, 0.05);
-          border-radius: 8px;
-          overflow: hidden;
-        }
-      `}</style>
-    </div>
-  );
-};
+    <Card className="karma-visualizer w-full">
+      <CardHeader>
+        <CardTitle>Karma Visualization</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex flex-col space-y-2">
+            <Skeleton className="w-[200px] h-8" />
+            <Skeleton className="w-[150px] h-6" />
+            <Skeleton className="w-[300px] h-4" />
+          </div>
+        ) : (
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="flex items-center justify-center w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800">
+                <span className="text-lg font-semibold">
+                  {karmaEvents.length} Events
+                </span>
+              </div>
+            </div>
+            <div className="flex justify-around">
+              {karmaEvents.map((event, index) => {
+                const position = calculateNodePosition(index, karmaEvents.length);
+                return (
+                  <div
+                    key={event.id}
+                    className="karma-node"
+                    style={{
+                      position: 'absolute',
+                      left: `calc(50% + ${position.x * 10}px)`,
+                      top: `calc(50% + ${position.y * 10}px)`,
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                  >
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={`https://i.pravatar.cc/150?img=${index + 1}`} />
+                            <AvatarFallback>{event.source.charAt(0)}{event.target.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{event.description}</p>
+                          <p>Source: {event.source}</p>
+                          <p>Target: {event.target}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </CardContent>

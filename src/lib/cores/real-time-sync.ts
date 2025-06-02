@@ -14,6 +14,7 @@ export interface ConnectionState {
   lastConnected?: Date;
   reconnectAttempts?: number;
   latency?: number;
+  error?: string;
 }
 
 interface DimensionalShift {
@@ -85,7 +86,7 @@ export class RealTimeSync {
 
     this.ws.onerror = (error) => {
       console.error('WebSocket error:', error);
-      this.connectionStateSubject.next({ status: 'error' });
+      this.connectionStateSubject.next({ status: 'error', error: error.message });
     };
   }
 
