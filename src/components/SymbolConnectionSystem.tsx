@@ -25,8 +25,10 @@ interface SymbolPattern {
 }
 
 // Placeholder for toast notifications
+import { toast } from 'react-toastify';
+
 const useToast = () => ({
-  toast: (msg: string) => alert(msg),
+  toast: (msg: string) => toast(msg),
 });
 
 // Fetch pattern analysis from backend AI
@@ -121,8 +123,18 @@ const SymbolConnectionSystem: React.FC = () => {
     }
   }, [connections, symbols]);
 
-  // Render the symbols and connections (basic SVG example)
-  return (
+    <div>
+      <h2 className="text-lg font-bold mb-2">Symbol Connection System</h2>
+      <button
+        className="mb-2 px-4 py-2 bg-red-500 text-white rounded"
+        onClick={() => {
+          setConnections([]);
+          setSymbols(prev => prev.map(symbol => ({ ...symbol, connected: false })));
+          toast('Connections reset!');
+        }}
+      >
+        Reset Connections
+      </button>
     <div>
       <h2 className="text-lg font-bold mb-2">Symbol Connection System</h2>
       {loading && (
