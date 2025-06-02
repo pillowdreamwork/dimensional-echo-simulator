@@ -16,6 +16,7 @@ export class PerformanceMonitor {
   };
   private lastFrameTime: number = 0;
   private frameTimes: number[] = [];
+  private metricHistory: Map<string, number[]> = new Map();
 
   constructor() {
     this.startMonitoring();
@@ -74,5 +75,28 @@ export class PerformanceMonitor {
       ...this.metrics,
       workerTime: time
     };
+  }
+
+  trackMetric(name: string, value: number): void {
+    if (!this.metricHistory.has(name)) {
+      this.metricHistory.set(name, []);
+    }
+    
+    const history = this.metricHistory.get(name)!;
+    history.push(value);
+    
+    // Keep only last 100 values
+    if (history.length > 100) {
+      history.shift();
+    }
+  }
+
+  getAverageMetric(name: string): number {
+    const history = this.metricHistory.get(name);
+    if (!history || history.length === 0) {
+      return 0;
+    }
+    
+    return history.reduce((sum, value) => sum + value, 0) / history.length;
   }
 }

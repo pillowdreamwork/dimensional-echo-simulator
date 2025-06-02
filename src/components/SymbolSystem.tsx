@@ -22,14 +22,11 @@ const SymbolSystem: React.FC<SymbolSystemProps> = ({
   
   // Define available symbols based on current dimension
   const getAvailableSymbols = () => {
-    // Only show glyphs from dimensions the player has access to
     const symbols: string[] = [];
     
-    for (let i = 1; i <= Math.min(dimension + 2, 11); i++) {
-      const key = i as keyof typeof dimensionGlyphs;
-      if (dimensionGlyphs[key]) {
-        symbols.push(dimensionGlyphs[key]);
-      }
+    // Add symbols from dimensionGlyphs array up to current dimension + 2
+    for (let i = 0; i < Math.min(dimension + 2, dimensionGlyphs.length); i++) {
+      symbols.push(dimensionGlyphs[i].symbol);
     }
     
     // Add some combinatorial symbols for higher dimensions

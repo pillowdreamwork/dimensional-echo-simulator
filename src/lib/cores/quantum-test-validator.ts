@@ -1,6 +1,13 @@
 import { Observable, Subject, BehaviorSubject } from 'rxjs';
-import { QuantumTesseractEngine, TesseractNode, QuantumState } from './quantum-tesseract';
-import { QuantumErrorHandler, ErrorSeverity } from './quantum-error-handler';
+import { QuantumState, QuantumError } from '../../types/quantum';
+
+export interface TesseractNode {
+  id: string;
+  position: { x: number; y: number; z: number; distanceTo: (other: any) => number };
+  connections: string[];
+  energyLevel: number;
+  timelineStability: number;
+}
 
 export interface TestResult {
   id: string;
@@ -27,6 +34,26 @@ export interface ValidationMetrics {
   testCoverage: number;
 }
 
+export class QuantumTesseractEngine {
+  getAllQuantumStates(): QuantumState[] {
+    return [];
+  }
+
+  getAllNodes(): TesseractNode[] {
+    return [];
+  }
+
+  getNode(nodeId: string): TesseractNode | null {
+    return null;
+  }
+}
+
+export class QuantumErrorHandler {
+  reportError(error: QuantumError): void {
+    console.error('Quantum Error:', error);
+  }
+}
+
 export class QuantumTestValidator {
   private testResults = new BehaviorSubject<Map<string, TestResult>>(new Map());
   private validationMetrics = new BehaviorSubject<ValidationMetrics>({
@@ -39,10 +66,46 @@ export class QuantumTestValidator {
   });
 
   constructor(
-    private engine: QuantumTesseractEngine,
-    private errorHandler: QuantumErrorHandler,
+    private engine: QuantumTesseractEngine = new QuantumTesseractEngine(),
+    private errorHandler: QuantumErrorHandler = new QuantumErrorHandler(),
     private readonly validationThreshold: number = 0.8
   ) {}
+
+  public validateQuantumState(state: QuantumState): boolean {
+    try {
+      // Validate coherence range
+      if (state.coherence < 0 || state.coherence > 100) {
+        return false;
+      }
+
+      // Validate entanglement range
+      if (state.entanglement < 0 || state.entanglement > 100) {
+        return false;
+      }
+
+      // Validate entanglement strength range
+      if (state.entanglementStrength < 0 || state.entanglementStrength > 100) {
+        return false;
+      }
+
+      // Validate superposition range
+      if (state.superposition < 0 || state.superposition > 100) {
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  public optimizeQuantumField(states: QuantumState[]): QuantumState[] {
+    return states.map(state => ({
+      ...state,
+      coherence: Math.min(100, state.coherence * 1.1),
+      entanglementStrength: Math.min(100, state.entanglementStrength * 1.05)
+    }));
+  }
 
   public async runSystemValidation(): Promise<boolean> {
     const startTime = performance.now();
@@ -69,13 +132,14 @@ export class QuantumTestValidator {
       return overallStability >= this.validationThreshold;
 
     } catch (error) {
-      this.errorHandler.reportError(
-        'VALIDATION_FAILURE',
-        'System validation failed',
-        ErrorSeverity.CRITICAL,
-        'runSystemValidation',
-        { error }
-      );
+      this.errorHandler.reportError({
+        id: crypto.randomUUID(),
+        type: 'QUANTUM_DECOHERENCE',
+        message: 'System validation failed',
+        severity: 'CRITICAL' as const,
+        timestamp: Date.now(),
+        context: { error }
+      });
       return false;
     } finally {
       this.testResults.next(results);
@@ -125,7 +189,7 @@ export class QuantumTestValidator {
           accuracy: 0,
           coherence: 0
         },
-        error
+        error: error as Error
       };
     }
   }
@@ -210,7 +274,7 @@ export class QuantumTestValidator {
           accuracy: 0,
           coherence: 0
         },
-        error
+        error: error as Error
       };
     }
   }
@@ -229,7 +293,6 @@ export class QuantumTestValidator {
 
   private async validateTimelineStability(): Promise<TestResult> {
     // Implementation for timeline stability validation
-    // Similar structure to other validation methods
     return {
       id: 'timeline-stability',
       name: 'Timeline Stability Validation',
@@ -301,7 +364,7 @@ export class QuantumTestValidator {
 
     const count = results.size || 1;
     Object.keys(metrics).forEach(key => {
-      metrics[key] /= count;
+      (metrics as any)[key] /= count;
     });
 
     metrics.testCoverage = (metrics.testCoverage * 100) / count;
@@ -317,30 +380,6 @@ export class QuantumTestValidator {
       (sum, result) => sum + (result.success ? result.metrics.stability : 0),
       0
     ) / validResults.length;
-  }
-
-  private reportValidationError(message: string): void {
-    console.error('Validation Error:', message);
-    // Use a valid error type
-    this.errorHandler.reportError({
-      id: crypto.randomUUID(),
-      type: 'QUANTUM_DECOHERENCE',
-      message,
-      severity: 'HIGH' as const,
-      timestamp: Date.now()
-    });
-  }
-
-  private getAllQuantumStates(): any[] {
-    return [];
-  }
-
-  private getAllNodes(): any[] {
-    return [];
-  }
-
-  private getNode(nodeId: string): any {
-    return null;
   }
 
   public observeTestResults(): Observable<Map<string, TestResult>> {

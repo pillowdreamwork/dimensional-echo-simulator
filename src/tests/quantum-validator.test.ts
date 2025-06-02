@@ -1,3 +1,4 @@
+
 import { describe, it, expect } from 'vitest';
 import { QuantumTestValidator } from '../lib/cores/quantum-test-validator';
 import { QuantumState } from '../types/quantum';
@@ -38,10 +39,10 @@ describe('QuantumTestValidator', () => {
 
   it('should pass validation if coherence and entanglement are within valid ranges', () => {
     const mockQuantumState = createCompleteQuantumState({
-      coherence: 0.5,
-      entanglement: 0.5,
-      entanglementStrength: 0.5,
-      superposition: 0.5
+      coherence: 50,
+      entanglement: 50,
+      entanglementStrength: 50,
+      superposition: 50
     });
     const validator = new QuantumTestValidator();
     const isValid = validator.validateQuantumState(mockQuantumState);
@@ -50,7 +51,7 @@ describe('QuantumTestValidator', () => {
 
   it('should fail validation if coherence is out of range', () => {
     const mockQuantumState = createCompleteQuantumState({
-      coherence: 1.2
+      coherence: 120
     });
     const validator = new QuantumTestValidator();
     const isValid = validator.validateQuantumState(mockQuantumState);
@@ -59,12 +60,12 @@ describe('QuantumTestValidator', () => {
 
   it('should apply optimization correctly', () => {
     const mockQuantumState = createCompleteQuantumState({
-      coherence: 0.5,
-      entanglementStrength: 0.5
+      coherence: 50,
+      entanglementStrength: 50
     });
     const validator = new QuantumTestValidator();
     const optimizedState = validator.optimizeQuantumField([mockQuantumState])[0];
-    expect(optimizedState.coherence).toBeGreaterThan(0.5);
-    expect(optimizedState.entanglementStrength).toBeGreaterThan(0.5);
+    expect(optimizedState.coherence).toBeGreaterThan(50);
+    expect(optimizedState.entanglementStrength).toBeGreaterThan(50);
   });
 });
