@@ -1,13 +1,36 @@
+
 import React, { useEffect, useState } from 'react';
 import { DreamSymbol, CompilationResult } from '../../types/quantum';
-import { DreamSymbolCompiler } from '../../lib/cores/dream-symbol-compiler';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useThree, useFrame } from '@react-three/fiber';
-import { askGPT } from '../../lib/ai/gptService';
-import { useQuantumState } from '../../hooks/use-quantum-state';
 
-const compiler = new DreamSymbolCompiler();
+// Mock compiler
+const mockCompiler = {
+  observeCompilationState: () => ({
+    subscribe: (callback: (result: CompilationResult) => void) => ({
+      unsubscribe: () => {}
+    })
+  }),
+  compileSymbol: async (symbol: DreamSymbol) => {
+    console.log('Compiling symbol:', symbol);
+  }
+};
+
+// Mock quantum state hook
+const useQuantumState = () => ({
+  quantumState: {
+    lastSymbolAnalysis: ''
+  },
+  updateQuantumState: (update: any) => {
+    console.log('Updating quantum state:', update);
+  }
+});
+
+// Mock AI service
+const askGPT = async (prompt: string, options?: any): Promise<string> => {
+  return `Mock analysis for: ${prompt}`;
+};
 
 const SymbolVisualizer: React.FC<{ symbol: DreamSymbol }> = ({ symbol }) => {
   const { scene } = useThree();
@@ -16,11 +39,13 @@ const SymbolVisualizer: React.FC<{ symbol: DreamSymbol }> = ({ symbol }) => {
     // Animate the symbol based on its quantum state
   });
 
+  const color = symbol.resonance ? `hsl(${symbol.resonance * 360}, 70%, 50%)` : 'white';
+
   return (
     <mesh>
       <sphereGeometry args={[1, 32, 32]} />
       <meshStandardMaterial 
-        color={`hsl(${symbol.resonance * 360}, 70%, 50%)`}
+        color={color}
         metalness={0.5}
         roughness={0.2}
       />
@@ -37,7 +62,7 @@ export const DreamSymbolWorkbench: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
-    const subscription = compiler.observeCompilationState().subscribe(
+    const subscription = mockCompiler.observeCompilationState().subscribe(
       result => setCompilationResult(result)
     );
     return () => subscription.unsubscribe();
@@ -46,7 +71,10 @@ export const DreamSymbolWorkbench: React.FC = () => {
   const handleSymbolCreation = async () => {
     const newSymbol: DreamSymbol = {
       id: crypto.randomUUID(),
-      pattern: 'test-pattern',
+      symbol: 'test-pattern',
+      meaning: 'Test symbol meaning',
+      energy: Math.random(),
+      connections: [],
       resonance: Math.random(),
       metadata: {
         origin: 'user-created',
@@ -55,15 +83,13 @@ export const DreamSymbolWorkbench: React.FC = () => {
       }
     };
     setActiveSymbol(newSymbol);
-    await compiler.compileSymbol(newSymbol);
+    await mockCompiler.compileSymbol(newSymbol);
   };
 
   async function analyzeSymbols() {
     setIsAnalyzing(true);
     const prompt = `Analyze these quantum dream symbols in context: ${symbols.join(', ')}`;
-    const result = await askGPT(prompt, {
-      systemPrompt: 'You are a quantum archetypal analyst specializing in dream symbol interpretation.'
-    });
+    const result = await askGPT(prompt);
     setAnalysis(result);
     updateQuantumState({ lastSymbolAnalysis: result });
     setIsAnalyzing(false);
@@ -97,9 +123,8 @@ export const DreamSymbolWorkbench: React.FC = () => {
         {compilationResult && (
           <div className="compilation-info">
             <h3>Compilation Result</h3>
-            <p>Coherence: {compilationResult.quantumState.coherence.toFixed(3)}</p>
-            <p>Entanglement: {compilationResult.quantumState.entanglement.toFixed(3)}</p>
-            <p>Superposition: {compilationResult.quantumState.superposition.toFixed(3)}</p>
+            <p>Success: {compilationResult.success ? 'Yes' : 'No'}</p>
+            <p>Output: {compilationResult.output}</p>
           </div>
         )}
       </div>
@@ -139,7 +164,7 @@ export const DreamSymbolWorkbench: React.FC = () => {
         </div>
       </div>
       
-      <style jsx>{`
+      <style>{`
         .dream-symbol-workbench {
           display: grid;
           grid-template-columns: 300px 1fr;

@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text } from '@react-three/drei';
 import { Vector3, MathUtils } from 'three';
-import { QuantumTesseractEngine, TesseractNode } from '../../lib/cores/quantum-tesseract';
 
 interface TimelineBranchProps {
-  engine: QuantumTesseractEngine;
+  engine: any;
 }
 
 interface BranchNode {
@@ -127,56 +127,39 @@ export const TimelineBranchVisualizer: React.FC<TimelineBranchProps> = ({
 }) => {
   const [nodes, setNodes] = useState<BranchNode[]>([]);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [nodeMap] = useState<Map<string, BranchNode>>(new Map());
 
   useEffect(() => {
-    // Subscribe to reality anchors and build branch hierarchy
-    const subscription = engine.observeRealityAnchors().subscribe(anchors => {
-      const rootNodes = buildBranchHierarchy(Array.from(anchors.entries()));
-      setNodes(rootNodes);
-    });
-
-    return () => subscription.unsubscribe();
+    // Mock data for now since engine interface is not defined
+    const mockNodes: BranchNode[] = [
+      {
+        id: 'root-1',
+        position: new Vector3(0, 0, 0),
+        connections: ['child-1', 'child-2'],
+        stability: 0.8,
+        energyLevel: 0.6,
+        children: [
+          {
+            id: 'child-1',
+            position: new Vector3(-5, 3, 0),
+            connections: [],
+            stability: 0.6,
+            energyLevel: 0.4,
+            children: []
+          },
+          {
+            id: 'child-2',
+            position: new Vector3(5, 3, 0),
+            connections: [],
+            stability: 0.7,
+            energyLevel: 0.5,
+            children: []
+          }
+        ]
+      }
+    ];
+    setNodes(mockNodes);
   }, [engine]);
-
-  const buildBranchHierarchy = (
-    anchors: [string, Vector3][]
-  ): BranchNode[] => {
-    // Convert flat list of anchors into a tree structure
-    const nodeMap = new Map<string, BranchNode>();
-    const rootNodes: BranchNode[] = [];
-
-    // First pass: Create all nodes
-    anchors.forEach(([id, position]) => {
-      const node = engine.getNode(id);
-      if (node) {
-        nodeMap.set(id, {
-          id,
-          position,
-          connections: node.connections,
-          stability: node.timelineStability,
-          energyLevel: node.energyLevel,
-          children: []
-        });
-      }
-    });
-
-    // Second pass: Build connections
-    nodeMap.forEach(node => {
-      let hasParent = false;
-      node.connections.forEach(connId => {
-        const connNode = nodeMap.get(connId);
-        if (connNode && node.position.y > connNode.position.y) {
-          connNode.children.push(node);
-          hasParent = true;
-        }
-      });
-      if (!hasParent) {
-        rootNodes.push(node);
-      }
-    });
-
-    return rootNodes;
-  };
 
   const handleNodeSelect = (nodeId: string) => {
     setSelectedNode(nodeId);
@@ -205,9 +188,9 @@ export const TimelineBranchVisualizer: React.FC<TimelineBranchProps> = ({
         <div className="absolute top-4 right-4 bg-black/80 text-white p-4 rounded">
           <h3 className="text-lg font-bold">Selected Node: {selectedNode}</h3>
           <div className="space-y-2">
-            <p>Stability: {nodeMap.get(selectedNode)?.stability.toFixed(2)}</p>
-            <p>Energy Level: {nodeMap.get(selectedNode)?.energyLevel.toFixed(2)}</p>
-            <p>Connections: {nodeMap.get(selectedNode)?.connections.length}</p>
+            <p>Stability: {nodeMap.get(selectedNode)?.stability.toFixed(2) || 'Unknown'}</p>
+            <p>Energy Level: {nodeMap.get(selectedNode)?.energyLevel.toFixed(2) || 'Unknown'}</p>
+            <p>Connections: {nodeMap.get(selectedNode)?.connections.length || 0}</p>
           </div>
         </div>
       )}

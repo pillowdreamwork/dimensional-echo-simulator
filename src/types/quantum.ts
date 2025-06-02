@@ -1,3 +1,4 @@
+
 export interface QuantumState {
   stateVector: number[];
   probability: number;
@@ -112,31 +113,68 @@ export interface ErrorMonitorProps {
   errorHandler: any;
 }
 
-// Add missing interface for DreamSymbol
 export interface DreamSymbol {
   id: string;
   symbol: string;
   meaning: string;
   energy: number;
   connections: string[];
+  resonance?: number;
+  pattern?: string;
+  metadata?: {
+    origin: string;
+    timestamp: number;
+    quantumSignature: string;
+  };
 }
 
-// Add missing interface for CompilationResult
 export interface CompilationResult {
   success: boolean;
   output: string;
   errors: string[];
   warnings: string[];
+  quantumState?: QuantumState;
 }
 
-// Add missing interface for ValidationResult
 export interface ValidationResult {
   valid: boolean;
   score: number;
   issues: string[];
-  results: Array<{
-    test: string;
-    passed: boolean;
+  errors: Array<{
+    code: string;
     message: string;
+    severity: 'error' | 'warning';
+    field: string;
   }>;
+  warnings: Array<{
+    code: string;
+    message: string;
+    field: string;
+    threshold: number;
+    actualValue: number;
+  }>;
+  metrics: {
+    coherenceScore: number;
+    stabilityScore: number;
+    integrityScore: number;
+    overallHealth: number;
+  };
+  results: Array<{
+    name: string;
+    success: boolean;
+    duration: number;
+    metrics: {
+      stability: number;
+      performance: number;
+    };
+    error?: Error;
+  }>;
+}
+
+export interface ConnectionState {
+  status: 'connected' | 'connecting' | 'disconnected' | 'error';
+  lastConnected?: Date;
+  reconnectAttempts?: number;
+  latency?: number;
+  error?: string;
 }

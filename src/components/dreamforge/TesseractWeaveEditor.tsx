@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { QuantumState } from '../../types/quantum';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
@@ -20,16 +21,22 @@ export const TesseractWeaveEditor: React.FC = () => {
       id: crypto.randomUUID(),
       label: `Node ${nodes.length + 1}`,
       quantumState: {
-        state: 'stable',
+        stateVector: [1, 0, 0, 0],
         probability: 1,
+        entanglementMap: new Map(),
+        collapseHistory: [],
+        state: 'stable',
         coherence: 1,
         entanglement: 1,
+        entanglementStrength: 1,
         superposition: 1,
         phase: 0,
         dimensionalResonance: 1,
         aethericResonance: 1,
         dimensionalStability: 1,
         timelineConvergence: 1,
+        dimensionalShift: 0,
+        ritualParticipants: {},
         realityAnchors: { primary: '', secondary: [], strength: 1 },
         quantumSignature: { hash: '', timestamp: Date.now(), validityPeriod: 3600000 },
         forgeMetadata: { version: '1.0', lastModified: Date.now(), stabilityIndex: 1, energyConsumption: 0 }

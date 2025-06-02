@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +8,35 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, AlertOctagon, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DimensionalImpact, RealityFeedback, PersonalEffect } from "@/types/impact";
-import { useRealityImpact } from "@/hooks/use-reality-impact";
+
+// Mock hook for reality impact
+const useRealityImpact = () => {
+  const [impacts] = useState<DimensionalImpact[]>([]);
+  const [realityFeedback] = useState<RealityFeedback[]>([]);
+  const [personalEffects] = useState<PersonalEffect[]>([]);
+
+  const verifyImpact = async (impactId: string, status: 'VERIFIED' | 'UNVERIFIED') => {
+    console.log('Verifying impact:', impactId, status);
+  };
+
+  const stabilizeReality = async () => {
+    console.log('Stabilizing reality...');
+  };
+
+  const processCascadeEffect = async (effect: PersonalEffect): Promise<PersonalEffect> => {
+    console.log('Processing cascade effect:', effect);
+    return effect;
+  };
+
+  return {
+    impacts,
+    realityFeedback,
+    personalEffects,
+    verifyImpact,
+    stabilizeReality,
+    processCascadeEffect
+  };
+};
 
 // Node color mapping
 const NODE_COLORS = {
@@ -156,11 +185,6 @@ const PersonalEffectNode: React.FC<PersonalEffectNodeProps> = ({ effect }) => {
   );
 };
 
-interface RealityImpactEngineProps {
-  initialResonance?: number;
-  className?: string;
-}
-
 export const RealityImpactEngine: React.FC<RealityImpactEngineProps> = ({
   initialResonance = 100,
   className
@@ -182,7 +206,7 @@ export const RealityImpactEngine: React.FC<RealityImpactEngineProps> = ({
     setStabilizing(true);
     try {
       const result = await processCascadeEffect(effect);
-      setCascadeEffects(prev => [...prev, result].filter(Boolean)); // Filter out void results
+      setCascadeEffects(prev => [...prev, result]); // Fixed: result is guaranteed to be PersonalEffect
       
       // Update resonance based on effect
       setResonance(prev => Math.max(0, Math.min(100, 

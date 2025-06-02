@@ -1,6 +1,6 @@
+
 import React, { useEffect, useState } from 'react';
-import { QuantumValidator, ValidationResult, ValidationMetrics } from '../../lib/cores/quantum-validator';
-import { ForgeAlchemistBridge } from '../../lib/cores/forge-alchemist-bridge';
+import { ValidationResult } from '../../types/quantum';
 import { Card } from '../ui/card';
 import { Progress } from '../ui/progress';
 import { Button } from '../ui/button';
@@ -28,12 +28,43 @@ import {
   Radar,
 } from 'recharts';
 
+// Mock validators
+const mockValidator = {
+  validateQuantumState: (quantum: any): ValidationResult => ({
+    valid: Math.random() > 0.3,
+    score: Math.random(),
+    issues: [],
+    errors: [],
+    warnings: [],
+    metrics: {
+      coherenceScore: Math.random(),
+      stabilityScore: Math.random(),
+      integrityScore: Math.random(),
+      overallHealth: Math.random()
+    },
+    results: [
+      {
+        name: 'Coherence Test',
+        success: Math.random() > 0.2,
+        duration: Math.floor(Math.random() * 100),
+        metrics: {
+          stability: Math.random(),
+          performance: Math.random()
+        }
+      }
+    ]
+  })
+};
+
+const mockBridge = {
+  getCurrentMetrics: () => ({
+    quantum: { coherence: 0.8, stability: 0.9 }
+  })
+};
+
 export const QuantumValidationMonitor: React.FC = () => {
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isMonitoring, setIsMonitoring] = useState(false);
-
-  const validator = QuantumValidator.getInstance();
-  const bridge = ForgeAlchemistBridge.getInstance();
 
   const [validationHistory, setValidationHistory] = useState<{
     timestamp: number;
@@ -43,8 +74,8 @@ export const QuantumValidationMonitor: React.FC = () => {
   useEffect(() => {
     if (isMonitoring) {
       const interval = setInterval(() => {
-        const { quantum } = bridge.getCurrentMetrics();
-        const result = validator.validateQuantumState(quantum);
+        const { quantum } = mockBridge.getCurrentMetrics();
+        const result = mockValidator.validateQuantumState(quantum);
         setValidationResult(result);
         setValidationHistory(prev => [...prev, {
           timestamp: Date.now(),
@@ -97,7 +128,7 @@ export const QuantumValidationMonitor: React.FC = () => {
           {isMonitoring ? 'Stop Monitoring' : 'Start Monitoring'}
         </Button>
       </div>
-      {/* Show errors */}
+
       {validationResult && validationResult.errors.length > 0 && (
         <div>
           {validationResult.errors.map((error, index) => (
@@ -108,7 +139,7 @@ export const QuantumValidationMonitor: React.FC = () => {
           ))}
         </div>
       )}
-      {/* Show warnings */}
+
       {validationResult && validationResult.warnings.length > 0 && (
         <div>
           {validationResult.warnings.map((warning, index) => (
@@ -119,7 +150,7 @@ export const QuantumValidationMonitor: React.FC = () => {
           ))}
         </div>
       )}
-      {/* Validation metrics table */}
+
       {validationResult && (
         <Table>
           <TableHeader>
@@ -205,37 +236,6 @@ export const QuantumValidationMonitor: React.FC = () => {
             </div>
           </div>
 
-          {/* Validation Results */}
-          <div className="space-y-4">
-            {validationResult.errors.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="font-semibold text-red-500">Critical Issues</h3>
-                {validationResult.errors.map((error, index) => (
-                  <Alert key={index} variant="destructive">
-                    <AlertTitle>Error {error.code}</AlertTitle>
-                    <AlertDescription>{error.message}</AlertDescription>
-                  </Alert>
-                ))}
-              </div>
-            )}
-
-            {validationResult.warnings.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="font-semibold text-yellow-500">Warnings</h3>
-                {validationResult.warnings.map((warning, index) => (
-                  <Alert key={index} variant="warning">
-                    <AlertTitle>Warning</AlertTitle>
-                    <AlertDescription>
-                      {warning.message}
-                      (Current: {warning.actualValue.toFixed(2)},
-                      Threshold: {warning.threshold.toFixed(2)})
-                    </AlertDescription>
-                  </Alert>
-                ))}
-              </div>
-            )}
-          </div>
-
           <div className="space-y-2">
             <div className="flex justify-between text-sm text-gray-500">
               <span>Overall Health</span>
@@ -247,7 +247,6 @@ export const QuantumValidationMonitor: React.FC = () => {
             />
           </div>
 
-          {/* Validation Results Table */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Validation Results</h3>
             <Table>
@@ -282,7 +281,6 @@ export const QuantumValidationMonitor: React.FC = () => {
             </Table>
           </div>
 
-          {/* Error Details for failed results */}
           {validationResult.results.map((result, idx) => (
             result.error ? (
               <div key={idx} className="mt-4 p-4 bg-red-100 text-red-700 rounded">

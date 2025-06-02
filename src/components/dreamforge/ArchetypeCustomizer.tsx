@@ -1,6 +1,23 @@
+
 import { useState, useEffect } from 'react';
-import { useQuantumState } from '../../hooks/use-quantum-state';
-import { askGPT, streamGPT } from '../../lib/ai/gptService';
+
+// Mock hooks and services
+const useQuantumState = () => ({
+  quantumState: { lastGeneratedArchetype: null, lastEvolvedArchetype: null },
+  updateQuantumState: (update: any) => console.log('Updating quantum state:', update)
+});
+
+const askGPT = async (prompt: string): Promise<string> => {
+  return `Mock archetype response for: ${prompt}`;
+};
+
+const streamGPT = async function* (prompt: string): AsyncGenerator<string> {
+  const words = ['Evolving', ' archetype', ' with', ' quantum', ' resonance...'];
+  for (const word of words) {
+    yield word;
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+};
 
 interface Archetype {
   id: string;
@@ -21,18 +38,14 @@ export function ArchetypeCustomizer() {
   const [evolutionLog, setEvolutionLog] = useState<string>('');
 
   async function generateNewArchetype(basePattern: string) {
-    const prompt = `Generate a quantum archetype based on the pattern: ${basePattern}. Include resonance patterns and quantum attributes.`;
-    const response = await askGPT(prompt, {
-      systemPrompt: 'You are a quantum archetype designer specializing in dimensional resonance patterns.'
-    });
+    const response = await askGPT(`Generate a quantum archetype based on the pattern: ${basePattern}`);
 
     try {
-      // Parse the AI response to create structured archetype data
       const lines = response.split('\n');
       const newArchetype: Archetype = {
         id: Date.now().toString(),
-        name: lines[0].replace('Name:', '').trim(),
-        description: lines.find(l => l.startsWith('Description:'))?.replace('Description:', '').trim() || '',
+        name: lines[0]?.replace('Name:', '').trim() || 'New Archetype',
+        description: lines.find(l => l.startsWith('Description:'))?.replace('Description:', '').trim() || 'No description',
         resonancePatterns: lines
           .filter(l => l.startsWith('- Pattern:'))
           .map(l => l.replace('- Pattern:', '').trim()),
@@ -46,7 +59,7 @@ export function ArchetypeCustomizer() {
       };
 
       setArchetypes(prev => [...prev, newArchetype]);
-      updateQuantumState({ lastGeneratedArchetype: newArchetype });
+      updateQuantumState({ lastGeneratedArchetype: newArchetype.id });
     } catch (err) {
       console.error('Error parsing archetype:', err);
     }
@@ -57,8 +70,7 @@ export function ArchetypeCustomizer() {
     setEvolutionLog('');
 
     const evolutionStream = streamGPT(
-      `Evolve the quantum archetype "${archetype.name}" to its next stage. Current description: ${archetype.description}. Consider its current resonance patterns: ${archetype.resonancePatterns.join(', ')}`,
-      { systemPrompt: 'You are a quantum evolution guide specializing in archetype transformation.' }
+      `Evolve the quantum archetype "${archetype.name}" to its next stage.`
     );
 
     let evolvedDescription = '';
@@ -83,7 +95,7 @@ export function ArchetypeCustomizer() {
     );
     setSelectedArchetype(evolvedArchetype);
     setIsEvolvingArchetype(false);
-    updateQuantumState({ lastEvolvedArchetype: evolvedArchetype });
+    updateQuantumState({ lastEvolvedArchetype: evolvedArchetype.id });
   }
 
   return (

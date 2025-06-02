@@ -1,10 +1,11 @@
+
 import { useState, useCallback } from 'react';
-import { GlyphNode } from '../types/glyph';
-import { DimensionalLevel, DIMENSIONAL_PROPERTIES } from '../types/dimensional';
+import { GlyphNode, DimensionalNodeProperties } from '../types/glyph';
+import { DimensionalLevel, DIMENSIONAL_PROPERTIES } from '../types/glyph';
 
 interface UseDimensionalPropertiesProps {
   initialLevel?: DimensionalLevel;
-  onPropertyChange?: (properties: GlyphNode['dimensionalProperties']) => void;
+  onPropertyChange?: (properties: DimensionalNodeProperties) => void;
 }
 
 const calculateHarmonics = (dimension: number): string[] => {
@@ -32,7 +33,7 @@ export function useDimensionalProperties({
   initialLevel = 3,
   onPropertyChange
 }: UseDimensionalPropertiesProps = {}) {
-  const [properties, setProperties] = useState<GlyphNode['dimensionalProperties']>({
+  const [properties, setProperties] = useState<DimensionalNodeProperties>({
     level: initialLevel,
     resonance: 100,
     stability: 100,
@@ -41,7 +42,7 @@ export function useDimensionalProperties({
     phaseAlignment: 100
   });
 
-  const updateProperties = useCallback((updates: Partial<GlyphNode['dimensionalProperties']>) => {
+  const updateProperties = useCallback((updates: Partial<DimensionalNodeProperties>) => {
     setProperties(prev => {
       const newProps = {
         ...prev,
