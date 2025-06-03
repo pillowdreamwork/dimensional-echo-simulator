@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - quantum-fixes-2025
+      - merge-unified
 
 jobs:
   smart-merge:
