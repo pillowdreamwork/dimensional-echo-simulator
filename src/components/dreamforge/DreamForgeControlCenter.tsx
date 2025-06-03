@@ -9,6 +9,9 @@ import { QuantumErrorMonitor } from './QuantumErrorMonitor';
 import { QuantumValidationMonitor } from './QuantumValidationMonitor';
 import { RealTimeSyncMonitor } from './RealTimeSyncMonitor';
 import { SyncMonitor } from './SyncMonitor';
+import { TesseractControlPanel } from './TesseractControlPanel';
+import { AdvancedRealityMonitor } from './AdvancedRealityMonitor';
+import { DreamSymbolForge } from './DreamSymbolForge';
 import { SystemStatus } from '../SystemStatus';
 import { QuantumErrorHandler } from '../../lib/cores/quantum-error-handler';
 import { 
@@ -16,10 +19,14 @@ import {
   Zap, 
   Monitor, 
   Shield, 
-  Sync, 
+  RefreshCw, 
   Database,
   Settings,
-  Eye
+  Eye,
+  Layers,
+  Sparkles,
+  Globe,
+  Target
 } from 'lucide-react';
 
 export const DreamForgeControlCenter: React.FC = () => {
@@ -34,47 +41,55 @@ export const DreamForgeControlCenter: React.FC = () => {
             <CardTitle className="text-3xl font-bold flex items-center">
               <Zap className="mr-3" size={32} />
               DreamForge Control Center
-              <span className="ml-auto text-lg font-normal">Phase 2</span>
+              <span className="ml-auto text-lg font-normal">Phase 3 - Complete</span>
             </CardTitle>
             <p className="text-purple-100">
-              Advanced Quantum Reality Engineering Platform - Complete System Control
+              Advanced Quantum Reality Engineering Platform - Complete System Control & Symbol Forging
             </p>
           </CardHeader>
         </Card>
 
         {/* Main Control Tabs */}
         <Tabs defaultValue="reality-dashboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
             <TabsTrigger value="reality-dashboard" className="flex items-center">
-              <Zap className="w-4 h-4 mr-2" />
+              <Zap className="w-4 h-4 mr-1" />
               Reality
             </TabsTrigger>
+            <TabsTrigger value="tesseract-control" className="flex items-center">
+              <Layers className="w-4 h-4 mr-1" />
+              Tesseract
+            </TabsTrigger>
+            <TabsTrigger value="symbol-forge" className="flex items-center">
+              <Sparkles className="w-4 h-4 mr-1" />
+              Symbols
+            </TabsTrigger>
             <TabsTrigger value="quantum-visualizer" className="flex items-center">
-              <Eye className="w-4 h-4 mr-2" />
+              <Eye className="w-4 h-4 mr-1" />
               Visualizer
             </TabsTrigger>
+            <TabsTrigger value="reality-monitor" className="flex items-center">
+              <Globe className="w-4 h-4 mr-1" />
+              Monitor
+            </TabsTrigger>
             <TabsTrigger value="system-status" className="flex items-center">
-              <Monitor className="w-4 h-4 mr-2" />
+              <Monitor className="w-4 h-4 mr-1" />
               System
             </TabsTrigger>
             <TabsTrigger value="error-monitor" className="flex items-center">
-              <Shield className="w-4 h-4 mr-2" />
+              <Shield className="w-4 h-4 mr-1" />
               Errors
             </TabsTrigger>
             <TabsTrigger value="validation" className="flex items-center">
-              <Activity className="w-4 h-4 mr-2" />
+              <Activity className="w-4 h-4 mr-1" />
               Validation
             </TabsTrigger>
             <TabsTrigger value="realtime-sync" className="flex items-center">
-              <Sync className="w-4 h-4 mr-2" />
+              <RefreshCw className="w-4 h-4 mr-1" />
               Sync
             </TabsTrigger>
-            <TabsTrigger value="data-sync" className="flex items-center">
-              <Database className="w-4 h-4 mr-2" />
-              Data
-            </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center">
-              <Settings className="w-4 h-4 mr-2" />
+              <Settings className="w-4 h-4 mr-1" />
               Settings
             </TabsTrigger>
           </TabsList>
@@ -85,9 +100,27 @@ export const DreamForgeControlCenter: React.FC = () => {
             </ErrorBoundary>
           </TabsContent>
 
+          <TabsContent value="tesseract-control">
+            <ErrorBoundary>
+              <TesseractControlPanel />
+            </ErrorBoundary>
+          </TabsContent>
+
+          <TabsContent value="symbol-forge">
+            <ErrorBoundary>
+              <DreamSymbolForge />
+            </ErrorBoundary>
+          </TabsContent>
+
           <TabsContent value="quantum-visualizer">
             <ErrorBoundary>
               <AdvancedQuantumVisualizer />
+            </ErrorBoundary>
+          </TabsContent>
+
+          <TabsContent value="reality-monitor">
+            <ErrorBoundary>
+              <AdvancedRealityMonitor />
             </ErrorBoundary>
           </TabsContent>
 
@@ -100,7 +133,7 @@ export const DreamForgeControlCenter: React.FC = () => {
                     <CardTitle>System Metrics Overview</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div className="text-center p-4 bg-green-50 rounded-lg">
                         <Activity className="w-8 h-8 mx-auto mb-2 text-green-500" />
                         <h3 className="font-semibold">Uptime</h3>
@@ -115,6 +148,11 @@ export const DreamForgeControlCenter: React.FC = () => {
                         <Shield className="w-8 h-8 mx-auto mb-2 text-purple-500" />
                         <h3 className="font-semibold">Security</h3>
                         <p className="text-2xl font-bold text-purple-600">Secure</p>
+                      </div>
+                      <div className="text-center p-4 bg-orange-50 rounded-lg">
+                        <Target className="w-8 h-8 mx-auto mb-2 text-orange-500" />
+                        <h3 className="font-semibold">Accuracy</h3>
+                        <p className="text-2xl font-bold text-orange-600">98.7%</p>
                       </div>
                     </div>
                   </CardContent>
@@ -137,13 +175,10 @@ export const DreamForgeControlCenter: React.FC = () => {
 
           <TabsContent value="realtime-sync">
             <ErrorBoundary>
-              <RealTimeSyncMonitor />
-            </ErrorBoundary>
-          </TabsContent>
-
-          <TabsContent value="data-sync">
-            <ErrorBoundary>
-              <SyncMonitor />
+              <div className="grid gap-6">
+                <RealTimeSyncMonitor />
+                <SyncMonitor />
+              </div>
             </ErrorBoundary>
           </TabsContent>
 
@@ -151,7 +186,7 @@ export const DreamForgeControlCenter: React.FC = () => {
             <ErrorBoundary>
               <Card>
                 <CardHeader>
-                  <CardTitle>System Configuration</CardTitle>
+                  <CardTitle>Advanced System Configuration</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
@@ -166,24 +201,60 @@ export const DreamForgeControlCenter: React.FC = () => {
                           </div>
                         </div>
                         <div className="p-4 border rounded-lg">
-                          <h4 className="font-medium">Energy Conservation Mode</h4>
-                          <p className="text-sm text-gray-600">Optimize for energy efficiency</p>
+                          <h4 className="font-medium">Tesseract Node Limit</h4>
+                          <p className="text-sm text-gray-600">Maximum active tesseract nodes</p>
                           <div className="mt-2">
-                            <span className="text-lg font-bold text-green-600">Enabled</span>
+                            <span className="text-lg font-bold">1000</span>
                           </div>
                         </div>
                         <div className="p-4 border rounded-lg">
-                          <h4 className="font-medium">Auto-Recovery</h4>
-                          <p className="text-sm text-gray-600">Automatic error recovery system</p>
+                          <h4 className="font-medium">Symbol Forge Energy</h4>
+                          <p className="text-sm text-gray-600">Energy allocation for symbol creation</p>
                           <div className="mt-2">
-                            <span className="text-lg font-bold text-blue-600">Active</span>
+                            <span className="text-lg font-bold text-purple-600">High</span>
                           </div>
                         </div>
                         <div className="p-4 border rounded-lg">
-                          <h4 className="font-medium">Quantum Coherence Target</h4>
-                          <p className="text-sm text-gray-600">Target coherence level</p>
+                          <h4 className="font-medium">Dimensional Weave Limit</h4>
+                          <p className="text-sm text-gray-600">Maximum simultaneous weaves</p>
                           <div className="mt-2">
-                            <span className="text-lg font-bold">95%</span>
+                            <span className="text-lg font-bold">50</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3">Phase 3 Features</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="p-4 border rounded-lg">
+                          <h4 className="font-medium flex items-center">
+                            <Layers className="w-4 h-4 mr-2" />
+                            Tesseract Engine
+                          </h4>
+                          <p className="text-sm text-gray-600 mt-1">Multi-dimensional node management</p>
+                          <div className="mt-2">
+                            <span className="text-lg font-bold text-green-600">Active</span>
+                          </div>
+                        </div>
+                        <div className="p-4 border rounded-lg">
+                          <h4 className="font-medium flex items-center">
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Symbol Forge
+                          </h4>
+                          <p className="text-sm text-gray-600 mt-1">Dream symbol creation and connection</p>
+                          <div className="mt-2">
+                            <span className="text-lg font-bold text-blue-600">Enabled</span>
+                          </div>
+                        </div>
+                        <div className="p-4 border rounded-lg">
+                          <h4 className="font-medium flex items-center">
+                            <Globe className="w-4 h-4 mr-2" />
+                            Reality Monitor
+                          </h4>
+                          <p className="text-sm text-gray-600 mt-1">Advanced reality matrix monitoring</p>
+                          <div className="mt-2">
+                            <span className="text-lg font-bold text-purple-600">Online</span>
                           </div>
                         </div>
                       </div>
