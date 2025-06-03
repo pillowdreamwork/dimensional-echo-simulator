@@ -1,75 +1,42 @@
 
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
-import { Vector3 } from 'three';
+import { Color, Vector3 } from 'three';
 import { GlyphNode, GlyphConnection } from '../../types/glyph';
 
 interface InterDimensionalConnectionProps {
   source: GlyphNode;
   target: GlyphNode;
   connection: GlyphConnection;
-  isActive?: boolean;
 }
 
 export const InterDimensionalConnection: React.FC<InterDimensionalConnectionProps> = ({
   source,
   target,
-  connection,
-  isActive = true
+  connection
 }) => {
   const lineRef = useRef<any>(null);
-  
-  // Calculate connection properties
-  const connectionProps = useMemo(() => {
-    const phaseAlignment = connection.phaseAlignment || 90;
-    const dimensionalResonance = connection.dimensionalResonance || 50;
-    const strength = connection.strength || 0.5;
-    
-    return {
-      phaseAlignment,
-      dimensionalResonance,
-      strength,
-      opacity: isActive ? strength * 0.8 : 0.3,
-      color: `hsl(${phaseAlignment * 2}, ${strength * 100}%, ${dimensionalResonance}%)`
-    };
-  }, [connection, isActive]);
 
-  // Generate curve points between nodes
-  const points = useMemo(() => {
-    const start = source.position;
-    const end = target.position;
-    const distance = start.distanceTo(end);
-    
-    // Create a curved path with quantum fluctuation
-    const midPoint = new Vector3()
-      .addVectors(start, end)
-      .multiplyScalar(0.5);
-    
-    // Add dimensional curvature based on resonance
-    const curvature = connectionProps.dimensionalResonance / 100;
-    midPoint.y += distance * curvature * 0.3;
-    
-    return [start, midPoint, end];
-  }, [source.position, target.position, connectionProps.dimensionalResonance]);
+  const points = [
+    new Vector3(source.position.x, source.position.y, source.position.z),
+    new Vector3(target.position.x, target.position.y, target.position.z)
+  ];
 
-  // Animate the connection
+  const getConnectionColor = () => {
+    switch (connection.type) {
+      case 'quantum': return '#4299E1';
+      case 'dimensional': return '#9F7AEA';
+      case 'temporal': return '#F6AD55';
+      case 'aetheric': return '#48BB78';
+      default: return '#E2E8F0';
+    }
+  };
+
   useFrame((state) => {
     if (lineRef.current && lineRef.current.material) {
-      const time = state.clock.getElapsedTime();
-      const pulseFreq = 2 + (connectionProps.strength * 3);
-      
-      // Pulsing opacity effect
-      const basePulse = Math.sin(time * pulseFreq) * 0.2 + 0.8;
-      lineRef.current.material.opacity = connectionProps.opacity * basePulse;
-      
-      // Phase-aligned color shifting
-      const hueShift = Math.sin(time + connectionProps.phaseAlignment / 180 * Math.PI) * 20;
-      lineRef.current.material.color.setHSL(
-        (connectionProps.phaseAlignment * 2 + hueShift) / 360,
-        connectionProps.strength,
-        connectionProps.dimensionalResonance / 100
-      );
+      const intensity = 0.5 + Math.sin(state.clock.elapsedTime * 2) * 0.3;
+      lineRef.current.material.opacity = intensity * connection.strength;
     }
   });
 
@@ -77,14 +44,10 @@ export const InterDimensionalConnection: React.FC<InterDimensionalConnectionProp
     <Line
       ref={lineRef}
       points={points}
-      color={connectionProps.color}
-      transparent
-      opacity={connectionProps.opacity}
-      linewidth={2}
-      toneMapped={false}
-      dashed={false}
-      depthWrite={false}
-      blending={2}
+      color={getConnectionColor()}
+      lineWidth={Math.max(1, connection.strength * 5)}
+      transparent={true}
+      opacity={connection.strength}
     />
   );
 };

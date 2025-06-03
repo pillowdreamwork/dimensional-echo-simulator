@@ -1,148 +1,95 @@
-import { GPUAccelerator } from './gpu-accelerator';
+
+import { Observable, BehaviorSubject } from 'rxjs';
 import { QuantumState } from '../../types/quantum';
+import { GPUAccelerator } from './gpu-accelerator';
 import { PerformanceMonitor } from './performance-monitor';
 
+export interface QuantumCoreConfig {
+  useGPU: boolean;
+  maxStates: number;
+  optimizationLevel: number;
+}
+
 export class QuantumCore {
+  private states = new BehaviorSubject<Map<string, QuantumState>>(new Map());
   private gpuAccelerator: GPUAccelerator;
-  private workerPool: Worker[];
-  private stateBuffer: SharedArrayBuffer;
   private performanceMonitor: PerformanceMonitor;
-  private isInitialized: boolean = false;
+  private isInitialized = false;
 
-  constructor(numWorkers = navigator.hardwareConcurrency || 4) {
+  constructor(private config: QuantumCoreConfig = {
+    useGPU: false,
+    maxStates: 1000,
+    optimizationLevel: 1
+  }) {
     this.gpuAccelerator = new GPUAccelerator();
-    this.stateBuffer = new SharedArrayBuffer(1024 * 1024); // 1MB buffer
     this.performanceMonitor = new PerformanceMonitor();
-    this.workerPool = [];
-    this.initializeWorkerPool(numWorkers);
   }
 
-  private async initializeWorkerPool(numWorkers: number): Promise<void> {
-    for (let i = 0; i < numWorkers; i++) {
-      const worker = new Worker(
-        new URL('./quantum-worker.ts', import.meta.url),
-        { type: 'module' }
-      );
-      
-      worker.onmessage = (e: MessageEvent) => {
-        const { type, payload } = e.data;
-        this.handleWorkerMessage(type, payload, i);
-      };
-
-      this.workerPool.push(worker);
-    }
-  }
-
-  private handleWorkerMessage(type: string, payload: any, workerId: number): void {
-    switch (type) {
-      case 'COMPLETED':
-        this.performanceMonitor.trackMetric(`worker_${workerId}_time`, Date.now());
-        // Handle completed calculations
-        break;
-      case 'ERROR':
-        console.error(`Worker ${workerId} error:`, payload);
-        break;
-    }
-  }
-
-  public async initialize(): Promise<void> {
+  async initialize(): Promise<void> {
     if (this.isInitialized) return;
-
+    
     try {
       await this.gpuAccelerator.initialize();
+      this.performanceMonitor.startMonitoring();
       this.isInitialized = true;
+      console.log('Quantum Core initialized successfully');
     } catch (error) {
-      console.error('Failed to initialize QuantumCore:', error);
+      console.error('Failed to initialize Quantum Core:', error);
       throw error;
     }
   }
 
-  private splitIntoChunks(states: QuantumState[]): Array<{
-    workerId: number;
-    states: QuantumState[];
-  }> {
-    const chunkSize = Math.ceil(states.length / this.workerPool.length);
-    return this.workerPool.map((_, index) => ({
-      workerId: index,
-      states: states.slice(
-        index * chunkSize,
-        Math.min((index + 1) * chunkSize, states.length)
-      )
-    }));
-  }
+  async processQuantumState(stateId: string, partialState: Partial<QuantumState>): Promise<QuantumState> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
 
-  public async calculateParallelStates(
-    states: QuantumState[]
-  ): Promise<QuantumState[]> {
-    const startTime = Date.now();
-
+    const startTime = performance.now();
+    
     try {
-      // Try GPU acceleration first
-      const gpuResults = await this.gpuAccelerator.compute(states);
-      this.performanceMonitor.trackMetric('gpu_calculation_time', Date.now() - startTime);
-      return gpuResults;
-    } catch (error) {
-      console.warn('GPU acceleration failed, falling back to worker pool:', error);
+      const processedState = await this.gpuAccelerator.processQuantumState(partialState);
+      const states = this.states.value;
+      states.set(stateId, processedState);
+      this.states.next(states);
       
-      // Fall back to worker pool
-      const chunks = this.splitIntoChunks(states);
-      const promises = chunks.map(chunk => 
-        new Promise<QuantumState[]>((resolve) => {
-          const worker = this.workerPool[chunk.workerId];
-          
-          const messageHandler = (e: MessageEvent) => {
-            if (e.data.type === 'COMPLETED') {
-              worker.removeEventListener('message', messageHandler);
-              resolve(e.data.payload);
-            }
-          };
-          
-          worker.addEventListener('message', messageHandler);
-          worker.postMessage({
-            type: 'PROCESS_QUANTUM_STATES',
-            payload: chunk.states
-          });
-        })
-      );
-
-      const results = await Promise.all(promises);
-      this.performanceMonitor.trackMetric('worker_calculation_time', Date.now() - startTime);
-      return results.flat();
+      const duration = performance.now() - startTime;
+      this.performanceMonitor.recordWorkerTime(duration);
+      
+      return processedState;
+    } catch (error) {
+      console.error('Failed to process quantum state:', error);
+      throw error;
     }
   }
 
-  public async evolveQuantumState(state: QuantumState): Promise<QuantumState> {
-    // For single state evolution, use first available worker
-    return new Promise((resolve) => {
-      const worker = this.workerPool[0];
-      
-      const messageHandler = (e: MessageEvent) => {
-        if (e.data.type === 'STATE_EVOLVED') {
-          worker.removeEventListener('message', messageHandler);
-          resolve(e.data.payload);
-        }
-      };
-      
-      worker.addEventListener('message', messageHandler);
-      worker.postMessage({
-        type: 'EVOLVE_QUANTUM_STATE',
-        payload: state
-      });
+  observeStates(): Observable<Map<string, QuantumState>> {
+    return this.states.asObservable();
+  }
+
+  getState(stateId: string): QuantumState | undefined {
+    return this.states.value.get(stateId);
+  }
+
+  getAllStates(): QuantumState[] {
+    return Array.from(this.states.value.values());
+  }
+
+  getMetrics() {
+    return this.performanceMonitor.getMetrics();
+  }
+
+  async optimizeSystem(): Promise<void> {
+    const states = this.getAllStates();
+    const optimizedStates = await this.gpuAccelerator.compute(states);
+    
+    const statesMap = this.states.value;
+    optimizedStates.forEach((state, index) => {
+      const stateId = Array.from(statesMap.keys())[index];
+      if (stateId) {
+        statesMap.set(stateId, state);
+      }
     });
-  }
-
-  public getPerformanceMetrics(): Record<string, number> {
-    return {
-      averageGPUTime: this.performanceMonitor.getAverageMetric('gpu_calculation_time'),
-      averageWorkerTime: this.performanceMonitor.getAverageMetric('worker_calculation_time'),
-      ...this.workerPool.reduce((acc, _, index) => ({
-        ...acc,
-        [`worker_${index}_avg_time`]: this.performanceMonitor.getAverageMetric(`worker_${index}_time`)
-      }), {})
-    };
-  }
-
-  public cleanup(): void {
-    this.workerPool.forEach(worker => worker.terminate());
+    
+    this.states.next(statesMap);
   }
 }
