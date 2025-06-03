@@ -450,6 +450,11 @@ export class DreamCompass {
     }
     return false;
   }
+
+  isCalibrated() {
+    return this.currentDimension >= 1 && this.currentDimension <= this.maxDimension &&
+           this.accessibleDimensions.length > 0;
+  }
 }
 
 // Uncertainty Engine: Implements probabilistic outcomes and quantum logic
@@ -551,6 +556,11 @@ export class UncertaintyEngine {
   calculateQuantumStates(input?: any) {
     // Stub for quantum state calculation
     return 'Quantum states calculated';
+  }
+
+  isCalibrated() {
+    return this.uncertaintyLevel >= 0 && this.uncertaintyLevel <= 1 && 
+           this.observerStrength >= 0 && this.observerStrength <= 1;
   }
 }
 
@@ -927,6 +937,10 @@ export class MultiversalDreamServer {
     
     return dreams;
   }
+
+  isOnline() {
+    return this.connected;
+  }
 }
 
 // Mythic Intelligence: AI archetypes and adaptive personalities
@@ -1072,6 +1086,10 @@ export class MythicIntelligence {
       ]
     });
     this.affinity.set("Warrior", 0);
+  }
+
+  isConnected() {
+    return this.archetypes.size > 0 && this.activeArchetype !== null;
   }
 }
 
@@ -1296,6 +1314,10 @@ export class IURI {
       domain: "time",
       description: "Manipulates timeflow and causality"
     });
+  }
+  
+  isInitialized() {
+    return this.glyphLibrary.size > 0;
   }
 }
 
