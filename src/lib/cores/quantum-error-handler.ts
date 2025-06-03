@@ -16,6 +16,10 @@ export interface ErrorState {
   mediumCount: number;
   lowCount: number;
   lastError?: QuantumError;
+  activeErrors: Map<string, QuantumError>;
+  recoveryInProgress: boolean;
+  lastRecoveryAttempt: number;
+  systemStability: number;
 }
 
 export class QuantumErrorHandler {
@@ -25,7 +29,11 @@ export class QuantumErrorHandler {
     criticalCount: 0,
     highCount: 0,
     mediumCount: 0,
-    lowCount: 0
+    lowCount: 0,
+    activeErrors: new Map(),
+    recoveryInProgress: false,
+    lastRecoveryAttempt: 0,
+    systemStability: 1.0
   });
   private errorHistory: QuantumError[] = [];
   private maxRetries = 3;
@@ -59,27 +67,65 @@ export class QuantumErrorHandler {
 
   private updateErrorState(error: QuantumError): void {
     const current = this.errorState.value;
+    const activeErrors = new Map(current.activeErrors);
+    activeErrors.set(error.id, error);
+    
     const newState: ErrorState = {
       hasErrors: true,
       criticalCount: current.criticalCount + (error.severity === 'CRITICAL' ? 1 : 0),
       highCount: current.highCount + (error.severity === 'HIGH' ? 1 : 0),
       mediumCount: current.mediumCount + (error.severity === 'MEDIUM' ? 1 : 0),
       lowCount: current.lowCount + (error.severity === 'LOW' ? 1 : 0),
-      lastError: error
+      lastError: error,
+      activeErrors,
+      recoveryInProgress: current.recoveryInProgress,
+      lastRecoveryAttempt: current.lastRecoveryAttempt,
+      systemStability: Math.max(0.1, current.systemStability - 0.1)
     };
     
     this.errorState.next(newState);
   }
 
   private async attemptRecovery(error: QuantumError): Promise<void> {
+    const current = this.errorState.value;
+    this.errorState.next({
+      ...current,
+      recoveryInProgress: true,
+      lastRecoveryAttempt: Date.now()
+    });
+
     try {
       console.log(`Attempting recovery for error: ${error.type}`);
-      // Implement recovery logic based on error type
       await new Promise(resolve => setTimeout(resolve, 100));
       console.log(`Recovery completed for error: ${error.type}`);
+      
+      // Update stability after recovery
+      const updated = this.errorState.value;
+      this.errorState.next({
+        ...updated,
+        recoveryInProgress: false,
+        systemStability: Math.min(1.0, updated.systemStability + 0.05)
+      });
     } catch (recoveryError) {
       console.error('Recovery failed:', recoveryError);
+      const updated = this.errorState.value;
+      this.errorState.next({
+        ...updated,
+        recoveryInProgress: false
+      });
     }
+  }
+
+  clearError(errorId: string): void {
+    const current = this.errorState.value;
+    const activeErrors = new Map(current.activeErrors);
+    activeErrors.delete(errorId);
+    
+    this.errorState.next({
+      ...current,
+      activeErrors,
+      hasErrors: activeErrors.size > 0
+    });
   }
 
   observeErrors(): Observable<QuantumError> {
@@ -101,7 +147,11 @@ export class QuantumErrorHandler {
       criticalCount: 0,
       highCount: 0,
       mediumCount: 0,
-      lowCount: 0
+      lowCount: 0,
+      activeErrors: new Map(),
+      recoveryInProgress: false,
+      lastRecoveryAttempt: 0,
+      systemStability: 1.0
     });
   }
 

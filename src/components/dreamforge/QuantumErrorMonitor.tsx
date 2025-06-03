@@ -1,5 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
-import { QuantumErrorHandler, QuantumError, ErrorState, ErrorSeverity } from '../../lib/cores/quantum-error-handler';
+import { QuantumErrorHandler, ErrorState, ErrorSeverity } from '../../lib/cores/quantum-error-handler';
+import { QuantumError } from '../../types/quantum';
 import { Card } from '../ui/card';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 import { Progress } from '../ui/progress';
@@ -21,6 +23,11 @@ export const QuantumErrorMonitor: React.FC<ErrorMonitorProps> = ({
   errorHandler
 }) => {
   const [errorState, setErrorState] = useState<ErrorState>({
+    hasErrors: false,
+    criticalCount: 0,
+    highCount: 0,
+    mediumCount: 0,
+    lowCount: 0,
     activeErrors: new Map(),
     recoveryInProgress: false,
     lastRecoveryAttempt: 0,
@@ -55,8 +62,8 @@ export const QuantumErrorMonitor: React.FC<ErrorMonitorProps> = ({
     return new Date(timestamp).toLocaleString();
   };
 
-  const handleErrorClear = (errorCode: string) => {
-    errorHandler.clearError(errorCode);
+  const handleErrorClear = (errorId: string) => {
+    errorHandler.clearError(errorId);
   };
 
   return (
@@ -92,31 +99,31 @@ export const QuantumErrorMonitor: React.FC<ErrorMonitorProps> = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Code</TableHead>
+              <TableHead>ID</TableHead>
               <TableHead>Severity</TableHead>
               <TableHead>Message</TableHead>
-              <TableHead>Source</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Time</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {Array.from(errorState.activeErrors.values()).map((error) => (
-              <TableRow key={error.code}>
-                <TableCell className="font-mono">{error.code}</TableCell>
+            {Array.from(errorState.activeErrors.values()).map((error: QuantumError) => (
+              <TableRow key={error.id}>
+                <TableCell className="font-mono">{error.id.slice(0, 8)}</TableCell>
                 <TableCell>
-                  <span className={`px-2 py-1 rounded ${getSeverityColor(error.severity)}`}>
+                  <span className={`px-2 py-1 rounded ${getSeverityColor(error.severity as ErrorSeverity)}`}>
                     {error.severity}
                   </span>
                 </TableCell>
                 <TableCell>{error.message}</TableCell>
-                <TableCell>{error.source}</TableCell>
+                <TableCell>{error.type}</TableCell>
                 <TableCell>{formatTimestamp(error.timestamp)}</TableCell>
                 <TableCell>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleErrorClear(error.code)}
+                    onClick={() => handleErrorClear(error.id)}
                   >
                     Clear
                   </Button>
@@ -136,14 +143,24 @@ export const QuantumErrorMonitor: React.FC<ErrorMonitorProps> = ({
       <div className="grid grid-cols-2 gap-4 mt-4">
         <div className="space-y-2">
           <h3 className="text-sm font-medium">Error Distribution</h3>
-          <div className="h-32 bg-gray-50 rounded-lg p-4">
-            {/* Add error distribution chart here */}
+          <div className="h-32 bg-gray-50 rounded-lg p-4 flex items-center justify-center">
+            <div className="text-center text-gray-500">
+              <div>Critical: {errorState.criticalCount}</div>
+              <div>High: {errorState.highCount}</div>
+              <div>Medium: {errorState.mediumCount}</div>
+              <div>Low: {errorState.lowCount}</div>
+            </div>
           </div>
         </div>
         <div className="space-y-2">
-          <h3 className="text-sm font-medium">Recovery History</h3>
-          <div className="h-32 bg-gray-50 rounded-lg p-4">
-            {/* Add recovery history chart here */}
+          <h3 className="text-sm font-medium">System Health</h3>
+          <div className="h-32 bg-gray-50 rounded-lg p-4 flex items-center justify-center">
+            <div className="text-center">
+              <div className={`text-2xl font-bold ${getStabilityColor(errorState.systemStability)}`}>
+                {(errorState.systemStability * 100).toFixed(0)}%
+              </div>
+              <div className="text-sm text-gray-500">Stability</div>
+            </div>
           </div>
         </div>
       </div>
