@@ -119,13 +119,35 @@ export class QuantumErrorHandler {
   clearError(errorId: string): void {
     const current = this.errorState.value;
     const activeErrors = new Map(current.activeErrors);
+    const error = activeErrors.get(errorId);
     activeErrors.delete(errorId);
     
-    this.errorState.next({
-      ...current,
-      activeErrors,
-      hasErrors: activeErrors.size > 0
-    });
+    // Adjust counts based on the cleared error's severity
+    let newState = { ...current, activeErrors };
+    
+    if (error) {
+      switch (error.severity) {
+        case ErrorSeverity.CRITICAL:
+          newState.criticalCount = Math.max(0, current.criticalCount - 1);
+          break;
+        case ErrorSeverity.HIGH:
+          newState.highCount = Math.max(0, current.highCount - 1);
+          break;
+        case ErrorSeverity.MEDIUM:
+          newState.mediumCount = Math.max(0, current.mediumCount - 1);
+          break;
+        case ErrorSeverity.LOW:
+          newState.lowCount = Math.max(0, current.lowCount - 1);
+          break;
+      }
+      
+      // Increase stability when errors are cleared
+      newState.systemStability = Math.min(1.0, current.systemStability + 0.05);
+    }
+    
+    newState.hasErrors = activeErrors.size > 0;
+    
+    this.errorState.next(newState);
   }
 
   observeErrors(): Observable<QuantumError> {

@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -28,6 +29,11 @@ function App() {
             <Suspense fallback={<LoadingSpinner size="lg" text="Loading DreamForge..." />}>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/dashboard" element={
+                  <Suspense fallback={<LoadingSpinner size="lg" text="Loading Control Center..." />}>
+                    <Dashboard />
+                  </Suspense>
+                } />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

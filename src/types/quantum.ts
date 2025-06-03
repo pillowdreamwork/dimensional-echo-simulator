@@ -1,4 +1,3 @@
-
 export interface TimelineState {
   probability: number;
   stability: number;

@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { QuantumErrorHandler, ErrorState, ErrorSeverity } from '../../lib/cores/quantum-error-handler';
-import { QuantumError } from '../../types/quantum';
 import { Card } from '../ui/card';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 import { Progress } from '../ui/progress';
@@ -66,6 +65,31 @@ export const QuantumErrorMonitor: React.FC<ErrorMonitorProps> = ({
     errorHandler.clearError(errorId);
   };
 
+  // Function to generate test errors
+  const generateTestError = (severity: ErrorSeverity) => {
+    const errorTypes = {
+      [ErrorSeverity.LOW]: "QUANTUM_FLUCTUATION",
+      [ErrorSeverity.MEDIUM]: "DIMENSIONAL_SHIFT",
+      [ErrorSeverity.HIGH]: "STABILITY_BREACH",
+      [ErrorSeverity.CRITICAL]: "REALITY_COLLAPSE"
+    };
+    
+    const errorMessages = {
+      [ErrorSeverity.LOW]: "Minor quantum fluctuation detected",
+      [ErrorSeverity.MEDIUM]: "Dimensional shift occurring in subsystem",
+      [ErrorSeverity.HIGH]: "Reality stability breach in progress",
+      [ErrorSeverity.CRITICAL]: "Critical reality collapse imminent"
+    };
+    
+    errorHandler.reportError(
+      errorTypes[severity],
+      errorMessages[severity],
+      severity,
+      `Module-${Math.floor(Math.random() * 100)}`,
+      { timestamp: Date.now() }
+    );
+  };
+
   return (
     <Card className="p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -95,6 +119,21 @@ export const QuantumErrorMonitor: React.FC<ErrorMonitorProps> = ({
         />
       </div>
 
+      <div className="flex space-x-2 mb-4">
+        <Button size="sm" variant="outline" onClick={() => generateTestError(ErrorSeverity.LOW)}>
+          Low Error
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => generateTestError(ErrorSeverity.MEDIUM)}>
+          Medium Error
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => generateTestError(ErrorSeverity.HIGH)}>
+          High Error
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => generateTestError(ErrorSeverity.CRITICAL)}>
+          Critical Error
+        </Button>
+      </div>
+
       <div className="overflow-auto">
         <Table>
           <TableHeader>
@@ -108,7 +147,7 @@ export const QuantumErrorMonitor: React.FC<ErrorMonitorProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {Array.from(errorState.activeErrors.values()).map((error: QuantumError) => (
+            {Array.from(errorState.activeErrors.values()).map((error) => (
               <TableRow key={error.id}>
                 <TableCell className="font-mono">{error.id.slice(0, 8)}</TableCell>
                 <TableCell>
