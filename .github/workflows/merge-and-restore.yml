@@ -6,7 +6,9 @@ on:
     branches:
       - main
       - quantum-fixes-2025
-
+      - merge-unified
+      - merge-unified
+      
 jobs:
   smart-merge:
     runs-on: ubuntu-latest
