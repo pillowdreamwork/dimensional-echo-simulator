@@ -12,6 +12,8 @@ import { SyncMonitor } from './SyncMonitor';
 import { TesseractControlPanel } from './TesseractControlPanel';
 import { AdvancedRealityMonitor } from './AdvancedRealityMonitor';
 import { DreamSymbolForge } from './DreamSymbolForge';
+import { DimensionalEchoMonitor } from './DimensionalEchoMonitor';
+import { EchoVisualization } from './EchoVisualization';
 import { SystemStatus } from '../SystemStatus';
 import { QuantumErrorHandler } from '../../lib/cores/quantum-error-handler';
 import { 
@@ -26,7 +28,9 @@ import {
   Layers,
   Sparkles,
   Globe,
-  Target
+  Target,
+  Radio,
+  Waves
 } from 'lucide-react';
 
 export const DreamForgeControlCenter: React.FC = () => {
@@ -39,19 +43,30 @@ export const DreamForgeControlCenter: React.FC = () => {
         <Card className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
           <CardHeader>
             <CardTitle className="text-3xl font-bold flex items-center">
-              <Zap className="mr-3" size={32} />
-              DreamForge Control Center
-              <span className="ml-auto text-lg font-normal">Phase 3 - Complete</span>
+              <Radio className="mr-3" size={32} />
+              Dimensional Echo Simulator
+              <span className="mx-4 text-2xl">•</span>
+              <Zap className="mr-2" size={24} />
+              DreamForge Interface
+              <span className="ml-auto text-lg font-normal">Complete System</span>
             </CardTitle>
             <p className="text-purple-100">
-              Advanced Quantum Reality Engineering Platform - Complete System Control & Symbol Forging
+              Advanced Quantum Reality Engineering Platform with Full Dimensional Echo Simulation
             </p>
           </CardHeader>
         </Card>
 
         {/* Main Control Tabs */}
-        <Tabs defaultValue="reality-dashboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
+        <Tabs defaultValue="echo-monitor" className="w-full">
+          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-12">
+            <TabsTrigger value="echo-monitor" className="flex items-center">
+              <Radio className="w-4 h-4 mr-1" />
+              Echo
+            </TabsTrigger>
+            <TabsTrigger value="echo-viz" className="flex items-center">
+              <Waves className="w-4 h-4 mr-1" />
+              Visualization
+            </TabsTrigger>
             <TabsTrigger value="reality-dashboard" className="flex items-center">
               <Zap className="w-4 h-4 mr-1" />
               Reality
@@ -66,7 +81,7 @@ export const DreamForgeControlCenter: React.FC = () => {
             </TabsTrigger>
             <TabsTrigger value="quantum-visualizer" className="flex items-center">
               <Eye className="w-4 h-4 mr-1" />
-              Visualizer
+              Quantum
             </TabsTrigger>
             <TabsTrigger value="reality-monitor" className="flex items-center">
               <Globe className="w-4 h-4 mr-1" />
@@ -93,6 +108,18 @@ export const DreamForgeControlCenter: React.FC = () => {
               Settings
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="echo-monitor">
+            <ErrorBoundary>
+              <DimensionalEchoMonitor />
+            </ErrorBoundary>
+          </TabsContent>
+
+          <TabsContent value="echo-viz">
+            <ErrorBoundary>
+              <EchoVisualization />
+            </ErrorBoundary>
+          </TabsContent>
 
           <TabsContent value="reality-dashboard">
             <ErrorBoundary>
@@ -130,29 +157,29 @@ export const DreamForgeControlCenter: React.FC = () => {
                 <SystemStatus />
                 <Card>
                   <CardHeader>
-                    <CardTitle>System Metrics Overview</CardTitle>
+                    <CardTitle>Dimensional Echo Simulator Metrics</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <Activity className="w-8 h-8 mx-auto mb-2 text-green-500" />
-                        <h3 className="font-semibold">Uptime</h3>
-                        <p className="text-2xl font-bold text-green-600">99.9%</p>
+                      <div className="text-center p-4 bg-purple-50 rounded-lg">
+                        <Radio className="w-8 h-8 mx-auto mb-2 text-purple-500" />
+                        <h3 className="font-semibold">Echo Resonance</h3>
+                        <p className="text-2xl font-bold text-purple-600">Active</p>
                       </div>
                       <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <Zap className="w-8 h-8 mx-auto mb-2 text-blue-500" />
-                        <h3 className="font-semibold">Performance</h3>
+                        <Waves className="w-8 h-8 mx-auto mb-2 text-blue-500" />
+                        <h3 className="font-semibold">Dimensional Sync</h3>
                         <p className="text-2xl font-bold text-blue-600">Optimal</p>
                       </div>
-                      <div className="text-center p-4 bg-purple-50 rounded-lg">
-                        <Shield className="w-8 h-8 mx-auto mb-2 text-purple-500" />
-                        <h3 className="font-semibold">Security</h3>
-                        <p className="text-2xl font-bold text-purple-600">Secure</p>
+                      <div className="text-center p-4 bg-green-50 rounded-lg">
+                        <Activity className="w-8 h-8 mx-auto mb-2 text-green-500" />
+                        <h3 className="font-semibold">Consciousness Link</h3>
+                        <p className="text-2xl font-bold text-green-600">Stable</p>
                       </div>
                       <div className="text-center p-4 bg-orange-50 rounded-lg">
                         <Target className="w-8 h-8 mx-auto mb-2 text-orange-500" />
-                        <h3 className="font-semibold">Accuracy</h3>
-                        <p className="text-2xl font-bold text-orange-600">98.7%</p>
+                        <h3 className="font-semibold">Manifestation</h3>
+                        <p className="text-2xl font-bold text-orange-600">92.1%</p>
                       </div>
                     </div>
                   </CardContent>
@@ -186,75 +213,75 @@ export const DreamForgeControlCenter: React.FC = () => {
             <ErrorBoundary>
               <Card>
                 <CardHeader>
-                  <CardTitle>Advanced System Configuration</CardTitle>
+                  <CardTitle>Dimensional Echo Simulator Configuration</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-lg font-semibold mb-3">Quantum Engine Settings</h3>
+                      <h3 className="text-lg font-semibold mb-3">Core Echo Parameters</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="p-4 border rounded-lg">
-                          <h4 className="font-medium">Reality Stability Threshold</h4>
-                          <p className="text-sm text-gray-600">Minimum stability before auto-correction</p>
+                          <h4 className="font-medium">Echo Frequency</h4>
+                          <p className="text-sm text-gray-600">Base resonance frequency</p>
                           <div className="mt-2">
-                            <span className="text-lg font-bold">30%</span>
+                            <span className="text-lg font-bold text-purple-600">432 Hz</span>
                           </div>
                         </div>
                         <div className="p-4 border rounded-lg">
-                          <h4 className="font-medium">Tesseract Node Limit</h4>
-                          <p className="text-sm text-gray-600">Maximum active tesseract nodes</p>
+                          <h4 className="font-medium">Dimensional Sensitivity</h4>
+                          <p className="text-sm text-gray-600">Echo detection threshold</p>
                           <div className="mt-2">
-                            <span className="text-lg font-bold">1000</span>
+                            <span className="text-lg font-bold text-blue-600">High</span>
                           </div>
                         </div>
                         <div className="p-4 border rounded-lg">
-                          <h4 className="font-medium">Symbol Forge Energy</h4>
-                          <p className="text-sm text-gray-600">Energy allocation for symbol creation</p>
+                          <h4 className="font-medium">Consciousness Bridge</h4>
+                          <p className="text-sm text-gray-600">User consciousness integration</p>
                           <div className="mt-2">
-                            <span className="text-lg font-bold text-purple-600">High</span>
+                            <span className="text-lg font-bold text-green-600">Active</span>
                           </div>
                         </div>
                         <div className="p-4 border rounded-lg">
-                          <h4 className="font-medium">Dimensional Weave Limit</h4>
-                          <p className="text-sm text-gray-600">Maximum simultaneous weaves</p>
+                          <h4 className="font-medium">Reality Anchor Strength</h4>
+                          <p className="text-sm text-gray-600">Dimensional stability anchor</p>
                           <div className="mt-2">
-                            <span className="text-lg font-bold">50</span>
+                            <span className="text-lg font-bold text-orange-600">85%</span>
                           </div>
                         </div>
                       </div>
                     </div>
                     
                     <div>
-                      <h3 className="text-lg font-semibold mb-3">Phase 3 Features</h3>
+                      <h3 className="text-lg font-semibold mb-3">Integrated System Components</h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="p-4 border rounded-lg">
                           <h4 className="font-medium flex items-center">
-                            <Layers className="w-4 h-4 mr-2" />
-                            Tesseract Engine
+                            <Radio className="w-4 h-4 mr-2" />
+                            Echo Core
                           </h4>
-                          <p className="text-sm text-gray-600 mt-1">Multi-dimensional node management</p>
-                          <div className="mt-2">
-                            <span className="text-lg font-bold text-green-600">Active</span>
-                          </div>
-                        </div>
-                        <div className="p-4 border rounded-lg">
-                          <h4 className="font-medium flex items-center">
-                            <Sparkles className="w-4 h-4 mr-2" />
-                            Symbol Forge
-                          </h4>
-                          <p className="text-sm text-gray-600 mt-1">Dream symbol creation and connection</p>
-                          <div className="mt-2">
-                            <span className="text-lg font-bold text-blue-600">Enabled</span>
-                          </div>
-                        </div>
-                        <div className="p-4 border rounded-lg">
-                          <h4 className="font-medium flex items-center">
-                            <Globe className="w-4 h-4 mr-2" />
-                            Reality Monitor
-                          </h4>
-                          <p className="text-sm text-gray-600 mt-1">Advanced reality matrix monitoring</p>
+                          <p className="text-sm text-gray-600 mt-1">Dimensional echo processing engine</p>
                           <div className="mt-2">
                             <span className="text-lg font-bold text-purple-600">Online</span>
+                          </div>
+                        </div>
+                        <div className="p-4 border rounded-lg">
+                          <h4 className="font-medium flex items-center">
+                            <Zap className="w-4 h-4 mr-2" />
+                            DreamForge
+                          </h4>
+                          <p className="text-sm text-gray-600 mt-1">Reality engineering interface</p>
+                          <div className="mt-2">
+                            <span className="text-lg font-bold text-blue-600">Active</span>
+                          </div>
+                        </div>
+                        <div className="p-4 border rounded-lg">
+                          <h4 className="font-medium flex items-center">
+                            <Layers className="w-4 h-4 mr-2" />
+                            Quantum Systems
+                          </h4>
+                          <p className="text-sm text-gray-600 mt-1">All quantum processing cores</p>
+                          <div className="mt-2">
+                            <span className="text-lg font-bold text-green-600">Synchronized</span>
                           </div>
                         </div>
                       </div>
