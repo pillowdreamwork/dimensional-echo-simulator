@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Copilot Auto Continue",
+  "version": "1.0",
+  "description": "Automatically clicks continue buttons when GitHub Copilot is working",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://github.com/*",
+    "https://*.github.com/*",
+    "https://vscode.dev/*",
+    "https://*.vscode.dev/*",
+    "http://localhost:*/*",
+    "http://127.0.0.1:*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://github.com/*",
+        "https://*.github.com/*",
+        "https://vscode.dev/*",
+        "https://*.vscode.dev/*",
+        "http://localhost:*/*",
+        "http://127.0.0.1:*/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Copilot Auto Continue"
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}
