@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "Copilot Auto-Continue for Dimensional Echo Simulator",
+  "version": "2.0.0",
+  "description": "Enhanced auto-continue functionality for GitHub Copilot with quantum state awareness",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://github.com/*",
+    "https://copilot.github.com/*",
+    "https://github.dev/*",
+    "https://vscode.dev/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://github.com/*",
+        "https://copilot.github.com/*",
+        "https://github.dev/*",
+        "https://vscode.dev/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Copilot Auto-Continue Settings"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}
