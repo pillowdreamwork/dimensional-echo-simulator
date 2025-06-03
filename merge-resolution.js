@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 import fs from 'fs';
 
-const BRANCHES = ['main', 'feature-a', 'feature-b'];
+const BRANCHES = ['main', 'quantum-fixes-2025'];
 const MERGE_TARGET = 'merged-unified';
 
 function run(cmd, options = { stdio: 'inherit' }) {
