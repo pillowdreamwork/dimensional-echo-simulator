@@ -8,6 +8,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
+import Portal from "./pages/Portal";
+import Multimedia from "./pages/Multimedia";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -32,6 +34,16 @@ function App() {
                 <Route path="/dashboard" element={
                   <Suspense fallback={<LoadingSpinner size="lg" text="Loading Control Center..." />}>
                     <Dashboard />
+                  </Suspense>
+                } />
+                <Route path="/portal" element={
+                  <Suspense fallback={<LoadingSpinner size="lg" text="Loading Portal Interface..." />}>
+                    <Portal />
+                  </Suspense>
+                } />
+                <Route path="/multimedia" element={
+                  <Suspense fallback={<LoadingSpinner size="lg" text="Loading Multimedia Suite..." />}>
+                    <Multimedia />
                   </Suspense>
                 } />
                 <Route path="*" element={<NotFound />} />
