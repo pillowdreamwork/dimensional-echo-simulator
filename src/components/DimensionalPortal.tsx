@@ -9,7 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Radio, 
-  Portal, 
+  Circle, 
   Layers3, 
   Sparkles, 
   Zap, 
@@ -124,7 +124,7 @@ export const DimensionalPortal: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Portal className="text-purple-400" size={28} />
+              <Circle className="text-purple-400" size={28} />
               <div>
                 <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
                   Dimensional Portal Interface

@@ -25,7 +25,7 @@ import {
   Eye,
   Waves,
   Zap,
-  Portal,
+  Circle,
   Layers,
   History,
   Play
@@ -124,7 +124,7 @@ const Index = () => {
               <nav className="flex items-center space-x-4">
                 <Link to="/portal">
                   <Button variant="outline" className="flex items-center">
-                    <Portal className="mr-2 w-4 h-4" />
+                    <Circle className="mr-2 w-4 h-4" />
                     Portal Interface
                   </Button>
                 </Link>
@@ -187,7 +187,7 @@ const Index = () => {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <Portal className="mr-2 text-purple-500" size={20} />
+                  <Circle className="mr-2 text-purple-500" size={20} />
                   Quick Portal Access
                 </div>
                 <Badge className="bg-green-500">All Features Restored</Badge>
@@ -197,7 +197,7 @@ const Index = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Link to="/portal">
                   <Button className="w-full h-20 flex flex-col items-center justify-center bg-gradient-to-br from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
-                    <Portal className="w-6 h-6 mb-2" />
+                    <Circle className="w-6 h-6 mb-2" />
                     Portal Interface
                   </Button>
                 </Link>
@@ -326,7 +326,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 border-purple-300/30">
               <CardContent className="p-6 text-center">
-                <Portal className="w-12 h-12 mx-auto mb-4 text-purple-500" />
+                <Circle className="w-12 h-12 mx-auto mb-4 text-purple-500" />
                 <h3 className="text-lg font-semibold mb-2">Dimensional Portal</h3>
                 <p className="text-gray-600">Complete portal interface with environmental controls, reality overlay system, and dimensional navigation.</p>
               </CardContent>
