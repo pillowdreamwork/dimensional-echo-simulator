@@ -17,8 +17,9 @@ import './App.css';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: (failureCount, error: any) => {
-        const { stability } = error?.dimensionalContext ?? { stability: 1 };
+      retry: (failureCount, error: Error | null) => {
+        const errorWithContext = error as Error & { dimensionalContext?: { stability: number } };
+        const { stability } = errorWithContext?.dimensionalContext ?? { stability: 1 };
         const maxRetries = Math.ceil(4 * stability);
         return failureCount < maxRetries;
       },
@@ -29,59 +30,24 @@ const queryClient = new QueryClient({
 });
 
 // Lazy load major components with proper type handling
-const DimensionalView = lazy(() => 
-  import('./components/DimensionalView').then(m => ({
-    default: ({ currentDimension, quantumState, onStateChange }: any) => (
-      <m.DimensionalView
-        currentDimension={currentDimension}
-        quantumState={quantumState}
-        onStateChange={onStateChange}
-      />
-    )
-  }))
-);
+const DimensionalView = lazy(() => import('./components/DimensionalView'));
 
 const RealityMonitor = lazy(() => 
-  import('./components/RealityMonitor').then(m => ({
-    default: m.RealityMonitor
+  import('./components/RealityMonitor').then(module => ({
+    default: module.RealityMonitor
   }))
 );
 
 const QuantumStateCollapser = lazy(() => 
-  import('./components/QuantumStateCollapser').then(m => ({
-    default: ({ quantumState, onStateChange, onCollapse }: any) => (
-      <m.QuantumStateCollapser 
-        quantumState={quantumState}
-        onStateChange={onStateChange}
-        onCollapse={onCollapse}
-      />
-    )
-  }))
+  import('./components/QuantumStateCollapser')
 );
 
 const TesseractWeaveEditor = lazy(() =>
-  import('./components/dreamforge/TesseractWeaveEditor').then(m => ({
-    default: ({ quantumState, dimensionalProperties, onStateChange, onDimensionalShift }: any) => (
-      <m.default
-        quantumState={quantumState}
-        dimensionalProperties={dimensionalProperties}
-        onStateChange={onStateChange}
-        onDimensionalShift={onDimensionalShift}
-      />
-    )
-  }))
+  import('./components/TesseractWeaveEditor')
 );
 
 const DreamForge = lazy(() => 
-  import('./components/dreamforge/ForgeDashboard').then(m => ({
-    default: ({ dimensionalProperties, quantumState, onUpdateProperties }: any) => (
-      <m.ForgeDashboard
-        dimensionalProperties={dimensionalProperties}
-        quantumState={quantumState}
-        onUpdateProperties={onUpdateProperties}
-      />
-    )
-  }))
+  import('./components/dreamforge/ForgeDashboard')
 );
 
 const App = () => {
@@ -159,21 +125,14 @@ const App = () => {
                   path="/" 
                   element={
                     <DimensionalView 
-                      currentDimension={dimensionalProperties.level as DimensionalLevel}
                       quantumState={quantumState}
-                      onStateChange={updateQuantumState}
+                      isTransitioning={quantumState.isTransitioning}
                     />
                   } 
                 />
                 <Route 
                   path="/forge" 
-                  element={
-                    <DreamForge 
-                      dimensionalProperties={dimensionalProperties}
-                      quantumState={quantumState}
-                      onUpdateProperties={updateDimensionalProperties}
-                    />
-                  } 
+                  element={<DreamForge />} 
                 />
                 <Route 
                   path="/weaver" 
@@ -203,7 +162,6 @@ const App = () => {
                     <QuantumStateCollapser 
                       quantumState={quantumState}
                       onStateChange={updateQuantumState}
-                      onCollapse={handleCollapseState}
                     />
                   } 
                 />

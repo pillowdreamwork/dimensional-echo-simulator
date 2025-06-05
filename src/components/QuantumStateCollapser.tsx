@@ -51,7 +51,7 @@ const stabilizeQuantumState = (state: QuantumState): Partial<QuantumState> => ({
   entanglement: Math.max(0, state.entanglement - 0.1)
 });
 
-export const QuantumStateCollapser = memo(function QuantumStateCollapser({ className, quantumState, onStateChange }: Props) {
+const QuantumStateCollapser = memo(function QuantumStateCollapser({ className, quantumState, onStateChange }: Props) {
   const { toast } = useToast();
   const [stabilityFactor, setStabilityFactor] = useState(50);
   const [collapsing, setCollapsing] = useState(false);
@@ -303,3 +303,5 @@ export const QuantumStateCollapser = memo(function QuantumStateCollapser({ class
     </Card>
   );
 });
+
+export default QuantumStateCollapser;

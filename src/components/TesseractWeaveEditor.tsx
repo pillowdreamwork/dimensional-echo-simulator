@@ -340,3 +340,5 @@ export function TesseractWeaveEditor({
     </Card>
   );
 }
+
+export default TesseractWeaveEditor;

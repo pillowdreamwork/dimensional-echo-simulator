@@ -25,6 +25,7 @@ export interface QuantumState {
   
   // Metadata
   isCollapsed: boolean;
+  isTransitioning: boolean;
   collapseTimestamp: number;
   
   // Stability metrics

@@ -8,7 +8,12 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "autocontinue": "node autocontinue.js",
+    "autocontinue:activate": "node activate-autocontinue.js --verbose",
+    "autocontinue:test": "node test-methods.js --verbose",
+    "autocontinue:debug": "node activate-autocontinue.js --debug --verbose",
+    "autocontinue:status": "node autocontinue.js status"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
