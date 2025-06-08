@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Progress } from '../ui/progress';
@@ -29,7 +28,10 @@ export const DimensionalEchoMonitor: React.FC = () => {
     temporalAlignment: 0,
     consciousnessLink: 0,
     manifestationPotential: 0,
-    systemStatus: 'initializing'
+    activeProcesses: 0,
+    energyLevel: 0,
+    systemStatus: 'initializing',
+    lastUpdate: new Date()
   });
 
   const [recentEvents, setRecentEvents] = useState<EchoEvent[]>([]);
@@ -172,7 +174,7 @@ export const DimensionalEchoMonitor: React.FC = () => {
               <Eye className="w-8 h-8 text-orange-500" />
             </div>
             <Progress value={echoState.consciousnessLink} className="mt-2" />
-          </CardContent>
+          </Card>
         </Card>
       </div>
 
