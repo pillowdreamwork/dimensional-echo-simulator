@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Progress } from '../ui/progress';
@@ -174,7 +175,7 @@ export const DimensionalEchoMonitor: React.FC = () => {
               <Eye className="w-8 h-8 text-orange-500" />
             </div>
             <Progress value={echoState.consciousnessLink} className="mt-2" />
-          </Card>
+          </CardContent>
         </Card>
       </div>
 
